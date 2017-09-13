@@ -20,15 +20,6 @@ port=$(ynh_app_setting_get $app port)
 db_name=$(ynh_app_setting_get $app db_name)
 
 #=================================================
-# STANDARD REMOVE
-#=================================================
-# STOP AND REMOVE SERVICE
-#=================================================
-
-# Remove the dedicated systemd config
-ynh_remove_systemd_config
-
-#=================================================
 # REMOVE SERVICE FROM ADMIN PANEL
 #=================================================
 
@@ -67,13 +58,6 @@ ynh_secure_remove "/var/www/$app"
 ynh_remove_nginx_config
 
 #=================================================
-# REMOVE PHP-FPM CONFIGURATION
-#=================================================
-
-# Remove the dedicated php-fpm config
-ynh_remove_fpm_config
-
-#=================================================
 # REMOVE LOGROTATE CONFIGURATION
 #=================================================
 
@@ -81,19 +65,9 @@ ynh_remove_fpm_config
 ynh_remove_logrotate
 
 #=================================================
-# CLOSE A PORT
-#=================================================
-
-if yunohost firewall list | grep -q "\- $port$"
-then
-	echo "Close port $port"
-	QUIET yunohost firewall disallow TCP $port
-fi
-
-#=================================================
 # SPECIFIC REMOVE
 #=================================================
-# REMOVE THE CRON FILE
+# REMOVE CRON FILE
 #=================================================
 
 # Remove a cron file

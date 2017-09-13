@@ -71,17 +71,12 @@ ynh_add_nginx_config
 ynh_system_user_create $app
 
 #=================================================
-# PHP-FPM CONFIGURATION
-#=================================================
-
-# Create a dedicated php-fpm config
-ynh_fpm_config
-
-#=================================================
 # SPECIFIC UPGRADE
 #=================================================
-# ...
+# Migrate databases
 #=================================================
+
+cd "$final_path" && python3 ./manage.py migrate
 
 # Verify the checksum and backup the file if it's different
 ynh_backup_if_checksum_is_different "$final_path/CONFIG_FILE"
@@ -96,20 +91,8 @@ ynh_store_file_checksum "$final_path/CONFIG_FILE"
 ynh_use_logrotate
 
 #=================================================
-# SETUP SYSTEMD
-#=================================================
-
-# Create a dedicated systemd config
-ynh_systemd_config
-
-#=================================================
 # GENERIC FINALIZATION
 #=================================================
-# SECURE FILES AND DIRECTORIES
-#=================================================
-
-# Set right permissions for curl installation
-chown -R root: $final_path
 
 #=================================================
 # SETUP SSOWAT
