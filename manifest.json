@@ -30,6 +30,15 @@
 				"example": "domain.org"
 			},
 			{
+				"name": "path",
+				"type": "path",
+				"ask": {
+				    "en": "Choose a path for Weblate:"
+				},
+				"example": "/weblate",
+				"default": "/weblate"
+			},
+			{
 				"name": "is_public",
 				"type": "boolean",
 				"ask": {
@@ -37,6 +46,7 @@
 				},
 				"default": "0"
 			}
+
 		]
 	}
 }
