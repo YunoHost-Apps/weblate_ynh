@@ -25,7 +25,7 @@
 				"name": "domain",
 				"type": "domain",
 				"ask": {
-					"en": "Choose a domain:",
+					"en": "Choose a domain:"
 				},
 				"example": "domain.org"
 			},
