@@ -6,7 +6,7 @@
 		"yunohost": ">= 2.7.0"
 	},
 	"description": {
-		"en": "Instant messaging server who use matrix"
+		"en": "A translation platform using Git and Python"
 	},
 	"version": "2.16.0",
 	"url": "https://weblate.org",
@@ -25,7 +25,7 @@
 				"name": "domain",
 				"type": "domain",
 				"ask": {
-					"en": "Choose a domain:"
+					"en": "Choose a domain for Weblate:"
 				},
 				"example": "domain.org"
 			},
@@ -42,7 +42,7 @@
 				"name": "is_public",
 				"type": "boolean",
 				"ask": {
-					"en": "Is it a public server ?"
+					"en": "Should Weblate be public accessible?"
 				},
 				"default": "0"
 			},
@@ -50,11 +50,10 @@
 				"name": "admin",
 				"type": "user",
 				"ask": {
-				    "en": "Choose an admin user"
+				    "en": "Choose an admin user for Weblate"
 				},
 				"example": "simon"
-			},
-
+			}
 		]
 	}
 }
