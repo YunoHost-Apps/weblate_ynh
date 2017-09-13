@@ -1,3 +1,9 @@
-# https://docs.weblate.org/en/latest/admin/management.html#update-index
-# every 10 minutes
+# https://docs.weblate.org/en/latest/admin/install.html#production-cron
+# Fulltext index updates
 10 * * * * www-data cd "__FINALPATH__" && python3 ./manage.py update_index
+
+# Cleanup stale objects
+@daily cd "__FINALPATH__" && ./manage.py cleanuptrans
+
+# Commit pending changes after 96 hours
+@hourly cd "__FINALPATH__" && ./manage.py commit_pending --all --age=96 --verbosity=0

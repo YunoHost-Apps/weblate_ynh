@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# TODO: https://docs.weblate.org/en/latest/admin/install.html#migrating-database
-
 #=================================================
 # GENERIC START
 #=================================================
