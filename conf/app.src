@@ -1,0 +1,6 @@
+SOURCE_URL=https://dl.cihar.com/weblate/Weblate-2.16.tar.xz
+SOURCE_SUM=0cd67d3eef8fb414c55d9447a361feb9718e39460c85de51fc0c636838625c70
+SOURCE_SUM_PRG=sha256
+SOURCE_FORMAT=tar.xz
+SOURCE_IN_SUBDIR=true
+SOURCE_FILENAME=Weblate-2.16.tar.xz

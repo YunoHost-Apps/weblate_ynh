@@ -1,0 +1,3 @@
+# https://docs.weblate.org/en/latest/admin/management.html#update-index
+# every 10 minutes
+10 * * * * www-data cd "__FINALPATH__" && python3 ./manage.py update_index
