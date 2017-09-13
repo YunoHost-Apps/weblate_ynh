@@ -45,7 +45,15 @@
 					"en": "Is it a public server ?"
 				},
 				"default": "0"
-			}
+			},
+			{
+				"name": "admin",
+				"type": "user",
+				"ask": {
+				    "en": "Choose an admin user"
+				},
+				"example": "simon"
+			},
 
 		]
 	}
