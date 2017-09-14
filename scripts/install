@@ -158,6 +158,7 @@ ynh_replace_string "__KEY__" "$key" $final_path/weblate/settings.py
 virtualenv ${final_path}/venv
 #run source in a 'sub shell'
 (
+	set +eu
 	source ${final_path}/venv/bin/activate
 	${final_path}/venv/bin/pip install Weblate==2.16
 	${final_path}/venv/bin/pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
@@ -170,6 +171,7 @@ virtualenv ${final_path}/venv
 echo "SPECIFIC SETUP Filling up the database"
 # set up database
 (
+	set +eu
 	source ${final_path}/venv/bin/activate
 	weblate migrate --noinput --settings weblate.settings
 	# generate static files
