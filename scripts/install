@@ -73,7 +73,8 @@ ynh_install_app_dependencies python-django translate-toolkit \
     python-whoosh python-pil python-libravatar \
     python-babel git mercurial \
     python-django-compressor python-django-crispy-forms \
-    python-djangorestframework python-dateutil
+    python-djangorestframework python-dateutil \
+    uwsgi uwsgi-plugin-python
 
 #=================================================
 # CREATE A MYSQL DATABASE
