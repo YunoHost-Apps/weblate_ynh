@@ -140,18 +140,17 @@ systemctl enable $app.uwsgi.service
 systemctl restart $app.uwsgi.service
 
 # Add weblate.uwsgi as a service
-yunohost service add $app.service
+yunohost service add $app.uwsgi.service
 
 #=================================================
 # SPECIFIC SETUP settings.py
 # https://docs.weblate.org/en/latest/admin/install.html#installation
 #=================================================
-
+echo "SPECIFIC SETUP settings.py"
 db_pwd=$(ynh_app_setting_get $app mysqlpwd)
 admin_mail="$(ynh_user_get_info $admin mail)"
 key=$(ynh_string_random 64)
 
-cp $final_path/weblate/settings_example.py $final_path/weblate/settings.py
 cp ../conf/settings.py $final_path/weblate/settings.py
 
 ynh_replace_string "__NAME__" "$app" $final_path/weblate/settings.py
@@ -166,16 +165,16 @@ ynh_replace_string "__KEY__" "$key" $final_path/weblate/settings.py
 # SPECIFIC SETUP Filling up the database
 # https://docs.weblate.org/en/latest/admin/install.html#filling-up-the-database
 #==========================================
-
+echo "SPECIFIC SETUP Filling up the database"
 # set up database
-$final_path/manage.py migrate --noinput
+source ${final_path}/venv/bin/activate && $final_path/manage.py migrate --noinput
 # generate static files
-$final_path/manage.py collectstatic --noinput
+source ${final_path}/venv/bin/activate && $final_path/manage.py collectstatic --noinput
 
 #=================================================
 # SETUP CRON
 #=================================================
-
+echo "SETUP CRON"
 cp ../conf/cron_weblate /etc/cron.d/$app
 ynh_replace_string "__FINALPATH__" "$final_path/" /etc/cron.d/$app
 
@@ -201,7 +200,6 @@ chown -R root: $final_path
 
 # Use logrotate to manage application logfile(s)
 ynh_use_logrotate
-
 
 #=================================================
 # SETUP SSOWAT
