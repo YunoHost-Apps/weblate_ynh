@@ -40,9 +40,9 @@ DATABASES = {
         # Database engine
         'ENGINE': 'django.db.backends.mysql',
         # Database name
-        'NAME': '__APP__',
+        'NAME': '__NAME__',
         # Database user
-        'USER': '__APP__',
+        'USER': '__NAME__',
         # Database password
         'PASSWORD': '__DB_PWD__',
         # Set to empty string for localhost

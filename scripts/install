@@ -118,7 +118,7 @@ ynh_system_user_create $app
 
 # Copy Files
 sudo cp ../conf/uwsgi.ini $final_path/uwsgi.ini
-ynh_replace_string "__APP__" "$app" $final_path/uwsgi.ini
+ynh_replace_string "__NAME__" "$app" $final_path/uwsgi.ini
 ynh_replace_string "__FINALPATH__" "$finalpath" $final_path/uwsgi.ini
 
 # Config service
@@ -144,7 +144,7 @@ key=$(ynh_string_random 64)
 sudo cp $final_path/weblate/settings_example.py $final_path/weblate/settings.py
 sudo cp ../conf/settings.py $final_path/weblate/settings.py
 
-ynh_replace_string "__APP__" "$app" $final_path/settings.py
+ynh_replace_string "__NAME__" "$app" $final_path/settings.py
 ynh_replace_string "__DB_PWD__" "$db_pwd" $final_path/weblate/settings.py
 ynh_replace_string "__ADMIN__" "$admin" $final_path/weblate/settings.py
 ynh_replace_string "__ADMINMAIL__" "$admin_mail" $final_path/weblate/settings.py
