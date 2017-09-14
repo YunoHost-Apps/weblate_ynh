@@ -110,10 +110,10 @@ ynh_system_user_create $app
 #=================================================
 # PIP INSTALLATION
 #=================================================
-sudo su $app -c "virtualenv ${final_path}/venv"
-sudo source ${final_path}/venv/bin/activate
-sudo pip install Weblate==2.16
-sudo pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
+virtualenv ${final_path}/venv
+source ${final_path}/venv/bin/activate
+pip install Weblate==2.16
+pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
 
 #=================================================
 # SPECIFIC SETUP
@@ -122,25 +122,25 @@ sudo pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
 #=================================================
 
 # Copy Files
-sudo cp ../conf/uwsgi.ini $final_path/uwsgi.ini
+cp ../conf/uwsgi.ini $final_path/uwsgi.ini
 ynh_replace_string "__NAME__" "$app" $final_path/uwsgi.ini
 ynh_replace_string "__FINALPATH__" "$final_path" $final_path/uwsgi.ini
 
 # Config service
-sudo mkdir -p /etc/uwsgi/apps-enabled/
-sudo ln -s $final_path/uwsgi.ini /etc/uwsgi/apps-enabled/$app.uwsgi.ini
+mkdir -p /etc/uwsgi/apps-enabled/
+ln -s $final_path/uwsgi.ini /etc/uwsgi/apps-enabled/$app.uwsgi.ini
 
-sudo cp ../conf/uwsgi_service /etc/systemd/system/$app.uwsgi.service
+cp ../conf/uwsgi_service /etc/systemd/system/$app.uwsgi.service
 ynh_replace_string "__NAME__" "$app" /etc/systemd/system/$app.uwsgi.service
 ynh_replace_string "__FINALPATH__" "$final_path" /etc/systemd/system/$app.uwsgi.service
 
 
 # Start service
-sudo systemctl enable $app.uwsgi.service
-sudo systemctl restart $app.uwsgi.service
+systemctl enable $app.uwsgi.service
+systemctl restart $app.uwsgi.service
 
 # Add weblate.uwsgi as a service
-sudo yunohost service add $app.service
+yunohost service add $app.service
 
 #=================================================
 # SPECIFIC SETUP settings.py
@@ -151,8 +151,8 @@ db_pwd=$(ynh_app_setting_get $app mysqlpwd)
 admin_mail="$(ynh_user_get_info $admin mail)"
 key=$(ynh_string_random 64)
 
-sudo cp $final_path/weblate/settings_example.py $final_path/weblate/settings.py
-sudo cp ../conf/settings.py $final_path/weblate/settings.py
+cp $final_path/weblate/settings_example.py $final_path/weblate/settings.py
+cp ../conf/settings.py $final_path/weblate/settings.py
 
 ynh_replace_string "__NAME__" "$app" $final_path/weblate/settings.py
 ynh_replace_string "__DB_PWD__" "$db_pwd" $final_path/weblate/settings.py
@@ -168,15 +168,15 @@ ynh_replace_string "__KEY__" "$key" $final_path/weblate/settings.py
 #==========================================
 
 # set up database
-sudo $final_path/manage.py migrate --noinput
+$final_path/manage.py migrate --noinput
 # generate static files
-sudo $final_path/manage.py collectstatic --noinput
+$final_path/manage.py collectstatic --noinput
 
 #=================================================
 # SETUP CRON
 #=================================================
 
-sudo cp ../conf/cron_weblate /etc/cron.d/$app
+cp ../conf/cron_weblate /etc/cron.d/$app
 ynh_replace_string "__FINALPATH__" "$final_path/" /etc/cron.d/$app
 
 #=================================================
@@ -193,7 +193,7 @@ ynh_store_file_checksum "$final_path/CONFIG_FILE"
 #=================================================
 
 # Set permissions to app files
-sudo chown -R root: $final_path
+chown -R root: $final_path
 
 #=================================================
 # SETUP LOGROTATE

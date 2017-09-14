@@ -84,11 +84,19 @@ chown -R root: $final_path
 #=================================================
 
 # Define and install dependencies
-ynh_install_app_dependencies python-django translate-toolkit \
-    python-whoosh python-pil python-libravatar \
-    python-babel git mercurial \
-    python-django-compressor python-django-crispy-forms \
-    python-djangorestframework python-dateutil
+ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
+	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv
+
+virtualenv ${final_path}/venv
+source ${final_path}/venv/bin/activate
+pip install Weblate==2.16
+pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
+
+#=================================================
+# RESTORE THE SERVICE
+#=================================================
+
+ynh_restore_file "/etc/systemd/system/$app.uwsgi.service"
 
 #=================================================
 # ADVERTISE SERVICE IN ADMIN PANEL
@@ -103,7 +111,7 @@ yunohost service add $app --log "/var/log/$app/APP.log"
 ynh_restore_file "/etc/cron.d/$app"
 
 #=================================================
-# BACKUP THE LOGROTATE CONFIGURATION
+# RESTORE THE LOGROTATE CONFIGURATION
 #=================================================
 
 ynh_restore_file "/etc/logrotate.d/$app"
@@ -111,7 +119,8 @@ ynh_restore_file "/etc/logrotate.d/$app"
 #=================================================
 # GENERIC FINALIZATION
 #=================================================
-# RELOAD NGINX
+# RELOAD NGINX & uwsgi
 #=================================================
 
 systemctl reload nginx
+systemctl reload $app.uwsgi.service
