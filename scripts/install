@@ -83,7 +83,7 @@ ynh_app_setting_set $app db_name $db_name
 ynh_mysql_setup_db $db_name $db_name
 
 # https://docs.weblate.org/en/latest/admin/install.html#unicode-issues-in-mysql
-ynh_mysql_execute_as_root "ALTER DATABASE weblate CHARACTER SET utf8mb4;"
+ynh_mysql_execute_as_root "ALTER DATABASE $db_name CHARACTER SET utf8mb4;"
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
@@ -167,9 +167,9 @@ ynh_replace_string "__KEY__" "$key" $final_path/weblate/settings.py
 #==========================================
 echo "SPECIFIC SETUP Filling up the database"
 # set up database
-source ${final_path}/venv/bin/activate && $final_path/manage.py migrate --noinput
+source ${final_path}/venv/bin/activate && weblate migrate --noinput --settings weblate.settings
 # generate static files
-source ${final_path}/venv/bin/activate && $final_path/manage.py collectstatic --noinput
+source ${final_path}/venv/bin/activate && weblate collectstatic --noinput --settings weblate.settings
 
 #=================================================
 # SETUP CRON
