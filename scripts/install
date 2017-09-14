@@ -108,14 +108,6 @@ ynh_add_nginx_config
 ynh_system_user_create $app
 
 #=================================================
-# PIP INSTALLATION
-#=================================================
-virtualenv ${final_path}/venv
-source ${final_path}/venv/bin/activate
-${final_path}/venv/bin/pip install Weblate==2.16
-${final_path}/venv/bin/pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
-
-#=================================================
 # SPECIFIC SETUP
 #=================================================
 # SPECIFIC SETUP uwsgi
@@ -160,6 +152,16 @@ ynh_replace_string "__ADMINMAIL__" "$admin_mail" $final_path/weblate/settings.py
 ynh_replace_string "__DOMAIN__" "$domain" $final_path/weblate/settings.py
 ynh_replace_string "__KEY__" "$key" $final_path/weblate/settings.py
 
+#=================================================
+# PIP INSTALLATION
+#=================================================
+virtualenv ${final_path}/venv
+#run source in a 'sub shell'
+(
+	source ${final_path}/venv/bin/activate
+	${final_path}/venv/bin/pip install Weblate==2.16
+	${final_path}/venv/bin/pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
+)
 
 #=================================================
 # SPECIFIC SETUP Filling up the database
@@ -167,9 +169,12 @@ ynh_replace_string "__KEY__" "$key" $final_path/weblate/settings.py
 #==========================================
 echo "SPECIFIC SETUP Filling up the database"
 # set up database
-source ${final_path}/venv/bin/activate && weblate migrate --noinput --settings weblate.settings
-# generate static files
-source ${final_path}/venv/bin/activate && weblate collectstatic --noinput --settings weblate.settings
+(
+	source ${final_path}/venv/bin/activate
+	weblate migrate --noinput --settings weblate.settings
+	# generate static files
+	weblate collectstatic --noinput --settings weblate.settings
+)
 
 #=================================================
 # SETUP CRON
