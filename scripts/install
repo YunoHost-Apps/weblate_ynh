@@ -69,12 +69,8 @@ ynh_app_setting_set $app is_public $is_public
 # INSTALL DEPENDENCIES
 #=================================================
 
-ynh_install_app_dependencies python-django translate-toolkit \
-    python-whoosh python-pil python-libravatar \
-    python-babel git mercurial \
-    python-django-compressor python-django-crispy-forms \
-    python-djangorestframework python-dateutil \
-    uwsgi uwsgi-plugin-python
+ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
+	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv
 
 #=================================================
 # CREATE A MYSQL DATABASE
@@ -96,6 +92,14 @@ ynh_mysql_execute_as_root "ALTER DATABASE weblate CHARACTER SET utf8mb4;"
 ynh_app_setting_set $app final_path $final_path
 # Download, check integrity, uncompress and patch the source from app.src
 ynh_setup_source "$final_path"
+
+#=================================================
+# PIP INSTALLATION
+#=================================================
+sudo su $app -c "virtualenv ${final_path}/venv"
+sudo source ${final_path}/venv/bin/activate
+sudo pip install Weblate
+sudo pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
 
 #=================================================
 # NGINX CONFIGURATION
@@ -130,6 +134,7 @@ sudo cp ../conf/uwsgi_service /etc/systemd/system/$app.uwsgi.service
 ynh_replace_string "__NAME__" "$app" /etc/systemd/system/$app.uwsgi.service
 ynh_replace_string "__FINALPATH__" "$final_path" /etc/systemd/system/$app.uwsgi.service
 
+
 # Start service
 sudo systemctl enable $app.uwsgi.service
 sudo systemctl restart $app.uwsgi.service
@@ -149,7 +154,7 @@ key=$(ynh_string_random 64)
 sudo cp $final_path/weblate/settings_example.py $final_path/weblate/settings.py
 sudo cp ../conf/settings.py $final_path/weblate/settings.py
 
-ynh_replace_string "__NAME__" "$app" $final_path/settings.py
+ynh_replace_string "__NAME__" "$app" $final_path/weblate/settings.py
 ynh_replace_string "__DB_PWD__" "$db_pwd" $final_path/weblate/settings.py
 ynh_replace_string "__ADMIN__" "$admin" $final_path/weblate/settings.py
 ynh_replace_string "__ADMINMAIL__" "$admin_mail" $final_path/weblate/settings.py
@@ -171,7 +176,7 @@ sudo $final_path/manage.py collectstatic --noinput
 # SETUP CRON
 #=================================================
 
-cp ../conf/cron_weblate /etc/cron.d/$app
+sudo cp ../conf/cron_weblate /etc/cron.d/$app
 ynh_replace_string "__FINALPATH__" "$final_path/" /etc/cron.d/$app
 
 #=================================================
@@ -188,7 +193,7 @@ ynh_store_file_checksum "$final_path/CONFIG_FILE"
 #=================================================
 
 # Set permissions to app files
-chown -R root: $final_path
+sudo chown -R root: $final_path
 
 #=================================================
 # SETUP LOGROTATE
