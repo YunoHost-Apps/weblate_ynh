@@ -111,9 +111,11 @@ ynh_system_user_create $app
 # PIP INSTALLATION
 #=================================================
 virtualenv ${final_path}/venv
+set +o nounset
 source ${final_path}/venv/bin/activate
-pip install Weblate==2.16
-pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
+set -o nounset
+${final_path}/venv/bin/pip install Weblate==2.16
+${final_path}/venv/bin/pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
 
 #=================================================
 # SPECIFIC SETUP
