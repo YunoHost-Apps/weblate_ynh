@@ -80,6 +80,14 @@ ynh_secure_remove "/etc/$app/"
 ynh_secure_remove "/var/log/$app/"
 
 #=================================================
+# REMOVE uwsgi and systemd files
+#=================================================
+
+ynh_secure_remove "/etc/uwsgi/apps-enabled/$app.uwsgi.ini"
+
+ynh_secure_remove "/etc/systemd/system/$app.uwsgi.service"
+
+#=================================================
 # GENERIC FINALIZATION
 #=================================================
 # REMOVE DEDICATED USER

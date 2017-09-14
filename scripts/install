@@ -126,12 +126,16 @@ ynh_replace_string "__FINALPATH__" "$final_path" $final_path/uwsgi.ini
 sudo mkdir -p /etc/uwsgi/apps-enabled/
 sudo ln -s $final_path/uwsgi.ini /etc/uwsgi/apps-enabled/$app.uwsgi.ini
 
-# Start service
-sudo systemctl enable uwsgi
-sudo systemctl restart uwsgi
+sudo cp ../conf/uwsgi_service /etc/systemd/system/$app.uwsgi.service
+ynh_replace_string "__NAME__" "$app" /etc/systemd/system/$app.uwsgi.service
+ynh_replace_string "__FINALPATH__" "$final_path" /etc/systemd/system/$app.uwsgi.service
 
-# Add umap.uwsgi as a service
-sudo yunohost service add $app.uwsgi
+# Start service
+sudo systemctl enable $app.uwsgi.service
+sudo systemctl restart $app.uwsgi.service
+
+# Add weblate.uwsgi as a service
+sudo yunohost service add $app.service
 
 #=================================================
 # SPECIFIC SETUP settings.py
@@ -169,7 +173,6 @@ sudo $final_path/manage.py collectstatic --noinput
 
 cp ../conf/cron_weblate /etc/cron.d/$app
 ynh_replace_string "__FINALPATH__" "$final_path/" /etc/cron.d/$app
-chmod +x $final_path/script/lutim
 
 #=================================================
 # STORE THE CHECKSUM OF THE CONFIG FILE
