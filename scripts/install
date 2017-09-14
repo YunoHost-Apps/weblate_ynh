@@ -119,7 +119,7 @@ ynh_system_user_create $app
 # Copy Files
 sudo cp ../conf/uwsgi.ini $final_path/uwsgi.ini
 ynh_replace_string "__NAME__" "$app" $final_path/uwsgi.ini
-ynh_replace_string "__FINALPATH__" "$finalpath" $final_path/uwsgi.ini
+ynh_replace_string "__FINALPATH__" "$final_path" $final_path/uwsgi.ini
 
 # Config service
 sudo mkdir -p /etc/uwsgi/apps-enabled/
