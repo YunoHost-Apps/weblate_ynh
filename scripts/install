@@ -94,14 +94,6 @@ ynh_app_setting_set $app final_path $final_path
 ynh_setup_source "$final_path"
 
 #=================================================
-# PIP INSTALLATION
-#=================================================
-sudo su $app -c "virtualenv ${final_path}/venv"
-sudo source ${final_path}/venv/bin/activate
-sudo pip install Weblate
-sudo pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
-
-#=================================================
 # NGINX CONFIGURATION
 #=================================================
 
@@ -114,6 +106,14 @@ ynh_add_nginx_config
 
 # Create a system user
 ynh_system_user_create $app
+
+#=================================================
+# PIP INSTALLATION
+#=================================================
+sudo su $app -c "virtualenv ${final_path}/venv"
+sudo source ${final_path}/venv/bin/activate
+sudo pip install Weblate==2.16
+sudo pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
 
 #=================================================
 # SPECIFIC SETUP
