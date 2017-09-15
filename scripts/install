@@ -72,7 +72,8 @@ ynh_app_setting_set $app is_public $is_public
 #=================================================
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
-	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv
+	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
+	libmysqlclient-dev
 
 #=================================================
 # CREATE A MYSQL DATABASE
