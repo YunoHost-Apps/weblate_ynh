@@ -59,7 +59,7 @@ DATABASES = {
     }
 }
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BASE_DIR = '__FINALPATH__'
 
 # Data directory
 DATA_DIR = os.path.join(BASE_DIR, '..', 'data')

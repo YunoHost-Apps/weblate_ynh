@@ -86,14 +86,6 @@ ynh_mysql_setup_db $db_name $db_name
 ynh_mysql_execute_as_root "ALTER DATABASE $db_name CHARACTER SET utf8mb4;"
 
 #=================================================
-# DOWNLOAD, CHECK AND UNPACK SOURCE
-#=================================================
-
-ynh_app_setting_set $app final_path $final_path
-# Download, check integrity, uncompress and patch the source from app.src
-ynh_setup_source "$final_path"
-
-#=================================================
 # NGINX CONFIGURATION
 #=================================================
 
@@ -135,25 +127,6 @@ systemctl restart $app.uwsgi.service
 yunohost service add $app.uwsgi.service
 
 #=================================================
-# SPECIFIC SETUP settings.py
-# https://docs.weblate.org/en/latest/admin/install.html#installation
-#=================================================
-echo "SPECIFIC SETUP settings.py"
-db_pwd=$(ynh_app_setting_get $app mysqlpwd)
-admin_mail="$(ynh_user_get_info $admin mail)"
-key=$(ynh_string_random 64)
-
-cp ../conf/settings.py $final_path/weblate/settings.py
-
-ynh_replace_string "__NAME__" "$app" $final_path/weblate/settings.py
-ynh_replace_string "__DB_PWD__" "$db_pwd" $final_path/weblate/settings.py
-ynh_replace_string "__ADMIN__" "$admin" $final_path/weblate/settings.py
-ynh_replace_string "__ADMINMAIL__" "$admin_mail" $final_path/weblate/settings.py
-ynh_replace_string "__DOMAIN__" "$domain" $final_path/weblate/settings.py
-ynh_replace_string "__KEY__" "$key" $final_path/weblate/settings.py
-ynh_replace_string "__PATHURL__" "$path_url" $final_path/weblate/settings.py
-
-#=================================================
 # PIP INSTALLATION
 #=================================================
 virtualenv ${final_path}/venv
@@ -164,6 +137,27 @@ virtualenv ${final_path}/venv
 	${final_path}/venv/bin/pip install Weblate==2.16
 	${final_path}/venv/bin/pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
 )
+
+#=================================================
+# SPECIFIC SETUP settings.py
+# https://docs.weblate.org/en/latest/admin/install.html#installation
+#=================================================
+echo "SPECIFIC SETUP settings.py"
+db_pwd=$(ynh_app_setting_get $app mysqlpwd)
+admin_mail="$(ynh_user_get_info $admin mail)"
+key=$(ynh_string_random 64)
+
+cp ../conf/settings.py $final_path/venv/lib/python2.7/site-packages/weblate/settings.py
+
+ynh_replace_string "__NAME__"      "$app"        $final_path/venv/lib/python2.7/site-packages/weblate/settings.py
+ynh_replace_string "__DB_PWD__"    "$db_pwd"     $final_path/venv/lib/python2.7/site-packages/weblate/settings.py
+ynh_replace_string "__ADMIN__"     "$admin"      $final_path/venv/lib/python2.7/site-packages/weblate/settings.py
+ynh_replace_string "__ADMINMAIL__" "$admin_mail" $final_path/venv/lib/python2.7/site-packages/weblate/settings.py
+ynh_replace_string "__DOMAIN__"    "$domain"     $final_path/venv/lib/python2.7/site-packages/weblate/settings.py
+ynh_replace_string "__KEY__"       "$key"        $final_path/venv/lib/python2.7/site-packages/weblate/settings.py
+ynh_replace_string "__PATHURL__"   "$path_url"   $final_path/venv/lib/python2.7/site-packages/weblate/settings.py
+ynh_replace_string "__FINALPATH__" "$final_path" $final_path/venv/lib/python2.7/site-packages/weblate/settings.py
+
 
 #=================================================
 # SPECIFIC SETUP Filling up the database
