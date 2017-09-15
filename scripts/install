@@ -148,7 +148,7 @@ virtualenv ${final_path}/venv
 echo "SPECIFIC SETUP settings.py"
 db_pwd=$(ynh_app_setting_get $app mysqlpwd)
 admin_mail="$(ynh_user_get_info $admin mail)"
-key=$(ynh_string_random 64)
+key=$(ynh_string_random)
 
 cp ../conf/settings.py $final_path/venv/lib/python2.7/site-packages/weblate/settings.py
 
