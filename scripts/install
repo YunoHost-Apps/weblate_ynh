@@ -52,6 +52,8 @@ ynh_webpath_register $app $domain $path_url
 final_path=/var/www/$app
 test ! -e "$final_path" || ynh_die "This path already contains a folder"
 
+mkdir -p $final_path
+
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
