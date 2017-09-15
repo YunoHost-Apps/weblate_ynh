@@ -141,6 +141,7 @@ virtualenv ${final_path}/venv
 #=================================================
 # SPECIFIC SETUP settings.py
 # https://docs.weblate.org/en/latest/admin/install.html#installation
+# TODO: use --extra-search-dir=/path/to/dists
 #=================================================
 echo "SPECIFIC SETUP settings.py"
 db_pwd=$(ynh_app_setting_get $app mysqlpwd)
