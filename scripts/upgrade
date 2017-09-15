@@ -76,12 +76,18 @@ ynh_system_user_create $app
 # Migrate databases
 #=================================================
 
-cd "$final_path" && python3 ./manage.py migrate
+(
+	set +eu
+	source ${final_path}/venv/bin/activate
+	export DJANGO_SETTINGS_MODULE="weblate.settings"
+	cd ${final_path}
+	weblate migrate --noinput
+)
 
 # Verify the checksum and backup the file if it's different
-ynh_backup_if_checksum_is_different "$final_path/CONFIG_FILE"
+ynh_backup_if_checksum_is_different "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 # Recalculate and store the config file checksum into the app settings
-ynh_store_file_checksum "$final_path/CONFIG_FILE"
+ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 
 #=================================================
 # SETUP LOGROTATE

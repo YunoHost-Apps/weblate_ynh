@@ -191,7 +191,7 @@ ynh_replace_string "__FINALPATH__" "$final_path/" /etc/cron.d/$app
 #=================================================
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum "$final_path/CONFIG_FILE"
+ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 
 #=================================================
 # GENERIC FINALIZATION
