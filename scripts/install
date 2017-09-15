@@ -137,7 +137,7 @@ virtualenv ${final_path}/venv
 	set +eu
 	source ${final_path}/venv/bin/activate
 	${final_path}/venv/bin/pip install Weblate==2.16
-	${final_path}/venv/bin/pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
+	${final_path}/venv/bin/pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns pymysql
 )
 
 #=================================================
