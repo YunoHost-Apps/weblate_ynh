@@ -175,6 +175,7 @@ echo "SPECIFIC SETUP Filling up the database"
 	set +eu
 	source ${final_path}/venv/bin/activate
 	export DJANGO_SETTINGS_MODULE="weblate.settings"
+	cd ${final_path}
 	weblate migrate --noinput
 	# generate static files
 	weblate collectstatic --noinput
