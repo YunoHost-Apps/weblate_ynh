@@ -151,6 +151,7 @@ ynh_replace_string "__ADMIN__" "$admin" $final_path/weblate/settings.py
 ynh_replace_string "__ADMINMAIL__" "$admin_mail" $final_path/weblate/settings.py
 ynh_replace_string "__DOMAIN__" "$domain" $final_path/weblate/settings.py
 ynh_replace_string "__KEY__" "$key" $final_path/weblate/settings.py
+ynh_replace_string "__PATHURL__" "$pathurl" $final_path/weblate/settings.py
 
 #=================================================
 # PIP INSTALLATION
