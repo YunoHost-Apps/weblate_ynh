@@ -86,7 +86,10 @@ ynh_app_setting_set $app db_name $db_name
 ynh_mysql_setup_db $db_name $db_name
 
 # https://docs.weblate.org/en/latest/admin/install.html#unicode-issues-in-mysql
+# http://mechanics.flite.com/blog/2014/07/29/using-innodb-large-prefix-to-avoid-error-1071/
 ynh_mysql_execute_as_root "ALTER DATABASE $db_name CHARACTER SET utf8mb4;"
+ynh_mysql_execute_as_root "set global innodb_file_format = BARRACUDA;"
+ynh_mysql_execute_as_root "set global innodb_large_prefix = ON;"
 
 #=================================================
 # NGINX CONFIGURATION

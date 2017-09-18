@@ -52,7 +52,7 @@ DATABASES = {
         # Additional database options
         'OPTIONS': {
             # In case of older MySQL server which has default MariaDB
-            # 'init_command': 'SET storage_engine=INNODB',
+            'init_command': "SET storage_engine=INNODB; SET sql_mode='STRICT_TRANS_TABLES'",
             # If your server supports it, see Unicode issues above
            'charset': 'utf8mb4',
         }
