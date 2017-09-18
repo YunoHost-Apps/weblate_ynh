@@ -12,3 +12,7 @@ Carefull, this script modify your mysql config file:
 * set global innodb_large_prefix = ON;
 
 If you experience some transaction issues, please read [Transaction-locking help](https://docs.weblate.org/en/latest/admin/install.html#transaction-locking).
+
+## LDAP connexion
+
+It doesn't work yet, but it looks doable: https://docs.weblate.org/en/latest/admin/auth.html?highlight=LDAP#ldap-authentication
