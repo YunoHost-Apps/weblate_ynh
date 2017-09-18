@@ -11,7 +11,7 @@
 # | arg: pwd - the user password
 # | arg: db - the database to connect to
 ynh_psql_connect_as() {
-    ynh_die "ynh_psql_connect_as is not yet implemented"
+	ynh_die "ynh_psql_connect_as is not yet implemented"
 }
 
 # # Execute a command as root user
@@ -20,7 +20,9 @@ ynh_psql_connect_as() {
 # | arg: sql - the SQL command to execute
 # | arg: db - the database to connect to
 ynh_psql_execute_as_root () {
-        su -c "psql" - postgres <<< ${1}
+	sql="$1"
+	db="$2"
+	psql "${db}" <<< "${sql}"
 }
 
 # Execute a command from a file as root user
@@ -29,7 +31,7 @@ ynh_psql_execute_as_root () {
 # | arg: file - the file containing SQL commands
 # | arg: db - the database to connect to
 ynh_psql_execute_file_as_root() {
-     ynh_die "ynh_psql_execute_file_as_root is not yet implemented"
+	ynh_die "ynh_psql_execute_file_as_root is not yet implemented"
 }
 
 # Create a database and grant optionnaly privilegies to a user
@@ -37,16 +39,10 @@ ynh_psql_execute_file_as_root() {
 # usage: ynh_psql_create_db db [user [pwd]]
 # | arg: db - the database name to create
 # | arg: user - the user to grant privilegies
-# | arg: pwd - the password to identify user by
 ynh_psql_create_db() {
-    db=$1
-    # grant all privilegies to user
-    if [[ $# -gt 1 ]]; then
-        ynh_psql_create_user ${2} "${3}"
-        su -c "createdb -O ${2} $db" -  postgres
-    else
-        su -c "createdb $db" -  postgres
-    fi
+	db="$1"
+	user="$2"
+	createdb --owner="${user}" "${db}"
 }
 
 # Drop a database
@@ -54,7 +50,8 @@ ynh_psql_create_db() {
 # usage: ynh_psql_drop_db db
 # | arg: db - the database name to drop
 ynh_psql_drop_db() {
-    su -c "dropdb ${1}" -  postgres
+	db="$1"
+	dropdb "${db}"
 }
 
 # Dump a database
@@ -65,7 +62,7 @@ ynh_psql_drop_db() {
 # | arg: db - the database name to dump
 # | ret: the psqldump output
 ynh_psql_dump_db() {
-    ynh_die "ynh_psql_dump_db is not yet implemented"
+	ynh_die "ynh_psql_dump_db is not yet implemented"
 }
 
 
@@ -75,8 +72,10 @@ ynh_psql_dump_db() {
 # | arg: user - the user name to create
 # | arg: pwd - the password to identify user by
 ynh_psql_create_user() {
+	user="$1"
+	pwd="$2"
         ynh_psql_execute_as_root \
-        "CREATE USER ${1} WITH PASSWORD '${2}';"
+        "CREATE USER '${user}' WITH PASSWORD '${pwd}';"
 }
 
 # Drop a user
@@ -84,5 +83,6 @@ ynh_psql_create_user() {
 # usage: ynh_psql_drop_user user
 # | arg: user - the user name to drop
 ynh_psql_drop_user() {
-    su -c "dropuser ${1}" - postgres
+	user="$1"
+	dropuser "${user}"
 }
