@@ -53,6 +53,8 @@ ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf" "${backup_dir}/etc/nginx/conf
 ynh_mysql_dump_db "$db_name" > db.sql
 ynh_backup "db.sql" "${backup_dir}/db.sql"
 
+ynh_backup "/etc/mysql/conf.d/$app.cnf" "${backup_dir}/etc/mysql/conf.d/$app.cnf"
+
 #=================================================
 # SPECIFIC BACKUP
 #=================================================

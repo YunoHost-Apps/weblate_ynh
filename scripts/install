@@ -88,8 +88,9 @@ ynh_mysql_setup_db $db_name $db_name
 # https://docs.weblate.org/en/latest/admin/install.html#unicode-issues-in-mysql
 # http://mechanics.flite.com/blog/2014/07/29/using-innodb-large-prefix-to-avoid-error-1071/
 ynh_mysql_execute_as_root "ALTER DATABASE $db_name CHARACTER SET utf8mb4;"
-ynh_mysql_execute_as_root "set global innodb_file_format = BARRACUDA;"
-ynh_mysql_execute_as_root "set global innodb_large_prefix = ON;"
+
+cp ../conf/weblate.cnf /etc/mysql/conf.d/$app.cnf
+systemctl restart mysql
 
 #=================================================
 # NGINX CONFIGURATION
@@ -149,7 +150,6 @@ virtualenv ${final_path}/venv
 # https://docs.weblate.org/en/latest/admin/install.html#installation
 # TODO: use --extra-search-dir=/path/to/dists
 #=================================================
-echo "SPECIFIC SETUP settings.py"
 db_pwd=$(ynh_app_setting_get $app mysqlpwd)
 admin_mail="$(ynh_user_get_info $admin mail)"
 key=$(ynh_string_random)
@@ -170,8 +170,6 @@ ynh_replace_string "__FINALPATH__" "$final_path" $final_path/venv/lib/python2.7/
 # SPECIFIC SETUP Filling up the database
 # https://docs.weblate.org/en/latest/admin/install.html#filling-up-the-database
 #==========================================
-echo "SPECIFIC SETUP Filling up the database"
-# set up database
 (
 	set +eu
 	source ${final_path}/venv/bin/activate
@@ -185,7 +183,6 @@ echo "SPECIFIC SETUP Filling up the database"
 #=================================================
 # SETUP CRON
 #=================================================
-echo "SETUP CRON"
 cp ../conf/cron_weblate /etc/cron.d/$app
 ynh_replace_string "__FINALPATH__" "$final_path/" /etc/cron.d/$app
 

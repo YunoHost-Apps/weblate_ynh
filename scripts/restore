@@ -59,11 +59,12 @@ ynh_restore_file "$final_path"
 # RESTORE THE MYSQL DATABASE
 #=================================================
 
+ynh_restore_file "/etc/mysql/conf.d/$app.cnf"
+systemctl restart mysql
+
 db_pwd=$(ynh_app_setting_get $app mysqlpwd)
 ynh_mysql_setup_db $db_name $db_name $db_pwd
 ynh_mysql_connect_as $db_name $db_pwd $db_name < ./db.sql
-ynh_mysql_execute_as_root "set global innodb_file_format = BARRACUDA;"
-ynh_mysql_execute_as_root "set global innodb_large_prefix = ON;"
 
 #=================================================
 # RECREATE THE DEDICATED USER

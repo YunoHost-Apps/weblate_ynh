@@ -52,7 +52,7 @@ DATABASES = {
         # Additional database options
         'OPTIONS': {
             # In case of older MySQL server which has default MariaDB
-            'init_command': "SET storage_engine=INNODB; SET sql_mode='STRICT_TRANS_TABLES'",
+            # 'init_command': "SET storage_engine=INNODB; ",
             # If your server supports it, see Unicode issues above
            'charset': 'utf8mb4',
         }
@@ -62,7 +62,7 @@ DATABASES = {
 BASE_DIR = '__FINALPATH__'
 
 # Data directory
-DATA_DIR = os.path.join(BASE_DIR, '..', 'data')
+DATA_DIR = os.path.join(BASE_DIR, 'data')
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
