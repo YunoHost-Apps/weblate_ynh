@@ -90,6 +90,15 @@ ynh_mysql_setup_db $db_name $db_name
 ynh_mysql_execute_as_root "ALTER DATABASE $db_name CHARACTER SET utf8mb4;"
 
 cp ../conf/weblate.cnf /etc/mysql/conf.d/$app.cnf
+searchString="!includedir /etc/mysql/conf.d/"
+if grep -Fxq "$searchString" /etc/mysql/my.cnf
+then
+	echo "MySQL alread includes conf.d files"
+else
+	echo "MySQL do not includes conf.d files, edditing /etc/mysql/my.cnf"
+	echo "$searchString" >> /etc/mysql/my.cnf
+fi
+
 systemctl restart mysql
 
 #=================================================
