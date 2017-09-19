@@ -73,7 +73,7 @@ ynh_app_setting_set "$app" is_public "$is_public"
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
 	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
-	postgresql python-psycopg2 uwsgi
+	postgresql libpq-dev uwsgi
 
 #=================================================
 # CREATE A PostgreSQL DATABASE
@@ -86,9 +86,9 @@ db_user_pwd=$(ynh_string_random)
 # Initialize database and store postgres password for upgrade
 ynh_psql_create_db "$db_name" "$app" "$db_user_pwd"
 ynh_app_setting_set "$app" db_name "$db_name"
-ynh_app_setting_set "$app" psqlpwd "$db_pwd"
+ynh_app_setting_set "$app" psqlpwd "$db_user_pwd"
 
-systemctl reload postgres
+systemctl reload postgresql
 
 #=================================================
 # NGINX CONFIGURATION
@@ -140,7 +140,7 @@ virtualenv "${final_path}/venv"
 	set +eu
 	source "${final_path}/venv/bin/activate"
 	"${final_path}/venv/bin/pip" install Weblate==2.16
-	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
+	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2
 )
 
 #=================================================

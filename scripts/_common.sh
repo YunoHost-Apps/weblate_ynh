@@ -3,15 +3,16 @@
 
 
 ynh_psql_test_if_first_run() {
-	if [ -f /etc/yunohost/pgsql ];
+	if [ -f /etc/yunohost/psql ];
 	then
-		echo "Postgresql is already installed, no need to create master password"
+		echo "PostgreSQL is already installed, no need to create master password"
 	else
 		pgsql=$(ynh_string_random)
-		echo "$pgsql" >> /etc/yunohost/pgsql
-		psql postgres -c "\\password postgres" < echo "$pgsql"
-		systemctl service enable postgres
-		systemctl service start postgres
+		echo "$pgsql" >> /etc/yunohost/psql
+		systemctl start postgresql
+                sudo -u postgres psql -c"ALTER user postgres WITH PASSWORD '${pgsql}'"
+		systemctl enable postgresql
+		systemctl start postgresql
 	fi
 }
 
@@ -28,7 +29,7 @@ ynh_psql_connect_as() {
 	user="$1"
 	pwd="$2"
 	db="$3"
-	psql "${db}" --username="${user}" --password < echo "${pwd}"
+	su "${user}" -c "psql \"${db}\""
 }
 
 # # Execute a command as root user
@@ -38,8 +39,7 @@ ynh_psql_connect_as() {
 # | arg: db - the database to connect to
 ynh_psql_execute_as_root () {
 	sql="$1"
-	db="$2"
-	psql "${db}" --username="postgres" <<< "${sql}"
+	su postgres -c "psql <<< \"$sql\""
 }
 
 # Execute a command from a file as root user
@@ -84,16 +84,16 @@ ynh_psql_create_db() {
 	user="$2"
 	pwd="$3"
 	ynh_psql_create_user "$user" "$pwd"
-	createdb --owner="${user}" "${db}"
+	su postgres -c "createdb --owner=\"${user}\" \"${db}\""
 }
 
 # Drop a database
 #
 # usage: ynh_psql_drop_db db
 # | arg: db - the database name to drop
-ynh_psql_drop_db() {
+ynh_psql_remove_db() {
 	db="$1"
-	dropdb "${db}"
+	su postgres -c "dropdb \"${db}\""
 }
 
 # Dump a database
@@ -105,7 +105,7 @@ ynh_psql_drop_db() {
 # | ret: the psqldump output
 ynh_psql_dump_db() {
 	db="$1"
-	pg_dump "${db}"
+	su postgres -c "pg_dump \"${db}\""
 }
 
 
@@ -113,12 +113,9 @@ ynh_psql_dump_db() {
 #
 # usage: ynh_psql_create_user user pwd [host]
 # | arg: user - the user name to create
-# | arg: pwd - the password to identify user by
 ynh_psql_create_user() {
 	user="$1"
-	pwd="$2"
-        ynh_psql_execute_as_root \
-        "CREATE USER '${user}' WITH PASSWORD '${pwd}';"
+        su postgres -c "createuser \"${user}\""
 }
 
 # Drop a user
@@ -127,5 +124,5 @@ ynh_psql_create_user() {
 # | arg: user - the user name to drop
 ynh_psql_drop_user() {
 	user="$1"
-	dropuser "${user}"
+	su postgres -c "dropuser \"${user}\""
 }
