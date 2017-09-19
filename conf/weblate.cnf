@@ -1,5 +1,0 @@
-[mysqld]
-sql-mode=STRICT_TRANS_TABLES
-innodb_large_prefix=on
-innodb_file_format=barracuda
-innodb_file_per_table=on
