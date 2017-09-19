@@ -38,7 +38,7 @@ MANAGERS = ADMINS
 DATABASES = {
     'default': {
         # Database engine
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         # Database name
         'NAME': '__NAME__',
         # Database user
@@ -49,13 +49,6 @@ DATABASES = {
         'HOST': '',
         # Set to empty string for default
         'PORT': '',
-        # Additional database options
-        'OPTIONS': {
-            # In case of older MySQL server which has default MariaDB
-            # 'init_command': "SET storage_engine=INNODB; ",
-            # If your server supports it, see Unicode issues above
-           'charset': 'utf8mb4',
-        }
     }
 }
 
