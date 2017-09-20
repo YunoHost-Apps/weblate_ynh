@@ -170,9 +170,11 @@ ynh_replace_string "__FINALPATH__" "$final_path" "$final_path/venv/lib/python2.7
 #==========================================
 (
 	set +eu
+	su - weblate
 	source "${final_path}/venv/bin/activate"
 	export DJANGO_SETTINGS_MODULE="weblate.settings"
 	cd "${final_path}"
+	# the user needs to be weblate for postgresql
 	weblate migrate --noinput
 	# generate static files
 	weblate collectstatic --noinput

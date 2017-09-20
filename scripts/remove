@@ -41,7 +41,7 @@ ynh_remove_app_dependencies
 #=================================================
 
 # Remove a database if it exists, along with the associated user
-ynh_psql_remove_db $db_name $db_name
+ynh_psql_remove_db $db_name $app
 
 #=================================================
 # REMOVE APP MAIN DIR
