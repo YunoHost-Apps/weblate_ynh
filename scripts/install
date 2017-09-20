@@ -73,7 +73,7 @@ ynh_app_setting_set "$app" is_public "$is_public"
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
 	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
-	postgresql libpq-dev uwsgi
+	postgresql libpq-dev uwsgi uwsgi-plugin-python
 
 #=================================================
 # CREATE A PostgreSQL DATABASE
@@ -117,19 +117,17 @@ ynh_replace_string "__FINALPATH__" "$final_path" "$final_path/uwsgi.ini"
 
 # Config service
 mkdir -p /etc/uwsgi/apps-enabled/
-ln -s "$final_path/uwsgi.ini" "/etc/uwsgi/apps-enabled/$app.uwsgi.ini"
+ln -s "$final_path/uwsgi.ini" "/etc/uwsgi/apps-enabled/$app.ini"
 
-cp ../conf/uwsgi_service "/etc/systemd/system/$app.uwsgi.service"
-ynh_replace_string "__NAME__" "$app" "/etc/systemd/system/$app.uwsgi.service"
-ynh_replace_string "__FINALPATH__" "$final_path" "/etc/systemd/system/$app.uwsgi.service"
-
+cp ../conf/uwsgi_service "/etc/systemd/system/$app.service"
+ynh_replace_string "__NAME__" "$app" "/etc/systemd/system/$app.service"
+ynh_replace_string "__FINALPATH__" "$final_path" "/etc/systemd/system/$app.service"
 
 # Start service
-systemctl enable "$app.uwsgi.service"
-systemctl restart "$app.uwsgi.service"
+systemctl enable "$app.service"
 
-# Add weblate.uwsgi as a service
-yunohost service add "$app.uwsgi.service"
+# Add weblate as a service
+yunohost service add "$app.service"
 
 #=================================================
 # PIP INSTALLATION
@@ -170,7 +168,6 @@ ynh_replace_string "__FINALPATH__" "$final_path" "$final_path/venv/lib/python2.7
 #==========================================
 (
 	set +eu
-	su - weblate
 	source "${final_path}/venv/bin/activate"
 	export DJANGO_SETTINGS_MODULE="weblate.settings"
 	cd "${final_path}"
@@ -200,7 +197,8 @@ ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/se
 #=================================================
 
 # Set permissions to app files
-chown -R root: "$final_path"
+chown -R "$app": "$final_path"
+chown -R 777 /var/run/uwsgi/app/$app/
 
 #=================================================
 # SETUP LOGROTATE
@@ -228,4 +226,5 @@ fi
 # RELOAD NGINX
 #=================================================
 
+systemctl start "$app.service"
 systemctl reload nginx
