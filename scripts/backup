@@ -71,4 +71,4 @@ ynh_backup "/etc/cron.d/$app" "${backup_dir}/etc/cron.d/$app"
 # BACKUP THE SERVICE
 #=================================================
 
-ynh_backup "/etc/systemd/system/$app.uwsgi.service" "${backup_dir}/etc/systemd/system/$app.uwsgi.service"
+ynh_backup "/etc/systemd/system/$app.service" "${backup_dir}/etc/systemd/system/$app.service"

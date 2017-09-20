@@ -96,13 +96,13 @@ pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns
 # RESTORE THE SERVICE
 #=================================================
 
-ynh_restore_file "/etc/systemd/system/$app.uwsgi.service"
+ynh_restore_file "/etc/systemd/system/$app.service"
 
 #=================================================
 # ADVERTISE SERVICE IN ADMIN PANEL
 #=================================================
 
-yunohost service add $app --log "/var/log/$app/APP.log"
+yunohost service add $app.service --log "/var/log/$app/APP.log"
 
 #=================================================
 # RESTORE THE CRON FILE
@@ -123,4 +123,4 @@ ynh_restore_file "/etc/logrotate.d/$app"
 #=================================================
 
 systemctl reload nginx
-systemctl reload $app.uwsgi.service
+systemctl reload $app.service
