@@ -198,7 +198,7 @@ ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/se
 
 # Set permissions to app files
 chown -R "$app": "$final_path"
-chown -R 777 /var/run/uwsgi/app/$app/
+#chown -R 777 /var/run/uwsgi/app/$app/
 
 #=================================================
 # SETUP LOGROTATE
