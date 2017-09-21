@@ -9,7 +9,7 @@ Group=__NAME__
 RemainAfterExit=yes
 WorkingDirectory=__FINALPATH__
 ExecStart=/usr/bin/uwsgi \
-	  --ini __FINALPATH_/uwsgi.ini \
+	  --ini __FINALPATH__/uwsgi.ini \
 	  --socket __FINALPATH__/socket
 Restart=always
 StandardError=syslog
