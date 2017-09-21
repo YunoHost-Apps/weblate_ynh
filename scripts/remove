@@ -23,11 +23,19 @@ db_name=$(ynh_app_setting_get $app db_name)
 # REMOVE SERVICE FROM ADMIN PANEL
 #=================================================
 
-if yunohost service status | grep -q $app
+if yunohost service status | grep -q "$app"
 then
 	echo "Remove $app service"
-	yunohost service remove $app.service
+	systemctl stop "$app.service"
+	yunohost service remove "$app.service"
 fi
+
+#=================================================
+# REMOVE THE PostgreSQL DATABASE
+#=================================================
+
+# Remove a database if it exists, along with the associated user
+ynh_psql_remove_db "$db_name" "$app"
 
 #=================================================
 # REMOVE DEPENDENCIES
@@ -35,13 +43,6 @@ fi
 
 # Remove metapackage and its dependencies
 ynh_remove_app_dependencies
-
-#=================================================
-# REMOVE THE PostgreSQL DATABASE
-#=================================================
-
-# Remove a database if it exists, along with the associated user
-ynh_psql_remove_db $db_name $app
 
 #=================================================
 # REMOVE APP MAIN DIR
