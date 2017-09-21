@@ -8,7 +8,6 @@
 		domain="domain.tld"	(DOMAIN)
 		path="/path"	(PATH)
 		admin="john"	(USER)
-		language="fr"
 		is_public=1	(PUBLIC|public=1|private=0)
   	password="pass"
 	; Checks
@@ -18,7 +17,7 @@
 		setup_nourl=0
 		setup_private=1
 		setup_public=1
-		upgrade=0
+		upgrade=1
 		backup_restore=1
 		multi_instance=1
 		incorrect_path=1

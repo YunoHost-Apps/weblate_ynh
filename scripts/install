@@ -115,10 +115,6 @@ cp ../conf/uwsgi.ini "$final_path/uwsgi.ini"
 ynh_replace_string "__NAME__" "$app" "$final_path/uwsgi.ini"
 ynh_replace_string "__FINALPATH__" "$final_path" "$final_path/uwsgi.ini"
 
-# Config service
-mkdir -p /etc/uwsgi/apps-enabled/
-ln -s "$final_path/uwsgi.ini" "/etc/uwsgi/apps-enabled/$app.ini"
-
 cp ../conf/uwsgi_service "/etc/systemd/system/$app.service"
 ynh_replace_string "__NAME__" "$app" "/etc/systemd/system/$app.service"
 ynh_replace_string "__FINALPATH__" "$final_path" "/etc/systemd/system/$app.service"
