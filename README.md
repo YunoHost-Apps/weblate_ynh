@@ -1,17 +1,13 @@
 # Weblate translation platform for YunoHost
 
-The YunoHost team uses [Weblate](https://weblate.org) for its community: http://translate.yunohost.org/
+The YunoHost team uses [Weblate](https://weblate.org) for translations: https://translate.yunohost.org
 
-## Weblate & Mysql
+
+## Weblate and databases
 
 Weblate [recommands PostgreSQL](https://docs.weblate.org/en/latest/admin/install.html#database-setup-for-weblate), but YunoHost uses Mysql.
 
-Carefull, this script modify your mysql config file:
-
-* set global innodb_file_format = BARRACUDA;
-* set global innodb_large_prefix = ON;
-
-If you experience some transaction issues, please read [Transaction-locking help](https://docs.weblate.org/en/latest/admin/install.html#transaction-locking).
+Carefull, this installs PostgreSQL and change default configuration to ask for every connexion and every user a password (local all all password).
 
 ## LDAP connexion
 
