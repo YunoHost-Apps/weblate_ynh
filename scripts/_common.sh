@@ -4,18 +4,11 @@
 #
 # usage: ynh_system_user_create user_name [home_dir]
 # | arg: user_name - Name of the system user that will be create
-# | arg: home_dir - Path of the home dir for the user. Usually the final path of the app. If this argument is omitted, the user will be created without home
 # | arg: password - user password (for SMTP access)
 ynh_system_user_create_smtp () {
 	if ! ynh_system_user_exists "$1"	# Check if the user exists on the system
 	then	# If the user doesn't exist
-		if [ $# -ge 2 ]; then	# If a home dir is mentioned
-			user_home_dir="-d $2"
-		else
-			user_home_dir="--no-create-home"
-		fi
-		user_home_dir="-d $2"
-		sudo useradd $user_home_dir --system --user-group $1 --shell /bin/false || ynh_die "Unable to create $1 system account"
+		sudo useradd --no-create-home --system --user-group "$1" --shell /bin/false --password "$2" || ynh_die "Unable to create $1 system account"
 	fi
 }
 
