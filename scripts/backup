@@ -38,20 +38,20 @@ db_pwd=$(ynh_app_setting_get $app pgsqlpwd)
 # BACKUP THE APP MAIN DIR
 #=================================================
 
-ynh_backup "$final_path" "${backup_dir}$final_path"
+ynh_backup "$final_path"
 
 #=================================================
 # BACKUP THE NGINX CONFIGURATION
 #=================================================
 
-ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf" "${backup_dir}/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # BACKUP THE PostgreSQL DATABASE
 #=================================================
 
 ynh_psql_dump_db "$db_name" > db.sql
-ynh_backup "db.sql" "${backup_dir}/db.sql"
+ynh_backup "db.sql"
 
 #=================================================
 # SPECIFIC BACKUP
@@ -59,16 +59,16 @@ ynh_backup "db.sql" "${backup_dir}/db.sql"
 # BACKUP LOGROTATE
 #=================================================
 
-ynh_backup "/etc/logrotate.d/$app" "${backup_dir}/etc/logrotate.d/$app"
+ynh_backup "/etc/logrotate.d/$app"
 
 #=================================================
 # BACKUP THE CRON FILE
 #=================================================
 
-ynh_backup "/etc/cron.d/$app" "${backup_dir}/etc/cron.d/$app"
+ynh_backup "/etc/cron.d/$app"
 
 #=================================================
 # BACKUP THE SERVICE
 #=================================================
 
-ynh_backup "/etc/systemd/system/$app.service" "${backup_dir}/etc/systemd/system/$app.service"
+ynh_backup "/etc/systemd/system/$app.service"
