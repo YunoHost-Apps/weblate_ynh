@@ -10,7 +10,8 @@ RemainAfterExit=yes
 WorkingDirectory=__FINALPATH__
 ExecStart=/usr/bin/uwsgi \
 	  --ini __FINALPATH__/uwsgi.ini \
-	  --socket __FINALPATH__/socket
+	  --socket __FINALPATH__/socket \
+	  --logfile /var/log/__NAME__/__NAME__.log
 Restart=always
 StandardError=syslog
 
