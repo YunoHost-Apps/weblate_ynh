@@ -554,6 +554,13 @@ EMAIL_SEND_HTML = True
 # Subject of emails includes site title
 EMAIL_SUBJECT_PREFIX = '[{0}] '.format(SITE_TITLE)
 
+# SMTP settings
+EMAIL_HOST="localhost"
+EMAIL_HOST_USER="__NAME__"
+EMAIL_HOST_PASSWORD="__SMTPPWD__"
+EMAIL_PORT=465
+EMAIL_USE_SSL=True
+
 # Enable remote hooks
 ENABLE_HOOKS = True
 

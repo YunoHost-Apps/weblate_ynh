@@ -22,6 +22,7 @@ is_public=$(ynh_app_setting_get $app is_public)
 final_path=$(ynh_app_setting_get $app final_path)
 port=$(ynh_app_setting_get $app port)
 db_name=$(ynh_app_setting_get $app db_name)
+smtp_pwd=$(ynh_app_setting_get $app smtppwd)
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
@@ -68,7 +69,7 @@ ynh_add_nginx_config
 #=================================================
 
 # Create a system user
-ynh_system_user_create $app
+ynh_system_user_create_smtp "$app" "$smtp_pwd"
 
 #=================================================
 # SPECIFIC UPGRADE
