@@ -51,11 +51,6 @@ path_url=$(ynh_normalize_url_path $path_url)
 #=================================================
 # STANDARD UPGRADE STEPS
 #=================================================
-# DOWNLOAD, CHECK AND UNPACK SOURCE
-#=================================================
-
-# Download, check integrity, uncompress and patch the source from app.src
-ynh_setup_source "$final_path"
 
 #=================================================
 # NGINX CONFIGURATION
@@ -73,6 +68,19 @@ ynh_system_user_create_smtp "$app" "$smtp_pwd"
 
 #=================================================
 # SPECIFIC UPGRADE
+#=================================================
+
+#=================================================
+# PIP INSTALLATION
+#=================================================
+
+(
+	set +eu
+	source "${final_path}/venv/bin/activate"
+	"${final_path}/venv/bin/pip" install Weblate==2.16
+	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2
+)
+
 #=================================================
 # Migrate databases
 #=================================================
