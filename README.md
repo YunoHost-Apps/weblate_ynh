@@ -2,6 +2,9 @@
 
 The YunoHost team uses [Weblate](https://weblate.org) for translations: https://translate.yunohost.org
 
+## Admin
+
+An admin user is created at installation, the password is *weblate*.
 
 ## Weblate and databases
 

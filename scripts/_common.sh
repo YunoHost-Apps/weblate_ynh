@@ -63,7 +63,7 @@ ynh_psql_execute_as_root () {
 ynh_psql_execute_file_as_root() {
 	file="$1"
 	db="$2"
-	sudo -u postgres psql "$db" <<< "$file"
+	su -c "psql $db" postgres < $file
 }
 
 # Create a database, an user and its password. Then store the password in the app's config

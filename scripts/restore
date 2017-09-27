@@ -31,6 +31,7 @@ domain=$(ynh_app_setting_get $app domain)
 path_url=$(ynh_app_setting_get $app path)
 final_path=$(ynh_app_setting_get $app final_path)
 db_name=$(ynh_app_setting_get $app db_name)
+db_pwd=$(ynh_app_setting_get "$app" psqlpwd)
 smtp_pwd=$(ynh_app_setting_get $app smtppwd)
 
 #=================================================
@@ -85,16 +86,15 @@ ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
 #=================================================
 
 ynh_psql_test_if_first_run
-
-db_pwd=$(ynh_app_setting_get "$app" pgsqlpwd)
 ynh_psql_setup_db "$db_name" "$db_name" "$db_pwd"
-ynh_psql_connect_as "$db_name" "$db_pwd" "$db_name" < ./db.sql
+ynh_psql_execute_file_as_root ./db.sql "$db_name"
 
 #=================================================
 # RESTORE THE SERVICE
 #=================================================
 
 ynh_restore_file "/etc/systemd/system/$app.service"
+systemctl enable "$app.service"
 
 #=================================================
 # ADVERTISE SERVICE IN ADMIN PANEL
@@ -121,4 +121,5 @@ ynh_restore_file "/etc/logrotate.d/$app"
 #=================================================
 
 systemctl reload nginx
-systemctl reload "$app.service"
+systemctl stop "$app.service"
+systemctl start "$app.service"
