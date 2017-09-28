@@ -1,9 +1,9 @@
 # https://docs.weblate.org/en/latest/admin/install.html#production-cron
 # Fulltext index updates
-10 * * * * root DJANGO_SETTINGS_MODULE="weblate.settings" __FINALPATH__/venv/bin/weblate update_index
+*/5 * * * * weblate DJANGO_SETTINGS_MODULE="weblate.settings" __FINALPATH__/venv/bin/weblate update_index
 
 # Cleanup stale objects
-@daily root DJANGO_SETTINGS_MODULE="weblate.settings" __FINALPATH__/venv/bin/weblate cleanuptrans
+@daily weblate DJANGO_SETTINGS_MODULE="weblate.settings" __FINALPATH__/venv/bin/weblate cleanuptrans
 
 # Commit pending changes after 96 hours
-@hourly root DJANGO_SETTINGS_MODULE="weblate.settings" __FINALPATH__/venv/bin/weblate commit_pending --all --age=96 --verbosity=0
+@hourly weblate DJANGO_SETTINGS_MODULE="weblate.settings" __FINALPATH__/venv/bin/weblate commit_pending --all --age=96 --verbosity=0
