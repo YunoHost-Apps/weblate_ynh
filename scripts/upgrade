@@ -64,7 +64,7 @@ ynh_add_nginx_config
 #=================================================
 
 # Create a system user
-ynh_system_user_create_smtp "$app" "$smtp_pwd"
+ynh_system_user_create "$app" "/home/$app"
 
 #=================================================
 # SPECIFIC UPGRADE

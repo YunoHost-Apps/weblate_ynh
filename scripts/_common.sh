@@ -1,17 +1,5 @@
 #!/bin/bash
 
-# Create a system user
-#
-# usage: ynh_system_user_create user_name [home_dir]
-# | arg: user_name - Name of the system user that will be create
-# | arg: password - user password (for SMTP access)
-ynh_system_user_create_smtp () {
-	if ! ynh_system_user_exists "$1"	# Check if the user exists on the system
-	then	# If the user doesn't exist
-		sudo useradd --no-create-home --system --user-group "$1" --shell /bin/false --password "$2" || ynh_die "Unable to create $1 system account"
-	fi
-}
-
 ynh_psql_test_if_first_run() {
 	if [ -f /etc/yunohost/psql ];
 	then

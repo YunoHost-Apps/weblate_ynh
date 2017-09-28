@@ -104,8 +104,7 @@ ynh_add_nginx_config
 
 # Create system user for email notifications
 smtp_pwd=$(ynh_string_random)
-ynh_system_user_create_smtp "$app" "$smtp_pwd"
-ynh_app_setting_set "$app" smtppwd "$smtp_pwd"
+ynh_system_user_create "$app" "/home/$app"
 
 #=================================================
 # SPECIFIC SETUP
@@ -137,7 +136,7 @@ virtualenv "${final_path}/venv"
 	set +eu
 	source "${final_path}/venv/bin/activate"
 	"${final_path}/venv/bin/pip" install Weblate==2.16
-	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2
+	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 django_sendmail_backend
 )
 
 #=================================================
