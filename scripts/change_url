@@ -51,15 +51,14 @@ fi
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
 
-if [ $change_domain -eq 0 ]
-then
-	# The backup process will failed if the domain has changed, because the file settings.yml has already changed
-	BACKUP_BEFORE_UPGRADE	# Backup the current version of the app
-	ynh_clean_setup () {
-		BACKUP_FAIL_UPGRADE	# restore it if the upgrade fails
-	}
-	ynh_abort_if_errors	# Active trap pour arrêter le script si une erreur est détectée.
-fi
+# Backup the current version of the app
+ynh_backup_before_upgrade
+ynh_clean_setup () {
+	# restore it if the upgrade fails
+	ynh_restore_upgradebackup
+}
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
 
 #=================================================
 # STANDARD MODIFICATIONS
@@ -79,7 +78,7 @@ fi
 # Change the domain for nginx
 if [ $change_domain -eq 1 ]
 then
-	mv "$nginx_conf_path" "/etc/nginx/conf.d/$new_domain.d/$app.conf"
+	mv "$nginx_conf_path" "/etc/nginx/conf.d/${new_domain}.d/${app}.conf"
 fi
 
 #=================================================
@@ -118,5 +117,6 @@ fi
 #=================================================
 # RELOAD NGINX and Weblate
 #=================================================
-systemctl reload "$app.service"
 systemctl reload nginx
+systemctl stop "$app.service"
+systemctl start "$app.service"
