@@ -74,7 +74,7 @@ ynh_app_setting_set "$app" final_path "$final_path"
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
 	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
-	postgresql libpq-dev uwsgi uwsgi-plugin-python
+	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached
 
 #=================================================
 # CREATE A PostgreSQL DATABASE
@@ -136,7 +136,7 @@ virtualenv "${final_path}/venv"
 	set +eu
 	source "${final_path}/venv/bin/activate"
 	"${final_path}/venv/bin/pip" install Weblate==2.16
-	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 django_sendmail_backend
+	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 django_sendmail_backend python-memcached
 )
 
 #=================================================
@@ -147,6 +147,7 @@ virtualenv "${final_path}/venv"
 db_pwd=$(ynh_app_setting_get "$app" psqlpwd)
 admin_mail=$(ynh_user_get_info "$admin" mail)
 key=$(ynh_string_random)
+memc_port=$(ynh_find_port 8080)
 
 cp ../conf/settings.py "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 
@@ -159,6 +160,7 @@ ynh_replace_string "__KEY__"       "$key"        "$final_path/venv/lib/python2.7
 ynh_replace_string "__PATHURL__"   "$path_url"   "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 ynh_replace_string "__FINALPATH__" "$final_path" "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 ynh_replace_string "__SMTPPWD__"   "$smtp_pwd"   "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+ynh_replace_string "__MEMCPORT__"  "$memc_port"  "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 
 #=================================================
 # SPECIFIC SETUP Filling up the database

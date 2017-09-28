@@ -8,7 +8,7 @@ ynh_psql_test_if_first_run() {
 		pgsql=$(ynh_string_random)
 		echo "$pgsql" >> /etc/yunohost/psql
 		systemctl start postgresql
-                sudo -u postgres psql -c"ALTER user postgres WITH PASSWORD '${pgsql}'"
+                su --command="psql -c\"ALTER user postgres WITH PASSWORD '${pgsql}'\"" postgres
 		# we can't use peer since YunoHost create users with nologin
 		sed -i '/local\s*all\s*all\s*peer/i \
 		local all all password' /etc/postgresql/9.4/main/pg_hba.conf
@@ -30,7 +30,7 @@ ynh_psql_connect_as() {
 	user="$1"
 	pwd="$2"
 	db="$3"
-	sudo -u postgres PGUSER="${user}" PGPASSWORD="${pwd}" psql "${db}"
+	su --command="PGUSER=\"${user}\" PGPASSWORD=\"${pwd}\" psql \"${db}\"" postgres
 }
 
 # # Execute a command as root user
@@ -40,7 +40,7 @@ ynh_psql_connect_as() {
 # | arg: db - the database to connect to
 ynh_psql_execute_as_root () {
 	sql="$1"
-	sudo -u postgres psql <<< "$sql"
+	su --command="psql" postgres <<< "$sql"
 }
 
 # Execute a command from a file as root user
@@ -85,7 +85,7 @@ ynh_psql_create_db() {
 	user="$2"
 	pwd="$3"
 	ynh_psql_create_user "$user" "$pwd"
-	sudo -u postgres createdb --owner="${user}" "${db}"
+	su --command="createdb --owner=\"${user}\" \"${db}\"" postgres
 }
 
 # Drop a database
@@ -96,7 +96,7 @@ ynh_psql_create_db() {
 ynh_psql_remove_db() {
 	db="$1"
 	user="$2"
-	sudo -u postgres dropdb "${db}"
+	su --command="dropdb \"${db}\"" postgres
 	ynh_psql_drop_user "${user}"
 }
 
@@ -109,7 +109,7 @@ ynh_psql_remove_db() {
 # | ret: the psqldump output
 ynh_psql_dump_db() {
 	db="$1"
-	sudo -u postgres pg_dump "${db}"
+	su --command="pg_dump \"${db}\"" postgres
 }
 
 
@@ -120,7 +120,7 @@ ynh_psql_dump_db() {
 ynh_psql_create_user() {
 	user="$1"
 	pwd="$2"
-        sudo -u postgres psql -c"CREATE USER ${user} WITH PASSWORD '${pwd}'"
+        su --command="psql -c\"CREATE USER ${user} WITH PASSWORD '${pwd}'\"" postgres
 }
 
 # Drop a user
@@ -129,5 +129,5 @@ ynh_psql_create_user() {
 # | arg: user - the user name to drop
 ynh_psql_drop_user() {
 	user="$1"
-	sudo -u postgres dropuser "${user}"
+	su --command="dropuser \"${user}\"" postgres
 }

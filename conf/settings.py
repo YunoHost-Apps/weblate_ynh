@@ -27,7 +27,7 @@ from logging.handlers import SysLogHandler
 # Django settings for Weblate project.
 #
 
-DEBUG = True
+DEBUG = False
 
 ADMINS = (
     ('__ADMIN__', '__ADMINMAIL__'),
@@ -125,7 +125,7 @@ USE_L10N = True
 USE_TZ = True
 
 # URL prefix to use, please see documentation for more details
-URL_PREFIX = '__PATHURL__/'
+URL_PREFIX = '__PATHURL__'
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
@@ -638,20 +638,20 @@ DEFAULT_FROM_EMAIL = '__ADMINMAIL__'
 ALLOWED_HOSTS = ['__DOMAIN__']
 
 # Example configuration to use memcached for caching
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#         'LOCATION': '127.0.0.1:11211',
-#     },
-#     'avatar': {
-#         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-#         'LOCATION': os.path.join(BASE_DIR, 'avatar-cache'),
-#         'TIMEOUT': 3600,
-#         'OPTIONS': {
-#             'MAX_ENTRIES': 1000,
-#         },
-#     }
-# }
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': '127.0.0.1:__MEMCPORT__',
+    },
+    'avatar': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'avatar-cache'),
+        'TIMEOUT': 3600,
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        },
+    }
+}
 
 # REST framework settings for API
 REST_FRAMEWORK = {
