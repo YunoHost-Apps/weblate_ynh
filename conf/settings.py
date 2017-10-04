@@ -199,9 +199,9 @@ AUTHENTICATION_BACKENDS = (
     # 'social_core.backends.google.GoogleOAuth2',
     # 'social_core.backends.github.GithubOAuth2',
     # 'social_core.backends.bitbucket.BitbucketOAuth',
-    # 'social_core.backends.suse.OpenSUSEOpenId',
-    # 'social_core.backends.ubuntu.UbuntuOpenId',
-    # 'social_core.backends.fedora.FedoraOpenId',
+    'social_core.backends.suse.OpenSUSEOpenId',
+    'social_core.backends.ubuntu.UbuntuOpenId',
+    'social_core.backends.fedora.FedoraOpenId',
     # 'social_core.backends.facebook.FacebookOAuth2',
     'weblate.accounts.auth.WeblateUserBackend',
 )
