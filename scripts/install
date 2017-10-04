@@ -150,6 +150,8 @@ cp ../conf/hub_config "$final_path/.config/hub"
 ynh_replace_string "__GITHUBUSER__"  "$github_account" "$final_path/.config/hub"
 ynh_replace_string "__GITHUBTOKEN__" "$github_token"   "$final_path/.config/hub"
 
+echo "alias git=hub" > "$final_path/.bashrc"
+
 #=================================================
 # SPECIFIC SETUP
 #=================================================
@@ -207,6 +209,7 @@ ynh_replace_string "__PATHURL__"   "$path_url"   "$final_path/venv/lib/python2.7
 ynh_replace_string "__FINALPATH__" "$final_path" "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 ynh_replace_string "__SMTPPWD__"   "$smtp_pwd"   "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 ynh_replace_string "__MEMCPORT__"  "$memc_port"  "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+ynh_replace_string "__GITHUBUSER__" "$github_account" "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 
 #=================================================
 # SPECIFIC SETUP Filling up the database
