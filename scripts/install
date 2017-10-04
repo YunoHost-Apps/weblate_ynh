@@ -107,7 +107,6 @@ ynh_add_nginx_config
 #=================================================
 
 # Hub needs a home directory with a config file
-smtp_pwd=$(ynh_string_random)
 ynh_system_user_create "$app" "$final_path"
 # Allow bash for our user, so he can use Hub
 chsh --shell /bin/bash "$app"
@@ -139,7 +138,7 @@ case "$arch" in
 	;;
 esac
 
-[[ $(sha256sum "$file_bin" | cut -d' ' -f1) = $sha256sum ]] || ynh_die "Hub's sha256sum failed (arch: ${arch})"
+[[ $(sha256sum "$file_bin" | cut -d' ' -f1) = "$sha256sum" ]] || ynh_die "Hub's sha256sum failed (arch: ${arch})"
 
 tar --extract --file "$file_bin" "$version/bin/hub"
 mkdir "$final_path/bin/"
@@ -207,7 +206,6 @@ ynh_replace_string "__DOMAIN__"    "$domain"     "$final_path/venv/lib/python2.7
 ynh_replace_string "__KEY__"       "$key"        "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 ynh_replace_string "__PATHURL__"   "$path_url"   "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 ynh_replace_string "__FINALPATH__" "$final_path" "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-ynh_replace_string "__SMTPPWD__"   "$smtp_pwd"   "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 ynh_replace_string "__MEMCPORT__"  "$memc_port"  "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 ynh_replace_string "__GITHUBUSER__" "$github_account" "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 
@@ -233,7 +231,7 @@ ynh_replace_string "__GITHUBUSER__" "$github_account" "$final_path/venv/lib/pyth
 #=================================================
 # SETUP CRON
 #=================================================
-cp ../conf/cron_weblate "/etc/cron.d/$app"
+cp ../conf/cron "/etc/cron.d/$app"
 ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
 
 #=================================================

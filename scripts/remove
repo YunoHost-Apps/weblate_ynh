@@ -5,7 +5,7 @@
 #=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
-set -eu
+set -u
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -15,9 +15,7 @@ source /usr/share/yunohost/helpers
 
 app=$YNH_APP_INSTANCE_NAME
 
-domain=$(ynh_app_setting_get $app domain)
-port=$(ynh_app_setting_get $app port)
-db_name=$(ynh_app_setting_get $app db_name)
+db_name=$(ynh_app_setting_get "$app" db_name)
 
 #=================================================
 # REMOVE SERVICE FROM ADMIN PANEL
@@ -87,4 +85,4 @@ ynh_secure_remove "/etc/systemd/system/$app.service"
 #=================================================
 
 # Delete a system user
-ynh_system_user_delete $app
+ynh_system_user_delete "$app"
