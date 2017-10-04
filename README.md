@@ -8,10 +8,7 @@ An admin user is created at installation, the login is what you provided at inst
 
 # Github
 
-Pulling works fine. But pushing still needs some love. Please read [Weblate's documentation about this](https://docs.weblate.org/en/latest/vcs.html).
-
-I understant we need to manually install [hub](https://github.com/github/hub), a tool that creates pull-requests.
-Which will require to download and install a binary file, as Debian 8 don't have Go>=1.8
+You'll need to give weblate a github user and a token. Please read [github's documentation about token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/).
 
 ## Weblate and databases
 
@@ -21,4 +18,4 @@ Carefull, this application install PostgreSQL and change the default configurati
 
 ## LDAP connexion
 
-It doesn't work yet, but while [it looks doable](https://docs.weblate.org/en/latest/admin/auth.html?highlight=LDAP#ldap-authentication), I'm unsure it is a good idea to link this kind of tools to you LDAP.
+It doesn't work yet, but while [it looks doable](https://docs.weblate.org/en/latest/admin/auth.html?highlight=LDAP#ldap-authentication), I'm unsure it is a good idea to connect this kind of tools to your LDAP.

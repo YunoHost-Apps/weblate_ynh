@@ -24,6 +24,8 @@ domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
 admin=$YNH_APP_ARG_ADMIN
 is_public=$YNH_APP_ARG_IS_PUBLIC
+github_account=$YNH_APP_ARG_GITHUB_ACCOUNT
+github_token=$YNH_APP_ARG_GITHUB_TOKEN
 
 # This is a multi-instance app, meaning it can be installed several times independently
 # The id of the app as stated in the manifest is available as $YNH_APP_ID
@@ -63,6 +65,8 @@ ynh_app_setting_set "$app" path "$path_url"
 ynh_app_setting_set "$app" admin "$admin"
 ynh_app_setting_set "$app" is_public "$is_public"
 ynh_app_setting_set "$app" final_path "$final_path"
+ynh_app_setting_set "$app" github_account "$github_account"
+ynh_app_setting_set "$app" github_token "$github_token"
 
 #=================================================
 # STANDARD MODIFICATIONS
@@ -102,9 +106,49 @@ ynh_add_nginx_config
 # CREATE DEDICATED USER
 #=================================================
 
-# Create system user for email notifications
+# Hub needs a home directory with a config file
 smtp_pwd=$(ynh_string_random)
-ynh_system_user_create "$app" "/home/$app"
+ynh_system_user_create "$app" "$final_path"
+# Allow bash for our user, so he can use Hub
+chsh --shell /bin/bash "$app"
+
+#=================================================
+# Download and install hub
+#=================================================
+
+arch=$(dpkg --print-architecture)
+version="hub-linux-${arch}-2.3.0-pre10"
+file_bin="hub-linux-${arch}-2.3.0-pre10.tgz"
+wget --quiet "https://github.com/github/hub/releases/download/v2.3.0-pre10/${file_bin}"
+
+case "$arch" in
+"386")
+	sha256sum="08e29a118577b57f962c7c6e4c2e4bfc72b23df1469f2339631c55454893e24f"
+	;;
+"amd64")
+	sha256sum="015297eb81e8fe11f3989d8f65c213111e508cecf0e9de8af1b7741de2077320"
+	;;
+"arm")
+	sha256sum="a05cd6a42c973177c2a0b457451e9eef0035be67c666e4beebe3b9ed6d526f3d"
+	;;
+"arm64")
+	sha256sum="6d845601196ef26342b8bafa9ab6e98c88270fb6dad60e0915396ba5486d0c76"
+	;;
+*)
+	sha256sum="-1"
+	;;
+esac
+
+[[ $(sha256sum "$file_bin" | cut -d' ' -f1) = $sha256sum ]] || ynh_die "Hub's sha256sum failed (arch: ${arch})"
+
+tar --extract --file "$file_bin" "$version/bin/hub"
+mkdir "$final_path/bin/"
+mv "$version/bin/hub" "$final_path/bin/"
+
+mkdir "$final_path/.config/"
+cp ../conf/hub_config "$final_path/.config/hub"
+ynh_replace_string "__GITHUBUSER__"  "$github_account" "$final_path/.config/hub"
+ynh_replace_string "__GITHUBTOKEN__" "$github_token"   "$final_path/.config/hub"
 
 #=================================================
 # SPECIFIC SETUP
@@ -136,7 +180,9 @@ virtualenv "${final_path}/venv"
 	set +eu
 	source "${final_path}/venv/bin/activate"
 	"${final_path}/venv/bin/pip" install Weblate==2.16
-	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 django_sendmail_backend python-memcached
+	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 python-memcached
+	# specific to YunoHost package:
+	"${final_path}/venv/bin/pip" install django_sendmail_backend
 )
 
 #=================================================

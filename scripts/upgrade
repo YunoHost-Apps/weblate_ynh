@@ -65,6 +65,7 @@ ynh_add_nginx_config
 
 # Create a system user
 ynh_system_user_create "$app" "/home/$app"
+chsh --shell /bin/bash "$app"
 
 #=================================================
 # SPECIFIC UPGRADE
@@ -78,7 +79,9 @@ ynh_system_user_create "$app" "/home/$app"
 	set +eu
 	source "${final_path}/venv/bin/activate"
 	"${final_path}/venv/bin/pip" install Weblate==2.16
-	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2
+	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 python-memcached
+	# specific to YunoHost package:
+	"${final_path}/venv/bin/pip" install django_sendmail_backend
 )
 
 #=================================================

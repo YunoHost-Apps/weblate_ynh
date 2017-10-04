@@ -53,6 +53,22 @@
 				    "en": "Choose an admin user for Weblate"
 				},
 				"example": "simon"
+			},
+			{
+				"name": "github_account",
+				"type": "text",
+				"ask": {
+				    "en": "Github's username"
+				},
+				"example": "simon"
+			},
+			{
+				"name": "github_token",
+				"type": "text",
+				"ask": {
+				    "en": "Github's token (oauth)"
+				},
+				"example": "simon"
 			}
 		]
 	}

@@ -1,0 +1,4 @@
+github.com:
+- user: __GITHUBUSER__
+  oauth_token: __GITHUBTOKEN__
+  protocol: https

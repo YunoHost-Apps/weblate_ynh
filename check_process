@@ -9,6 +9,8 @@
 		path="/path"	(PATH)
 		admin="john"	(USER)
 		is_public=1	(PUBLIC|public=1|private=0)
+		github_account="myaccount"
+		github_token="myoauthtoken"
   	password="pass"
 	; Checks
 		pkg_linter=1
