@@ -10,7 +10,7 @@
 	},
 	"version": "2.16.0",
 	"url": "https://weblate.org",
-	"license": "GNU GPL-3, or any later version.",
+	"license": "AGPL-3.0",
 	"maintainer": {
 		"name": "Jean-Baptiste Holcroft",
 		"email": "jean-baptiste@holcroft.fr"

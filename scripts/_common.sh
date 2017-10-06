@@ -10,7 +10,7 @@ ynh_psql_test_if_first_run() {
 		systemctl start postgresql
                 su --command="psql -c\"ALTER user postgres WITH PASSWORD '${pgsql}'\"" postgres
 		# we can't use peer since YunoHost create users with nologin
-		sed -i '/local\s*all\s*all\s*peer/i
+		sed -i '/local\s*all\s*all\s*peer/i \
 		local all all password' /etc/postgresql/9.4/main/pg_hba.conf
 		systemctl enable postgresql
 		systemctl reload postgresql
