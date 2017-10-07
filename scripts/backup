@@ -3,12 +3,6 @@
 #=================================================
 # GENERIC START
 #=================================================
-# MANAGE SCRIPT FAILURE
-#=================================================
-
-ynh_abort_if_errors
-
-#=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
 
@@ -17,8 +11,11 @@ if [ ! -e _common.sh ]; then
 	cp ../settings/scripts/_common.sh ./_common.sh
 	chmod a+rx _common.sh
 fi
+
 source _common.sh
 source /usr/share/yunohost/helpers
+
+ynh_abort_if_errors
 
 #=================================================
 # LOAD SETTINGS
