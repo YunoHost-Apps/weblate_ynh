@@ -46,9 +46,9 @@ DATABASES = {
         # Database password
         'PASSWORD': '__DB_PWD__',
         # Set to empty string for localhost
-        'HOST': '',
+        'HOST': 'localhost',
         # Set to empty string for default
-        'PORT': '',
+        'PORT': '5432',
     }
 }
 
