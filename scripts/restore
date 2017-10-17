@@ -76,7 +76,7 @@ chown -R "$app": "$final_path"
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
 	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
-	postgresql libpq-dev uwsgi uwsgi-plugin-python
+	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached
 
 #=================================================
 # RESTORE THE PostgreSQL DATABASE

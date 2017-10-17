@@ -57,6 +57,20 @@ path_url=$(ynh_normalize_url_path "$path_url")
 # Create a dedicated nginx config
 ynh_add_nginx_config
 
+if [ "$path_url" == "/" ]
+then
+	# $finalnginxconf comes from ynh_add_nginx_config
+	# uwsgi_param is only needed for non-root installation
+	ynh_replace_string "uwsgi_param "     "#wsgi_param "      "$finalnginxconf"
+	ynh_replace_string "uwsgi_modifier1 " "#uwsgi_modifier1 " "$finalnginxconf"
+	ynh_replace_string "location //"      "location /"        "$finalnginxconf"
+
+	# ynh panel is only comptable with non-root installation
+	ynh_replace_string "	include conf.d/"  "	#include conf.d/"  "$finalnginxconf"
+
+	ynh_store_file_checksum "$finalnginxconf"
+fi
+
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
@@ -123,6 +137,9 @@ if [ $is_public -eq 1 ]
 then
 	# unprotected_uris allows SSO credentials to be passed anyway
 	ynh_app_setting_set "$app" unprotected_uris "/"
+
+	# ynh panel is not needed
+	ynh_replace_string "	include conf.d/"  "	#include conf.d/"  "$finalnginxconf"
 fi
 
 #=================================================

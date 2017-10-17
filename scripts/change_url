@@ -22,6 +22,8 @@ new_path=$YNH_APP_NEW_PATH
 app=$YNH_APP_INSTANCE_NAME
 final_path=/var/www/$app
 
+is_public=$(ynh_app_setting_get "$app" is_public)
+
 #=================================================
 # CHECK THE SYNTAX OF THE PATHS
 #=================================================
@@ -66,7 +68,8 @@ fi
 # MODIFY URL IN NGINX CONF
 #=================================================
 
-nginx_conf_path=/etc/nginx/conf.d/$old_domain.d/$app.conf
+nginx_conf_path="/etc/nginx/conf.d/$old_domain.d/$app.conf"
+finalnginxconf=$nginx_conf_path
 
 # Change the path in the nginx config file
 if [ $change_path -eq 1 ]
@@ -78,7 +81,47 @@ fi
 # Change the domain for nginx
 if [ $change_domain -eq 1 ]
 then
-	mv "$nginx_conf_path" "/etc/nginx/conf.d/${new_domain}.d/${app}.conf"
+	finalnginxconf="/etc/nginx/conf.d/${new_domain}.d/${app}.conf"
+	mv "$nginx_conf_path" "$finalnginxconf"
+fi
+
+#=================================================
+# Edit specific content from nginx configuration
+#=================================================
+
+settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+
+if [ "$old_path" == "/" ] && [ "$new_path" != "/" ]
+then
+	# uwsgi_param is only needed for non-root installation
+	ynh_replace_string "#uwsgi_param "     "wsgi_param "      "$finalnginxconf"
+	ynh_replace_string "#uwsgi_modifier1 " "uwsgi_modifier1 " "$finalnginxconf"
+
+	if [ "$is_public" -eq 0 ]
+	then
+		# ynh panel is only comptable with non-root installation
+		# ynh panel is useless for public websites
+		ynh_replace_string "	#include conf.d/"  "	include conf.d/"  "$finalnginxconf"
+	fi
+	# root install as an empty PATHURL to prevent '//static'
+	ynh_replace_string "URL_PREFIX = ''" "URL_PREFIX = '$new_path'" "$settings"
+
+	ynh_store_file_checksum "$finalnginxconf"
+fi
+
+if [ "$old_path" != "/" ] && [ "$new_path" == "/" ]
+then
+	# uwsgi_param is only needed for non-root installation
+	ynh_replace_string "uwsgi_param "     "#wsgi_param "      "$finalnginxconf"
+	ynh_replace_string "uwsgi_modifier1 " "#uwsgi_modifier1 " "$finalnginxconf"
+
+	# ynh panel is only comptable with non-root installation
+	ynh_replace_string "	include conf.d/"  "	#include conf.d/"  "$finalnginxconf"
+
+	# root install as an empty PATHURL to prevent '//static'
+	ynh_replace_string "URL_PREFIX = '$old_path'" "URL_PREFIX = ''" "$settings"
+
+	ynh_store_file_checksum "$finalnginxconf"
 fi
 
 #=================================================

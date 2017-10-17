@@ -102,6 +102,20 @@ systemctl reload postgresql
 # Create a dedicated nginx config
 ynh_add_nginx_config
 
+if [ "$path_url" == "/" ]
+then
+	# $finalnginxconf comes from ynh_add_nginx_config
+	# uwsgi_param is only needed for non-root installation
+	ynh_replace_string "uwsgi_param "     "#wsgi_param "      "$finalnginxconf"
+	ynh_replace_string "uwsgi_modifier1 " "#uwsgi_modifier1 " "$finalnginxconf"
+	ynh_replace_string "location //"      "location /"        "$finalnginxconf"
+
+	# ynh panel is only comptable with non-root installation
+	ynh_replace_string "	include conf.d/"  "	#include conf.d/"  "$finalnginxconf"
+
+	ynh_store_file_checksum "$finalnginxconf"
+fi
+
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
@@ -152,7 +166,10 @@ cp ../conf/hub_config "$final_path/.config/hub"
 ynh_replace_string "__GITHUBUSER__"  "$github_account" "$final_path/.config/hub"
 ynh_replace_string "__GITHUBTOKEN__" "$github_token"   "$final_path/.config/hub"
 
-echo "alias git=hub" > "$final_path/.bashrc"
+cat <<EOF > "$final_path/.bashrc"
+alias git=hub
+PATH="$PATH:~/bin"
+EOF
 
 #=================================================
 # SPECIFIC SETUP
@@ -198,19 +215,26 @@ db_pwd=$(ynh_app_setting_get "$app" psqlpwd)
 admin_mail=$(ynh_user_get_info "$admin" mail)
 key=$(ynh_string_random)
 memc_port=$(ynh_find_port 8080)
+settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+cp ../conf/settings.py "$settings"
 
-cp ../conf/settings.py "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+ynh_replace_string "__NAME__"       "$app"            "$settings"
+ynh_replace_string "__DB_PWD__"     "$db_pwd"         "$settings"
+ynh_replace_string "__ADMIN__"      "$admin"          "$settings"
+ynh_replace_string "__ADMINMAIL__"  "$admin_mail"     "$settings"
+ynh_replace_string "__DOMAIN__"     "$domain"         "$settings"
+ynh_replace_string "__KEY__"        "$key"            "$settings"
+ynh_replace_string "__FINALPATH__"  "$final_path"     "$settings"
+ynh_replace_string "__MEMCPORT__"   "$memc_port"      "$settings"
+ynh_replace_string "__GITHUBUSER__" "$github_account" "$settings"
 
-ynh_replace_string "__NAME__"      "$app"        "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-ynh_replace_string "__DB_PWD__"    "$db_pwd"     "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-ynh_replace_string "__ADMIN__"     "$admin"      "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-ynh_replace_string "__ADMINMAIL__" "$admin_mail" "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-ynh_replace_string "__DOMAIN__"    "$domain"     "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-ynh_replace_string "__KEY__"       "$key"        "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-ynh_replace_string "__PATHURL__"   "$path_url"   "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-ynh_replace_string "__FINALPATH__" "$final_path" "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-ynh_replace_string "__MEMCPORT__"  "$memc_port"  "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-ynh_replace_string "__GITHUBUSER__" "$github_account" "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+# root install as an empty PATHURL to prevent '//static'
+if [ "$path_url" == "/" ]
+then
+	ynh_replace_string "__PATHURL__" "" "$settings"
+else
+	ynh_replace_string "__PATHURL__" "$path_url" "$settings"
+fi
 
 #=================================================
 # SPECIFIC SETUP Filling up the database
@@ -273,6 +297,9 @@ if [ "$is_public" -eq 1 ]
 then
 	# unprotected_uris allows SSO credentials to be passed anyway.
 	ynh_app_setting_set "$app" unprotected_uris "/"
+
+	# ynh panel is not needed
+	ynh_replace_string "	include conf.d/"  "	#include conf.d/"  "$finalnginxconf"
 fi
 
 #=================================================
