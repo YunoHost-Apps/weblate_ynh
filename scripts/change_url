@@ -94,7 +94,7 @@ settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 if [ "$old_path" == "/" ] && [ "$new_path" != "/" ]
 then
 	# uwsgi_param is only needed for non-root installation
-	ynh_replace_string "#uwsgi_param "     "wsgi_param "      "$finalnginxconf"
+	ynh_replace_string "#uwsgi_param "     "uwsgi_param "      "$finalnginxconf"
 	ynh_replace_string "#uwsgi_modifier1 " "uwsgi_modifier1 " "$finalnginxconf"
 
 	if [ "$is_public" -eq 0 ]
@@ -112,7 +112,7 @@ fi
 if [ "$old_path" != "/" ] && [ "$new_path" == "/" ]
 then
 	# uwsgi_param is only needed for non-root installation
-	ynh_replace_string "uwsgi_param "     "#wsgi_param "      "$finalnginxconf"
+	ynh_replace_string "uwsgi_param "     "#uwsgi_param "      "$finalnginxconf"
 	ynh_replace_string "uwsgi_modifier1 " "#uwsgi_modifier1 " "$finalnginxconf"
 
 	# ynh panel is only comptable with non-root installation
