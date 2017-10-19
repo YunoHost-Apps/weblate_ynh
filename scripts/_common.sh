@@ -24,6 +24,20 @@ weblate_fill_settings() {
 	fi
 }
 
+ynh_check_if_checksum_is_different() {
+	local file=$1
+	local checksum_setting_name=checksum_${file//[\/ ]/_}	# Replace all '/' and ' ' by '_'
+	local checksum_value=$(ynh_app_setting_get $app $checksum_setting_name)
+	local check=0
+
+	if ! echo "$checksum_value $file" | sudo md5sum -c --status
+	then	# If the checksum is now different
+		check=1
+	fi
+
+	return "$check"
+}
+
 ynh_psql_test_if_first_run() {
 	if [ -f /etc/yunohost/psql ];
 	then

@@ -131,45 +131,56 @@ fi
 	"${final_path}/venv/bin/pip" install django_sendmail_backend
 )
 
-# generate previous defaults settings
-cp "$previous_version_file" "$old_settings"
-weblate_fill_settings "$old_settings"
+check=$(ynh_check_if_checksum_is_different "$settings")
 
-# store diff between defaults and local settings
-diff --unified "$old_settings" "$settings" > "$settings_diff"
+if [[ "$check" -eq 1 ]]
+then
+	echo "Settings.py was modified localy, running diff before using the new default file for $current_version."
+	# generate previous defaults settings
+	cp "$previous_version_file" "$old_settings"
+	weblate_fill_settings "$old_settings"
 
-# generate new defaults settings
-cp ../conf/settings.py "$settings"
-weblate_fill_settings "$settings"
+	# store diff between defaults and local settings
+	diff --unified "$old_settings" "$settings" > "$settings_diff"
 
-# send diff to the server administrator
-mail_subject="'$app' settings diff from $previous_version to $current_version"
-mail_message="
-Weblate was updated from version $previous_version to $current_version
+	# generate new defaults settings
+	cp ../conf/settings.py "$settings"
+	weblate_fill_settings "$settings"
 
-A new settings.py has been created in:
-$settings
+	# send diff to the server administrator
+	mail_subject="'$app' settings diff from $previous_version to $current_version"
+	mail_message="
+	Weblate was updated from version $previous_version to $current_version
 
-You may have changed your defaults settings.
-To help you to apply it again, here is a diff file with every changes you did.
+	A new settings.py has been created in:
+	$settings
 
-Please note secret key is updated, this is normal.
+	You may have changed your defaults settings.
+	To help you to apply it again, here is a diff file with every changes you did.
 
-For any issue, please file a bug in: https://github.com/YunoHost-Apps/weblate_ynh
-"
+	Please note secret key is updated, this is normal.
 
-echo "$mail_message" | mail -s "$mail_subject" root -u root -a "$settings_diff"
+	For any issue, please file a bug in: https://github.com/YunoHost-Apps/weblate_ynh
+	"
 
-# inform weblate's admin
-mail_subject="'$app' was updated from $previous_version to $current_version"
-mail_message="
-Weblate was updated from version $previous_version to $current_version
+	echo "$mail_message" | mail -s "$mail_subject" root -u root -a "$settings_diff"
 
-A new settings.py has been created and a diff has been sent to root user.
-Your administrator may have to update your settings.py to have a fully working installation.
-"
+	# inform weblate's admin
+	mail_subject="'$app' was updated from $previous_version to $current_version"
+	mail_message="
+	Weblate was updated from version $previous_version to $current_version
 
-echo "$mail_subject" | mail -s "$mail_subject" "$admin_mail"
+	A new settings.py has been created and a diff has been sent to root user.
+	Your administrator may have to update your settings.py to have a fully working installation.
+	"
+
+	echo "$mail_subject" | mail -s "$mail_subject" "$admin_mail"
+else
+	echo "Settings.py was not modified, using the new default file for $current_version."
+	# generate new defaults settings
+	cp ../conf/settings.py "$settings"
+	weblate_fill_settings "$settings"
+fi
 
 #=================================================
 # Run migration scripts
