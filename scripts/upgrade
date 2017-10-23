@@ -235,4 +235,6 @@ fi
 # RELOAD NGINX
 #=================================================
 
+systemctl stop "$app.service"
+systemctl start "$app.service"
 systemctl reload nginx

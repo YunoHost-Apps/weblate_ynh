@@ -35,7 +35,7 @@ ynh_check_if_checksum_is_different() {
 		check=1
 	fi
 
-	return "$check"
+	echo "$check"
 }
 
 ynh_psql_test_if_first_run() {
