@@ -23,6 +23,21 @@ db_name=$(ynh_app_setting_get "$app" db_name)
 domain=$(ynh_app_setting_get "$app" domain)
 
 #=================================================
+# Get previous version number
+#=================================================
+
+(
+	set +eu
+	source "${final_path}/venv/bin/activate"
+	"${final_path}/venv/bin/pip" install --upgrade pip
+	"${final_path}/venv/bin/pip" freeze --local > freeze.pip
+)
+previous_version=$(cat freeze.pip | grep "Weblate==" | sed "s|Weblate==||")
+
+previous_version_file="../conf/settings_history/settings.$previous_version.py"
+test -e "$previous_version_file" || ynh_die "Previous version unknown: $previous_version"
+
+#=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
 
@@ -87,17 +102,88 @@ chsh --shell /bin/bash "$app"
 # PIP INSTALLATION
 #=================================================
 
+old_settings="./settings.$previous_version.old.py"
+settings_diff="./settings.diff"
+settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+
+db_pwd=$(ynh_app_setting_get "$app" psqlpwd)
+admin=$(ynh_app_setting_get "$app" admin)
+admin_mail=$(ynh_user_get_info "$admin" mail)
+key=$(ynh_string_random)
+memc_port=$(ynh_app_setting_get "$app" memc_port)
+github_account=$(ynh_app_setting_get "$app" github_account)
+
+#save memc_port if it doesn't exist
+if [[ -z "$memc_port" ]]
+then
+	memc_port=$(cat "$settings" \
+		| grep "'LOCATION': '127.0.0.1:" \
+		| sed "s|.*:\\(.*\\)'.*|\\1|")
+	ynh_app_setting_set "$app" memc_port "$memc_port"
+fi
+
 (
 	set +eu
 	source "${final_path}/venv/bin/activate"
-	"${final_path}/venv/bin/pip" install Weblate==2.16
+	"${final_path}/venv/bin/pip" install Weblate=="$current_version"
 	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 python-memcached
 	# specific to YunoHost package:
 	"${final_path}/venv/bin/pip" install django_sendmail_backend
 )
 
+check=$(ynh_check_if_checksum_is_different "$settings")
+
+if [[ "$check" -eq 1 ]]
+then
+	echo "Settings.py was modified localy, running diff before using the new default file for $current_version."
+	# generate previous defaults settings
+	cp "$previous_version_file" "$old_settings"
+	weblate_fill_settings "$old_settings"
+
+	# store diff between defaults and local settings
+	diff --unified "$old_settings" "$settings" > "$settings_diff"
+
+	# generate new defaults settings
+	cp ../conf/settings.py "$settings"
+	weblate_fill_settings "$settings"
+
+	# send diff to the server administrator
+	mail_subject="'$app' settings diff from $previous_version to $current_version"
+	mail_message="
+	Weblate was updated from version $previous_version to $current_version
+
+	A new settings.py has been created in:
+	$settings
+
+	You may have changed your defaults settings.
+	To help you to apply it again, here is a diff file with every changes you did.
+
+	Please note secret key is updated, this is normal.
+
+	For any issue, please file a bug in: https://github.com/YunoHost-Apps/weblate_ynh
+	"
+
+	echo "$mail_message" | mail -s "$mail_subject" root -u root -a "$settings_diff"
+
+	# inform weblate's admin
+	mail_subject="'$app' was updated from $previous_version to $current_version"
+	mail_message="
+	Weblate was updated from version $previous_version to $current_version
+
+	A new settings.py has been created and a diff has been sent to root user.
+	Your administrator may have to update your settings.py to have a fully working installation.
+	"
+
+	echo "$mail_subject" | mail -s "$mail_subject" "$admin_mail"
+else
+	echo "Settings.py was not modified, using the new default file for $current_version."
+	# generate new defaults settings
+	cp ../conf/settings.py "$settings"
+	weblate_fill_settings "$settings"
+fi
+
 #=================================================
-# Migrate databases
+# Run migration scripts
 #=================================================
 
 (
@@ -106,10 +192,11 @@ chsh --shell /bin/bash "$app"
 	export DJANGO_SETTINGS_MODULE="weblate.settings"
 	cd "${final_path}"
 	weblate migrate --noinput
+	weblate collectstatic --noinput
+	weblate setuplang
+	weblate setupgroups
 )
 
-# Verify the checksum and backup the file if it's different
-ynh_backup_if_checksum_is_different "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 # Recalculate and store the config file checksum into the app settings
 ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 
@@ -140,10 +227,14 @@ then
 
 	# ynh panel is not needed
 	ynh_replace_string "	include conf.d/"  "	#include conf.d/"  "$finalnginxconf"
+
+	ynh_store_file_checksum "$finalnginxconf"
 fi
 
 #=================================================
 # RELOAD NGINX
 #=================================================
 
+systemctl stop "$app.service"
+systemctl start "$app.service"
 systemctl reload nginx

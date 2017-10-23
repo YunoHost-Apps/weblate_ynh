@@ -1,5 +1,43 @@
 #!/bin/bash
 
+current_version="2.17.1"
+
+weblate_fill_settings() {
+	settings="$1"
+
+	ynh_replace_string "__NAME__"       "$app"            "$settings"
+	ynh_replace_string "__DB_PWD__"     "$db_pwd"         "$settings"
+	ynh_replace_string "__ADMIN__"      "$admin"          "$settings"
+	ynh_replace_string "__ADMINMAIL__"  "$admin_mail"     "$settings"
+	ynh_replace_string "__DOMAIN__"     "$domain"         "$settings"
+	ynh_replace_string "__KEY__"        "$key"            "$settings"
+	ynh_replace_string "__FINALPATH__"  "$final_path"     "$settings"
+	ynh_replace_string "__MEMCPORT__"   "$memc_port"      "$settings"
+	ynh_replace_string "__GITHUBUSER__" "$github_account" "$settings"
+
+	# root install as an empty PATHURL to prevent '//static'
+	if [ "$path_url" == "/" ]
+	then
+		ynh_replace_string "__PATHURL__" "" "$settings"
+	else
+		ynh_replace_string "__PATHURL__" "$path_url" "$settings"
+	fi
+}
+
+ynh_check_if_checksum_is_different() {
+	local file=$1
+	local checksum_setting_name=checksum_${file//[\/ ]/_}	# Replace all '/' and ' ' by '_'
+	local checksum_value=$(ynh_app_setting_get $app $checksum_setting_name)
+	local check=0
+
+	if ! echo "$checksum_value $file" | sudo md5sum -c --status
+	then	# If the checksum is now different
+		check=1
+	fi
+
+	echo "$check"
+}
+
 ynh_psql_test_if_first_run() {
 	if [ -f /etc/yunohost/psql ];
 	then

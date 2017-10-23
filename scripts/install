@@ -200,7 +200,7 @@ virtualenv "${final_path}/venv"
 (
 	set +eu
 	source "${final_path}/venv/bin/activate"
-	"${final_path}/venv/bin/pip" install Weblate==2.16
+	"${final_path}/venv/bin/pip" install Weblate=="$current_version"
 	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 python-memcached
 	# specific to YunoHost package:
 	"${final_path}/venv/bin/pip" install django_sendmail_backend
@@ -218,23 +218,8 @@ memc_port=$(ynh_find_port 8080)
 settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 cp ../conf/settings.py "$settings"
 
-ynh_replace_string "__NAME__"       "$app"            "$settings"
-ynh_replace_string "__DB_PWD__"     "$db_pwd"         "$settings"
-ynh_replace_string "__ADMIN__"      "$admin"          "$settings"
-ynh_replace_string "__ADMINMAIL__"  "$admin_mail"     "$settings"
-ynh_replace_string "__DOMAIN__"     "$domain"         "$settings"
-ynh_replace_string "__KEY__"        "$key"            "$settings"
-ynh_replace_string "__FINALPATH__"  "$final_path"     "$settings"
-ynh_replace_string "__MEMCPORT__"   "$memc_port"      "$settings"
-ynh_replace_string "__GITHUBUSER__" "$github_account" "$settings"
-
-# root install as an empty PATHURL to prevent '//static'
-if [ "$path_url" == "/" ]
-then
-	ynh_replace_string "__PATHURL__" "" "$settings"
-else
-	ynh_replace_string "__PATHURL__" "$path_url" "$settings"
-fi
+weblate_fill_settings "$settings"
+ynh_app_setting_set "$app" memc_port "$memc_port"
 
 #=================================================
 # SPECIFIC SETUP Filling up the database
@@ -300,6 +285,8 @@ then
 
 	# ynh panel is not needed
 	ynh_replace_string "	include conf.d/"  "	#include conf.d/"  "$finalnginxconf"
+
+	ynh_store_file_checksum "$finalnginxconf"
 fi
 
 #=================================================
