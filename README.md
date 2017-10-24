@@ -1,3 +1,5 @@
+[![Install Weblate with YunoHost](https://install-app.yunohost.org/install-with-yunohost.png)](https://install-app.yunohost.org/?app=weblate)
+![](https://dash.yunohost.org/integration/weblate.svg)
 # Weblate translation platform for YunoHost
 
 The YunoHost team uses [Weblate](https://weblate.org) for translations: https://translate.yunohost.org
