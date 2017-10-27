@@ -21,6 +21,23 @@ is_public=$(ynh_app_setting_get "$app" is_public)
 final_path=$(ynh_app_setting_get "$app" final_path)
 db_name=$(ynh_app_setting_get "$app" db_name)
 domain=$(ynh_app_setting_get "$app" domain)
+db_pwd=$(ynh_app_setting_get "$app" psqlpwd)
+admin=$(ynh_app_setting_get "$app" admin)
+admin_mail=$(ynh_user_get_info "$admin" mail)
+memc_port=$(ynh_app_setting_get "$app" memc_port)
+github_account=$(ynh_app_setting_get "$app" github_account)
+key=$(ynh_string_random)
+
+settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+
+#save memc_port if it doesn't exist
+if [[ -z "$memc_port" ]]
+then
+	memc_port=$(cat "$settings" \
+		| grep "'LOCATION': '127.0.0.1:" \
+		| sed "s|.*:\\(.*\\)'.*|\\1|")
+	ynh_app_setting_set "$app" memc_port "$memc_port"
+fi
 
 #=================================================
 # Get previous version number
@@ -103,24 +120,7 @@ chsh --shell /bin/bash "$app"
 #=================================================
 
 old_settings="./settings.$previous_version.old.py"
-settings_diff="./settings.diff"
-settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-
-db_pwd=$(ynh_app_setting_get "$app" psqlpwd)
-admin=$(ynh_app_setting_get "$app" admin)
-admin_mail=$(ynh_user_get_info "$admin" mail)
-key=$(ynh_string_random)
-memc_port=$(ynh_app_setting_get "$app" memc_port)
-github_account=$(ynh_app_setting_get "$app" github_account)
-
-#save memc_port if it doesn't exist
-if [[ -z "$memc_port" ]]
-then
-	memc_port=$(cat "$settings" \
-		| grep "'LOCATION': '127.0.0.1:" \
-		| sed "s|.*:\\(.*\\)'.*|\\1|")
-	ynh_app_setting_set "$app" memc_port "$memc_port"
-fi
+settings_diff="$final_path/settings.${previous_version}_${current_version}.diff"
 
 (
 	set +eu
@@ -158,12 +158,16 @@ then
 	You may have changed your defaults settings.
 	To help you to apply it again, here is a diff file with every changes you did.
 
+	Diff has been created in:
+	$settings_diff
+
 	Please note secret key is updated, this is normal.
 
 	For any issue, please file a bug in: https://github.com/YunoHost-Apps/weblate_ynh
 	"
 
-	echo "$mail_message" | mail -s "$mail_subject" root -u root -a "$settings_diff"
+	# Email server admin - for ACTION
+	echo "$mail_message" | mail -s "$mail_subject" root -u root
 
 	# inform weblate's admin
 	mail_subject="'$app' was updated from $previous_version to $current_version"
@@ -174,6 +178,7 @@ then
 	Your administrator may have to update your settings.py to have a fully working installation.
 	"
 
+	# Email weblate's admin - for INFO
 	echo "$mail_subject" | mail -s "$mail_subject" "$admin_mail"
 else
 	echo "Settings.py was not modified, using the new default file for $current_version."
