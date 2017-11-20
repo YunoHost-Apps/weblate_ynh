@@ -114,6 +114,13 @@ chsh --shell /bin/bash "$app"
 #=================================================
 # SPECIFIC UPGRADE
 #=================================================
+# SPECIFIC SETUP uwsgi
+#=================================================
+
+ynh_add_uwsgi_config
+
+# Add weblate as a service
+yunohost service add "uwsgi-app@$app.service"
 
 #=================================================
 # PIP INSTALLATION
@@ -206,13 +213,6 @@ fi
 ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 
 #=================================================
-# SETUP LOGROTATE
-#=================================================
-
-# Use logrotate to manage app-specific logfile(s)
-ynh_use_logrotate
-
-#=================================================
 # GENERIC FINALIZATION
 #=================================================
 
@@ -240,6 +240,5 @@ fi
 # RELOAD NGINX
 #=================================================
 
-systemctl stop "$app.service"
-systemctl start "$app.service"
+systemctl restart "uwsgi-app@$app.service"
 systemctl reload nginx

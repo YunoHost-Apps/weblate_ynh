@@ -168,7 +168,7 @@ ynh_replace_string "__GITHUBTOKEN__" "$github_token"   "$final_path/.config/hub"
 
 cat <<EOF > "$final_path/.bashrc"
 alias git=hub
-PATH="$PATH:~/bin"
+PATH="\$PATH:$final_path/bin"
 EOF
 
 #=================================================
@@ -177,20 +177,7 @@ EOF
 # SPECIFIC SETUP uwsgi
 #=================================================
 
-# Copy Files
-cp ../conf/uwsgi.ini "$final_path/uwsgi.ini"
-ynh_replace_string "__NAME__" "$app" "$final_path/uwsgi.ini"
-ynh_replace_string "__FINALPATH__" "$final_path" "$final_path/uwsgi.ini"
-
-cp ../conf/uwsgi_service "/etc/systemd/system/$app.service"
-ynh_replace_string "__NAME__" "$app" "/etc/systemd/system/$app.service"
-ynh_replace_string "__FINALPATH__" "$final_path" "/etc/systemd/system/$app.service"
-
-# Start service
-systemctl enable "$app.service"
-
-# Add weblate as a service
-yunohost service add "$app.service" --log "/var/log/$app/APP.log"
+ynh_add_uwsgi_config
 
 #=================================================
 # PIP INSTALLATION
@@ -263,13 +250,6 @@ ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/se
 chown -R "$app": "$final_path"
 
 #=================================================
-# SETUP LOGROTATE
-#=================================================
-
-# Use logrotate to manage application logfile(s)
-ynh_use_logrotate
-
-#=================================================
 # SETUP SSOWAT
 #=================================================
 
@@ -293,5 +273,5 @@ fi
 # RELOAD NGINX
 #=================================================
 
-systemctl start "$app.service"
+systemctl start "uwsgi-app@$app.service"
 systemctl reload nginx

@@ -2,6 +2,83 @@
 
 current_version="2.17.1"
 
+ynh_check_global_uwsgi_config () {
+	if [ -f /etc/systemd/system/uwsgi-app@.service ];
+	then
+		echo "Uwsgi generic file is already installed"
+	else
+		cp ../conf/uwsgi-app@.socket /etc/systemd/system/uwsgi-app@.socket
+		cp ../conf/uwsgi-app@.service /etc/systemd/system/uwsgi-app@.service
+
+		# create uwsgi group
+		groupadd uwsgi
+
+		# make sure the folder for sockets exists and set authorizations
+		mkdir -p /var/run/uwsgi/
+		chown root:uwsgi /var/run/uwsgi/
+		chmod -R 775 /var/run/uwsgi/
+
+		# make sure the folder for logs exists and set authorizations
+		mkdir -p /var/log/uwsgi/app/
+		chown root:uwsgi /var/log/uwsgi/app/
+		chmod -R 775 /var/log/uwsgi/app/
+	fi
+}
+
+# Create a dedicated uwsgi ini file to use with generic uwsgi service
+# It will install generic uwsgi.socket and
+#
+# This will use a template in ../conf/uwsgi.ini
+# and will replace the following keywords with
+# global variables that should be defined before calling
+# this helper :
+#
+#   __APP__       by  $app
+#   __FINALPATH__ by  $final_path
+#
+# usage: ynh_add_systemd_config
+ynh_add_uwsgi_config () {
+	ynh_check_global_uwsgi_config
+
+	usermod --append --groups uwsgi "$app" || ynh_die "It wasn't possible to add user $app to group uwsgi"
+
+	finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
+	ynh_backup_if_checksum_is_different "$finaluwsgiini"
+	sudo cp ../conf/uwsgi.ini "$finaluwsgiini"
+
+	# To avoid a break by set -u, use a void substitution ${var:-}. If the variable is not set, it's simply set with an empty variable.
+	# Substitute in a nginx config file only if the variable is not empty
+	if test -n "${final_path:-}"; then
+		ynh_replace_string "__FINALPATH__" "$final_path" "$finaluwsgiini"
+	fi
+	if test -n "${app:-}"; then
+		ynh_replace_string "__APP__" "$app" "$finaluwsgiini"
+	fi
+	ynh_store_file_checksum "$finaluwsgiini"
+
+	chown root: "$finaluwsgiini"
+	systemctl enable "uwsgi-app@$app.service"
+	systemctl daemon-reload
+
+	# Add as a service
+	yunohost service add "uwsgi-app@$app.service" --log "/var/run/uwsgi/$app.socket"
+}
+
+# Remove the dedicated uwsgi ini file
+#
+# usage: ynh_remove_systemd_config
+ynh_remove_uwsgi_config () {
+	finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
+	if [ -e "$finaluwsgiini" ]; then
+		systemctl stop "uwsgi-app@$app.service"
+		systemctl disable "uwsgi-app@$app.service"
+		yunohost service remove "uwsgi-app@$app.service"
+
+		ynh_secure_remove "$finaluwsgiini"
+	fi
+}
+
+
 weblate_fill_settings() {
 	settings="$1"
 

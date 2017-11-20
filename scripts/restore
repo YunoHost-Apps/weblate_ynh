@@ -90,14 +90,17 @@ ynh_psql_execute_file_as_root ./db.sql "$db_name"
 # RESTORE THE SERVICE
 #=================================================
 
-ynh_restore_file "/etc/systemd/system/$app.service"
-systemctl enable "$app.service"
+ynh_restore_file "/etc/uwsgi/apps-available/$app.ini"
+
+ynh_check_global_uwsgi_config
+
+systemctl enable "uwsgi-app@$app.service"
 
 #=================================================
 # ADVERTISE SERVICE IN ADMIN PANEL
 #=================================================
 
-yunohost service add "$app.service" --log "/var/log/$app/APP.log"
+yunohost service add "uwsgi-app@$app.service"
 
 #=================================================
 # RESTORE THE CRON FILE
@@ -106,17 +109,10 @@ yunohost service add "$app.service" --log "/var/log/$app/APP.log"
 ynh_restore_file "/etc/cron.d/$app"
 
 #=================================================
-# RESTORE THE LOGROTATE CONFIGURATION
-#=================================================
-
-ynh_restore_file "/etc/logrotate.d/$app"
-
-#=================================================
 # GENERIC FINALIZATION
 #=================================================
 # RELOAD NGINX & uwsgi
 #=================================================
 
+systemctl restart "uwsgi-app@$app.service"
 systemctl reload nginx
-systemctl stop "$app.service"
-systemctl start "$app.service"
