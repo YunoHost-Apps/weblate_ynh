@@ -117,10 +117,7 @@ chsh --shell /bin/bash "$app"
 # SPECIFIC SETUP uwsgi
 #=================================================
 
-ynh_add_uwsgi_config
-
-# Add weblate as a service
-yunohost service add "uwsgi-app@$app.service"
+ynh_add_uwsgi_service
 
 #=================================================
 # PIP INSTALLATION

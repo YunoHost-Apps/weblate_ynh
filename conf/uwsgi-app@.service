@@ -8,7 +8,7 @@ ExecStart=/usr/bin/uwsgi \
         --socket /var/run/uwsgi/%i.socket \
         --logto /var/log/uwsgi/app/%i
 User=%i
-Group=uwsgi
+Group=www-data
 Restart=on-failure
 KillSignal=SIGQUIT
 Type=notify

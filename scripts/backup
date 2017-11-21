@@ -55,9 +55,3 @@ ynh_backup "db.sql"
 #=================================================
 
 ynh_backup "/etc/cron.d/$app"
-
-#=================================================
-# BACKUP THE UWSGI SERVICE
-#=================================================
-
-ynh_backup "/etc/uwsgi/apps-available/$app.ini"

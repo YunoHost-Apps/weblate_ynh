@@ -90,17 +90,7 @@ ynh_psql_execute_file_as_root ./db.sql "$db_name"
 # RESTORE THE SERVICE
 #=================================================
 
-ynh_restore_file "/etc/uwsgi/apps-available/$app.ini"
-
-ynh_check_global_uwsgi_config
-
-systemctl enable "uwsgi-app@$app.service"
-
-#=================================================
-# ADVERTISE SERVICE IN ADMIN PANEL
-#=================================================
-
-yunohost service add "uwsgi-app@$app.service"
+ynh_add_uwsgi_service
 
 #=================================================
 # RESTORE THE CRON FILE

@@ -58,7 +58,7 @@ ynh_secure_remove "/etc/cron.d/$app"
 # REMOVE uwsgi and systemd files
 #=================================================
 
-ynh_remove_uwsgi_config
+ynh_remove_uwsgi_service
 
 #=================================================
 # GENERIC FINALIZATION

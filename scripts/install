@@ -177,7 +177,7 @@ EOF
 # SPECIFIC SETUP uwsgi
 #=================================================
 
-ynh_add_uwsgi_config
+ynh_add_uwsgi_service
 
 #=================================================
 # PIP INSTALLATION

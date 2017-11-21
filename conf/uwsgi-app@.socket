@@ -4,8 +4,8 @@ Description=Socket for uWSGI app %i
 [Socket]
 ListenStream=/var/run/uwsgi/%i.socket
 SocketUser=%i
-SocketGroup=uwsgi
-SocketMode=0660
+SocketGroup=www-data
+SocketMode=0775
 
 [Install]
 WantedBy=sockets.target
