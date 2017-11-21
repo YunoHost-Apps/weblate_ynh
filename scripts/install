@@ -273,5 +273,4 @@ fi
 # RELOAD NGINX
 #=================================================
 
-systemctl start "uwsgi-app@$app.service"
 systemctl reload nginx

@@ -87,10 +87,36 @@ ynh_psql_setup_db "$db_name" "$db_name" "$db_pwd"
 ynh_psql_execute_file_as_root ./db.sql "$db_name"
 
 #=================================================
-# RESTORE THE SERVICE
+# RESTORE THE UWSGI MECANICS
 #=================================================
 
-ynh_add_uwsgi_service
+ynh_restore_file "/etc/systemd/system/uwsgi-app@.socket"
+ynh_restore_file "/etc/systemd/system/uwsgi-app@.service"
+
+# make sure the folder for sockets exists and set authorizations
+mkdir -p /var/run/uwsgi/
+chown root:www-data /var/run/uwsgi/
+chmod -R 775 /var/run/uwsgi/
+
+# make sure the folder for logs exists and set authorizations
+mkdir -p /var/log/uwsgi/app/
+chown root:www-data /var/log/uwsgi/app/
+chmod -R 775 /var/log/uwsgi/app/
+
+#=================================================
+# RESTORE Weblate service
+#=================================================
+
+usermod --append --groups www-data "$app"
+
+ynh_restore_file "/etc/uwsgi/apps-available/$app.ini"
+
+systemctl enable "uwsgi-app@$app.socket"
+systemctl start "uwsgi-app@$app.socket"
+systemctl daemon-reload
+
+# Add as a service
+yunohost service add "uwsgi-app@$app.socket" --log "/var/log/uwsgi/app/$app"
 
 #=================================================
 # RESTORE THE CRON FILE
@@ -104,5 +130,4 @@ ynh_restore_file "/etc/cron.d/$app"
 # RELOAD NGINX & uwsgi
 #=================================================
 
-systemctl restart "uwsgi-app@$app.service"
 systemctl reload nginx

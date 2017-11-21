@@ -160,6 +160,7 @@ fi
 #=================================================
 # RELOAD NGINX and Weblate
 #=================================================
+
+
+
 systemctl reload nginx
-systemctl stop "$app.service"
-systemctl start "$app.service"
