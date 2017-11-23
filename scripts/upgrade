@@ -71,6 +71,15 @@ if [ -z "$db_name" ]; then	# If db_name doesn't exist, create it
 	ynh_app_setting_set "$app" db_name "$db_name"
 fi
 
+if [ -e "/etc/systemd/system/$app.service" ]
+then
+	systemctl stop "$app.service"
+	systemctl disable "$app.service"
+	yunohost service remove "$app.service"
+	ynh_secure_remove "$final_path/uwsgi.ini"
+	ynh_secure_remove "/etc/systemd/system/$app.service"
+fi
+
 #=================================================
 # CHECK THE PATH
 #=================================================
