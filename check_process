@@ -20,6 +20,10 @@
 		setup_private=1
 		setup_public=1
 		upgrade=1
+		# latest published github
+		upgrade=1		from_commit=5d0b16f4cd458cc5c93f8a3287aa9560738c08fb
+		# latest published in community.json
+		upgrade=1		from_commit=58c98267fa4c3ea5c1ff8fd4c63655a3230a2134
 		backup_restore=1
 		multi_instance=1
 		incorrect_path=1

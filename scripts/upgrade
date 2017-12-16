@@ -157,7 +157,7 @@ then
 	diff --unified "$old_settings" "$settings" > "$settings_diff"
 
 	# generate new defaults settings
-	cp ../conf/settings.py "$settings"
+	cp "../conf/settings_history/settings.$current_version.py" "$settings"
 	weblate_fill_settings "$settings"
 
 	# send diff to the server administrator
@@ -196,7 +196,7 @@ then
 else
 	echo "Settings.py was not modified, using the new default file for $current_version."
 	# generate new defaults settings
-	cp ../conf/settings.py "$settings"
+	cp "../conf/settings_history/settings.$current_version.py" "$settings"
 	weblate_fill_settings "$settings"
 fi
 
@@ -216,7 +216,7 @@ fi
 )
 
 # Recalculate and store the config file checksum into the app settings
-ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+ynh_store_file_checksum "$final_path/venv/lib/python3.4/site-packages/weblate/settings.py"
 
 #=================================================
 # GENERIC FINALIZATION
