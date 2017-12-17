@@ -44,10 +44,11 @@ fi
 #=================================================
 
 (
-	set +eu
+	set +o nounset
 	source "${final_path}/venv/bin/activate"
-	"${final_path}/venv/bin/pip" install --upgrade pip
-	"${final_path}/venv/bin/pip" freeze --local > freeze.pip
+	set -o nounset
+	pip install --upgrade pip
+	pip freeze --local > freeze.pip
 )
 previous_version=$(cat freeze.pip | grep "Weblate==" | sed "s|Weblate==||")
 
@@ -101,9 +102,6 @@ ynh_add_nginx_config
 if [ "$path_url" == "/" ]
 then
 	# $finalnginxconf comes from ynh_add_nginx_config
-	# uwsgi_param is only needed for non-root installation
-	ynh_replace_string "uwsgi_param "     "#uwsgi_param "      "$finalnginxconf"
-	ynh_replace_string "uwsgi_modifier1 " "#uwsgi_modifier1 " "$finalnginxconf"
 	ynh_replace_string "location //"      "location /"        "$finalnginxconf"
 
 	# ynh panel is only comptable with non-root installation
@@ -136,12 +134,13 @@ old_settings="./settings.$previous_version.old.py"
 settings_diff="$final_path/settings.${previous_version}_${current_version}.diff"
 
 (
-	set +eu
+	set +o nounset
 	source "${final_path}/venv/bin/activate"
-	"${final_path}/venv/bin/pip" install Weblate=="$current_version"
-	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 python-memcached
+	set -o nounset
+	pip install Weblate=="$current_version"
+	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 python-memcached
 	# specific to YunoHost package:
-	"${final_path}/venv/bin/pip" install django_sendmail_backend
+	pip install django_sendmail_backend
 )
 
 check=$(ynh_check_if_checksum_is_different "$settings")
@@ -205,8 +204,9 @@ fi
 #=================================================
 
 (
-	set +eu
-	source ${final_path}/venv/bin/activate
+	set +o nounset
+	source "${final_path}/venv/bin/activate"
+	set -o nounset
 	export DJANGO_SETTINGS_MODULE="weblate.settings"
 	cd "${final_path}"
 	weblate migrate --noinput

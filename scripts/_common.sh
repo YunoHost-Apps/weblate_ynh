@@ -33,9 +33,12 @@ ynh_check_global_uwsgi_config () {
 # this helper :
 #
 #   __APP__       by  $app
+#   __PATH__      by  $path_url
 #   __FINALPATH__ by  $final_path
 #
 # usage: ynh_add_systemd_config
+#
+# to interact with your service: `systemctl <action> uwsgi-app@app`
 ynh_add_uwsgi_service () {
 	ynh_check_global_uwsgi_config
 
@@ -50,6 +53,9 @@ ynh_add_uwsgi_service () {
 	# Substitute in a nginx config file only if the variable is not empty
 	if test -n "${final_path:-}"; then
 		ynh_replace_string "__FINALPATH__" "$final_path" "$finaluwsgiini"
+	fi
+	if test -n "${path_url:-}"; then
+		ynh_replace_string "__PATH__" "$path_url" "$finaluwsgiini"
 	fi
 	if test -n "${app:-}"; then
 		ynh_replace_string "__APP__" "$app" "$finaluwsgiini"

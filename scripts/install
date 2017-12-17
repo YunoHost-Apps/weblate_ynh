@@ -105,9 +105,6 @@ ynh_add_nginx_config
 if [ "$path_url" == "/" ]
 then
 	# $finalnginxconf comes from ynh_add_nginx_config
-	# uwsgi_param is only needed for non-root installation
-	ynh_replace_string "uwsgi_param "     "#uwsgi_param "      "$finalnginxconf"
-	ynh_replace_string "uwsgi_modifier1 " "#uwsgi_modifier1 " "$finalnginxconf"
 	ynh_replace_string "location //"      "location /"        "$finalnginxconf"
 
 	# ynh panel is only comptable with non-root installation
@@ -188,11 +185,11 @@ virtualenv --python=python3 "${final_path}/venv"
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
 	set -o nounset
-	"${final_path}/venv/bin/pip" install --upgrade pip
-	"${final_path}/venv/bin/pip" install Weblate=="$current_version"
-	"${final_path}/venv/bin/pip" install python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2 python-memcached
+	pip install --upgrade pip
+	pip install Weblate=="$current_version"
+	pip install python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2 python-memcached
 	# specific to YunoHost package:
-	"${final_path}/venv/bin/pip" install django_sendmail_backend
+	pip install django_sendmail_backend
 )
 
 #=================================================
