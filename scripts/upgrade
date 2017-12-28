@@ -28,17 +28,6 @@ memc_port=$(ynh_app_setting_get "$app" memc_port)
 github_account=$(ynh_app_setting_get "$app" github_account)
 key=$(ynh_string_random)
 
-settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-
-#save memc_port if it doesn't exist
-if [[ -z "$memc_port" ]]
-then
-	memc_port=$(cat "$settings" \
-		| grep "'LOCATION': '127.0.0.1:" \
-		| sed "s|.*:\\(.*\\)'.*|\\1|")
-	ynh_app_setting_set "$app" memc_port "$memc_port"
-fi
-
 #=================================================
 # Get previous version number
 #=================================================
@@ -54,6 +43,28 @@ previous_version=$(cat freeze.pip | grep "Weblate==" | sed "s|Weblate==||")
 
 previous_version_file="../conf/settings_history/settings.$previous_version.py"
 test -e "$previous_version_file" || ynh_die "Previous version unknown: $previous_version"
+
+case "$previous_version" in
+
+2.16) python_ver=2.7
+    ;;
+2.17.1) python_ver=2.7
+    ;;
+*) python_ver=3.4
+   ;;
+esac
+
+settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+
+#save memc_port if it doesn't exist
+if [[ -z "$memc_port" ]]
+then
+	memc_port=$(cat "$settings" \
+		| grep "'LOCATION': '127.0.0.1:" \
+		| sed "s|.*:\\(.*\\)'.*|\\1|")
+	ynh_app_setting_set "$app" memc_port "$memc_port"
+fi
+
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
@@ -138,7 +149,7 @@ settings_diff="$final_path/settings.${previous_version}_${current_version}.diff"
 	source "${final_path}/venv/bin/activate"
 	set -o nounset
 	pip install Weblate=="$current_version"
-	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 python-memcached
+	pip install python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2 python-memcached
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
 )
