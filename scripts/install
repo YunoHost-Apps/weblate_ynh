@@ -8,6 +8,7 @@
 set -eu
 source _common.sh
 source /usr/share/yunohost/helpers
+source _future.sh
 
 #=================================================
 # MANAGE SCRIPT FAILURE
