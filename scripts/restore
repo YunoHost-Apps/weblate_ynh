@@ -12,9 +12,14 @@ if [ ! -e _common.sh ]; then
 	chmod a+rx _common.sh
 fi
 
+if [ ! -e _future.sh ]; then
+	# Get the _common.sh file if it's not in the current directory
+	cp ../settings/scripts/_future.sh ./_future.sh
+	chmod a+rx _future.sh
+fi
+
 source _common.sh
 source /usr/share/yunohost/helpers
-source _future.sh
 
 ynh_abort_if_errors
 
@@ -124,6 +129,12 @@ yunohost service add "uwsgi-app@$app.socket" --log "/var/log/uwsgi/app/$app"
 #=================================================
 
 ynh_restore_file "/etc/cron.d/$app"
+
+#=================================================
+# RESTORE THE HUB BINARY FILE
+#=================================================
+
+ynh_restore_file "/usr/bin/hub"
 
 #=================================================
 # GENERIC FINALIZATION

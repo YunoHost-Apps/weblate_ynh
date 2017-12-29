@@ -156,8 +156,7 @@ esac
 [[ $(sha256sum "$file_bin" | cut -d' ' -f1) = "$sha256sum" ]] || ynh_die "Hub's sha256sum failed (arch: ${arch})"
 
 tar --extract --file "$file_bin" "$version/bin/hub"
-mkdir "$final_path/bin/"
-mv "$version/bin/hub" "$final_path/bin/"
+mv "$version/bin/hub" /usr/bin/
 
 mkdir "$final_path/.config/"
 cp ../conf/hub_config "$final_path/.config/hub"
@@ -166,7 +165,6 @@ ynh_replace_string "__GITHUBTOKEN__" "$github_token"   "$final_path/.config/hub"
 
 cat <<EOF > "$final_path/.bashrc"
 alias git=hub
-PATH="\$PATH:$final_path/bin"
 EOF
 
 #=================================================

@@ -57,12 +57,13 @@ elif [ "$is_public" = "No" ]; then
 	is_public=0
 fi
 
+# (<2.17)
 if [ -z "$db_name" ]; then	# If db_name doesn't exist, create it
 	db_name=$(ynh_sanitize_dbid "$app")
 	ynh_app_setting_set "$app" db_name "$db_name"
 fi
 
-# handle python3 migration (because of django 2.0)
+# (<2.18) handle python3 migration (because of django 2.0)
 if [[ -e "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py" ]]
 then
 	settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
@@ -72,7 +73,7 @@ else
 	migrate_py2to3=false
 fi
 
-# save memc_port if it doesn't exist
+# (<2.17) save memc_port if it doesn't exist
 if [[ -z "$memc_port" ]]
 then
 	memc_port=$(cat "$settings" \
@@ -81,7 +82,7 @@ then
 	ynh_app_setting_set "$app" memc_port "$memc_port"
 fi
 
-# migrade old uwsgi files if existing
+# (<2.18) migrade old uwsgi files if existing
 if [ -e "/etc/systemd/system/$app.service" ]
 then
 	systemctl stop "$app.service"
@@ -89,6 +90,18 @@ then
 	yunohost service remove "$app.service"
 	ynh_secure_remove "$final_path/uwsgi.ini"
 	ynh_secure_remove "/etc/systemd/system/$app.service"
+fi
+
+# (<2.18) move hub to the correct folder
+if [ -e "$final_path/bin/hub" ]
+then
+	mv "$final_path/bin/hub" /usr/bin/
+	chown root:root /usr/bin/hub
+fi
+
+if [[ -d "$final_path/bin/" ]]
+then
+	ynh_secure_remove "$final_path/bin/"
 fi
 
 #=================================================
@@ -146,7 +159,8 @@ ynh_add_uwsgi_service
 
 # save old settings file
 cp "$settings" "$final_path/settings.$previous_version.old.py"
-# handle python3 migration
+
+# (<2.18) handle python3 migration
 if [[ "$migrate_py2to3" = true ]]
 then
 	ynh_secure_remove "$final_path/venv"
