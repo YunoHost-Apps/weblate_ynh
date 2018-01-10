@@ -10,7 +10,8 @@ RemainAfterExit=yes
 WorkingDirectory=__FINALPATH__
 ExecStart=/usr/bin/uwsgi \
 	  --ini __FINALPATH__/uwsgi.ini \
-	  --socket __FINALPATH__/socket
+	  --socket __FINALPATH__/socket \
+	  --pidfile __FINALPATH__/weblate.pid 
 Restart=always
 StandardError=syslog
 
