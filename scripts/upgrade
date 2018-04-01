@@ -207,7 +207,6 @@ then
 	weblate_fill_settings "$settings"
 
 	# send diff to the server administrator
-	mail_subject="'$app' settings diff from $previous_version to $current_version"
 	mail_message="
 	Weblate was updated from version $previous_version to $current_version
 
@@ -225,20 +224,7 @@ then
 	For any issue, please file a bug in: https://github.com/YunoHost-Apps/weblate_ynh
 	"
 
-	# Email server admin - for ACTION
-	echo "$mail_message" | mail -s "$mail_subject" root -u root
-
-	# inform weblate's admin
-	mail_subject="'$app' was updated from $previous_version to $current_version"
-	mail_message="
-	Weblate was updated from version $previous_version to $current_version
-
-	A new settings.py has been created and a diff has been sent to root user.
-	Your administrator may have to update your settings.py to have a fully working installation.
-	"
-
-	# Email weblate's admin - for INFO
-	echo "$mail_subject" | mail -s "$mail_subject" "$admin_mail"
+	ynh_send_readme_to_admin "$mail_message" root "$admin_mail"
 else
 	echo "Settings.py was not modified, using the new default file for $current_version."
 	# generate new defaults settings
