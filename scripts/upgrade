@@ -126,7 +126,7 @@ settings_diff="$final_path/settings.${previous_version}_${current_version}.diff"
 	set +eu
 	source "${final_path}/venv/bin/activate"
 	"${final_path}/venv/bin/pip" install Weblate=="$current_version" django==1.11.8
-	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 python-memcached
+	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 python-memcached phply
 	# specific to YunoHost package:
 	"${final_path}/venv/bin/pip" install django_sendmail_backend
 )
