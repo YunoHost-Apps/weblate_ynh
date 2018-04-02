@@ -185,7 +185,7 @@ settings_diff="$final_path/settings.${previous_version}_${current_version}.diff"
 	set -o nounset
 	pip install --upgrade pip
 	pip install Weblate=="$current_version"
-	pip install python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2 python-memcached
+	pip install python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2 python-memcached phply
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
 )
