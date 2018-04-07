@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright © 2012 - 2017 Michal Čihař <michal@cihar.com>
+# Copyright © 2012 - 2018 Michal Čihař <michal@cihar.com>
 #
 # This file is part of Weblate <https://weblate.org/>
 #
@@ -68,6 +68,7 @@ TIME_ZONE = 'UTC'
 LANGUAGE_CODE = 'en-us'
 
 LANGUAGES = (
+    ('ar', 'العربية'),
     ('az', 'Azərbaycan'),
     ('be', 'Беларуская'),
     ('be@latin', 'Biełaruskaja'),
@@ -166,7 +167,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.join(BASE_DIR, 'templates'),
+            os.path.join(BASE_DIR, 'weblate', 'templates'),
         ],
         'OPTIONS': {
             'context_processors': [
@@ -325,6 +326,7 @@ MIDDLEWARE = [
     'social_django.middleware.SocialAuthExceptionMiddleware',
     'weblate.accounts.middleware.RequireLoginMiddleware',
     'weblate.middleware.SecurityMiddleware',
+    'weblate.wladmin.middleware.ConfigurationErrorsMiddleware',
 ]
 
 ROOT_URLCONF = 'weblate.urls'
@@ -345,8 +347,11 @@ INSTALLED_APPS = (
     'compressor',
     'rest_framework',
     'rest_framework.authtoken',
+    'weblate.addons',
     'weblate.trans',
     'weblate.lang',
+    'weblate.langdata',
+    'weblate.memory',
     'weblate.permissions',
     'weblate.screenshots',
     'weblate.accounts',
@@ -395,7 +400,7 @@ else:
 # more details on how to customize your logging configuration.
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
@@ -411,6 +416,10 @@ LOGGING = {
         'logfile': {
             'format': '%(asctime)s %(levelname)s %(message)s'
         },
+        'django.server': {
+            '()': 'django.utils.log.ServerFormatter',
+            'format': '[%(server_time)s] %(message)s',
+        }
     },
     'handlers': {
         'mail_admins': {
@@ -423,6 +432,11 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
+        },
+        'django.server': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'django.server',
         },
         'syslog': {
             'level': 'DEBUG',
@@ -446,6 +460,11 @@ LOGGING = {
             'handlers': ['mail_admins', DEFAULT_LOG],
             'level': 'ERROR',
             'propagate': True,
+        },
+        'django.server': {
+            'handlers': ['django.server'],
+            'level': 'INFO',
+            'propagate': False,
         },
         # Logging database queries
         # 'django.db.backends': {
@@ -481,6 +500,7 @@ if not HAVE_SYSLOG:
 # List of machine translations
 # MACHINE_TRANSLATION_SERVICES = (
 #     'weblate.trans.machine.apertium.ApertiumAPYTranslation',
+#     'weblate.trans.machine.deepl.DeepLTranslation',
 #     'weblate.trans.machine.glosbe.GlosbeTranslation',
 #     'weblate.trans.machine.google.GoogleTranslation',
 #     'weblate.trans.machine.microsoft.MicrosoftCognitiveTranslation',
@@ -488,8 +508,9 @@ if not HAVE_SYSLOG:
 #     'weblate.trans.machine.tmserver.AmagamaTranslation',
 #     'weblate.trans.machine.tmserver.TMServerTranslation',
 #     'weblate.trans.machine.yandex.YandexTranslation',
-#     'weblate.trans.machine.weblatetm.WeblateSimilarTranslation',
 #     'weblate.trans.machine.weblatetm.WeblateTranslation',
+#     'weblate.trans.machine.saptranslationhub.SAPTranslationHub',
+#     'weblate.memory.machine.WeblateMemory',
 # )
 
 # Machine translation API keys
@@ -497,10 +518,8 @@ if not HAVE_SYSLOG:
 # URL of the Apertium APy server
 MT_APERTIUM_APY = None
 
-# Microsoft Translator service, register at
-# https://datamarket.azure.com/developer/applications/
-MT_MICROSOFT_ID = None
-MT_MICROSOFT_SECRET = None
+# DeepL API key
+MT_DEEPL_KEY = None
 
 # Microsoft Cognitive Services Translator API, register at
 # https://portal.azure.com/
@@ -522,6 +541,13 @@ MT_YANDEX_KEY = None
 
 # tmserver URL
 MT_TMSERVER = None
+
+# SAP Translation Hub
+MT_SAP_BASE_URL = None
+MT_SAP_SANDBOX_APIKEY = None
+MT_SAP_USERNAME = None
+MT_SAP_PASSWORD = None
+MT_SAP_USE_MT = True
 
 # Title of site to use
 SITE_TITLE = 'Weblate'
@@ -576,9 +602,6 @@ BACKGROUND_HOOKS = True
 # Number of nearby messages to show in each direction
 NEARBY_MESSAGES = 5
 
-# Enable lazy commits
-LAZY_COMMITS = True
-
 # Offload indexing
 OFFLOAD_INDEXING = True
 
@@ -630,6 +653,22 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 #     'weblate.trans.autofixes.chars.RemoveControlChars',
 # )
 
+# List of enabled addons
+# WEBLATE_ADDONS = (
+#     'weblate.addons.gettext.GenerateMoAddon',
+#     'weblate.addons.gettext.UpdateLinguasAddon',
+#     'weblate.addons.gettext.UpdateConfigureAddon',
+#     'weblate.addons.gettext.MsgmergeAddon',
+#     'weblate.addons.gettext.GettextCustomizeAddon',
+#     'weblate.addons.cleanup.CleanupAddon',
+#     'weblate.addons.flags.SourceEditAddon',
+#     'weblate.addons.flags.TargetEditAddon',
+#     'weblate.addons.json.JSONCustomizeAddon',
+#     'weblate.addons.generate.GenerateFileAddon',
+#     'weblate.addons.properties.PropertiesSortAddon',
+# )
+
+
 # List of scripts to use in custom processing
 # POST_UPDATE_SCRIPTS = (
 # )
@@ -671,6 +710,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.TokenAuthentication',
+        'weblate.api.authentication.BearerAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_THROTTLE_CLASSES': (
@@ -702,7 +742,11 @@ REST_FRAMEWORK = {
 #    r'/data/(.*)$',     # Allowing public access to data exports
 #    r'/hooks/(.*)$',    # Allowing public access to notification hooks
 #    r'/api/(.*)$',      # Allowing access to API
+#    r'/js/i18n/$',      # Javascript localization
+#    r'/contact/$',      # Optional for contact form
+#    r'/legal/(.*)$',    # Optional for legal app
 # )
 
 # Force sane test runner
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+
