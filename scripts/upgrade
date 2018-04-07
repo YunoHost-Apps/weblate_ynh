@@ -7,7 +7,6 @@
 #=================================================
 source _common.sh
 source /usr/share/yunohost/helpers
-source _future.sh
 
 ynh_abort_if_errors
 
@@ -184,8 +183,12 @@ settings_diff="$final_path/settings.${previous_version}_${current_version}.diff"
 	source "${final_path}/venv/bin/activate"
 	set -o nounset
 	pip install --upgrade pip
+	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
+	pip install --upgrade setuptools
 	pip install Weblate=="$current_version"
-	pip install python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2 python-memcached phply
+	# prevent error "ImportError: No module named 'social'"
+	pip install -r "$final_path/venv/lib/python3.4/site-packages/weblate/requirements.txt"
+	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2 python-memcached phply
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
 )
@@ -246,6 +249,23 @@ fi
 	weblate collectstatic --noinput
 	weblate setuplang
 	weblate setupgroups
+
+	if [[ $previous_version = "2.16" ]] || \
+		[[ $previous_version = "2.17.1" ]] || \
+		[[ $previous_version = "2.18"   ]]
+	then
+		weblate loadpo --all --lang dsb
+		weblate loadpo --all --lang he
+		weblate loadpo --all --lang hsb
+		weblate loadpo --all --lang kw
+		weblate loadpo --all --lang lt
+		weblate loadpo --all --lang lv
+	fi
+
+	if [[ "$migrate_py2to3" = true ]]
+	then
+		weblate rebuild_index --clean --all
+	fi
 )
 
 # Recalculate and store the config file checksum into the app settings

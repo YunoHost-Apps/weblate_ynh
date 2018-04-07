@@ -12,12 +12,6 @@ if [ ! -e _common.sh ]; then
 	chmod a+rx _common.sh
 fi
 
-if [ ! -e _future.sh ]; then
-	# Get the _common.sh file if it's not in the current directory
-	cp ../settings/scripts/_future.sh ./_future.sh
-	chmod a+rx _future.sh
-fi
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -81,7 +75,7 @@ chown -R "$app": "$final_path"
 #=================================================
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
-	libjpeg-dev libz-dev libyaml-dev python3-dev python3-pip python3-virtualenv \
+	libjpeg-dev libz-dev libyaml-dev python3-dev python3-pip python3-virtualenv python-virtualenv \
 	postgresql libpq-dev uwsgi uwsgi-plugin-python3 memcached
 
 #=================================================

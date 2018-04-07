@@ -8,7 +8,6 @@
 set -eu
 source _common.sh
 source /usr/share/yunohost/helpers
-source _future.sh
 
 #=================================================
 # MANAGE SCRIPT FAILURE
@@ -185,8 +184,10 @@ virtualenv --python=python3 "${final_path}/venv"
 	source "${final_path}/venv/bin/activate"
 	set -o nounset
 	pip install --upgrade pip
+	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
+	pip install --upgrade setuptools
 	pip install Weblate=="$current_version"
-	pip install python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2 python-memcached phply
+	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2 python-memcached phply
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
 )
