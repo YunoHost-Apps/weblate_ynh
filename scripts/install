@@ -129,6 +129,7 @@ chsh --shell /bin/bash "$app"
 arch=$(dpkg --print-architecture)
 # Rasberry Pi: Debian armhf (ARM hard float) refers to the ARMv7
 [[ $arch = "armhf" ]] && arch="arm"
+[[ $arch = "i386" ]] && arch="386"
 
 version="hub-linux-${arch}-2.3.0-pre10"
 file_bin="hub-linux-${arch}-2.3.0-pre10.tgz"
