@@ -593,6 +593,8 @@ EMAIL_SEND_HTML = True
 # Subject of emails includes site title
 EMAIL_SUBJECT_PREFIX = '[{0}] '.format(SITE_TITLE)
 
+EMAIL_BACKEND = 'django_sendmail_backend.backends.EmailBackend'
+
 # Enable remote hooks
 ENABLE_HOOKS = True
 

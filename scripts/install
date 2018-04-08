@@ -77,8 +77,8 @@ ynh_app_setting_set "$app" github_token "$github_token"
 #=================================================
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
-	libjpeg-dev libz-dev libyaml-dev python3-dev python3-pip python3-virtualenv python-virtualenv \
-	postgresql libpq-dev uwsgi uwsgi-plugin-python3 memcached
+	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
+	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached
 
 #=================================================
 # CREATE A PostgreSQL DATABASE
@@ -177,7 +177,7 @@ ynh_add_uwsgi_service
 #=================================================
 # PIP INSTALLATION
 #=================================================
-virtualenv --python=python3 "${final_path}/venv"
+virtualenv "${final_path}/venv"
 #run source in a 'sub shell'
 (
 	set +o nounset
@@ -187,7 +187,7 @@ virtualenv --python=python3 "${final_path}/venv"
 	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
 	pip install --upgrade setuptools
 	pip install Weblate=="$current_version"
-	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2 python-memcached phply
+	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 python-memcached phply
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
 )
@@ -201,7 +201,7 @@ db_pwd=$(ynh_app_setting_get "$app" psqlpwd)
 admin_mail=$(ynh_user_get_info "$admin" mail)
 key=$(ynh_string_random)
 memc_port=$(ynh_find_port 8080)
-settings="$final_path/venv/lib/python3.4/site-packages/weblate/settings.py"
+settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 cp "../conf/settings_history/settings.$current_version.py" "$settings"
 
 weblate_fill_settings "$settings"
@@ -238,7 +238,7 @@ ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
 #=================================================
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum "$final_path/venv/lib/python3.4/site-packages/weblate/settings.py"
+ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 
 #=================================================
 # GENERIC FINALIZATION
@@ -247,7 +247,10 @@ ynh_store_file_checksum "$final_path/venv/lib/python3.4/site-packages/weblate/se
 #=================================================
 
 # Set permissions to app files
-chown -R "$app": "$final_path"
+chown -R "$app": "$final_path/data"
+
+mkdir -p "$final_path/avatar-cache"
+chown -R "$app": "$final_path/avatar-cache"
 
 #=================================================
 # SETUP SSOWAT

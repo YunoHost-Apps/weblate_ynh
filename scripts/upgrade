@@ -62,15 +62,7 @@ if [ -z "$db_name" ]; then	# If db_name doesn't exist, create it
 	ynh_app_setting_set "$app" db_name "$db_name"
 fi
 
-# (<2.18) handle python3 migration (because of django 2.0)
-if [[ -e "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py" ]]
-then
-	settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-	migrate_py2to3=true
-else
-	settings="$final_path/venv/lib/python3.4/site-packages/weblate/settings.py"
-	migrate_py2to3=false
-fi
+settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 
 # (<2.17) save memc_port if it doesn't exist
 if [[ -z "$memc_port" ]]
@@ -143,8 +135,8 @@ chsh --shell /bin/bash "$app"
 #=================================================
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
-	libjpeg-dev libz-dev libyaml-dev python3-dev python3-pip python3-virtualenv python-virtualenv \
-	postgresql libpq-dev uwsgi uwsgi-plugin-python3 memcached
+	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
+	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached
 
 #=================================================
 # SPECIFIC SETUP uwsgi
@@ -159,22 +151,6 @@ ynh_add_uwsgi_service
 # save old settings file
 cp "$settings" "$final_path/settings.$previous_version.old.py"
 
-# (<2.18) handle python3 migration
-if [[ "$migrate_py2to3" = true ]]
-then
-	ynh_secure_remove "$final_path/venv"
-	virtualenv --python=python3 "${final_path}/venv"
-	set +o nounset
-	source "${final_path}/venv/bin/activate"
-	set -o nounset
-	pip install --upgrade pip
-	pip install Weblate=="$current_version"
-
-	settings="$final_path/venv/lib/python3.4/site-packages/weblate/settings.py"
-	cp "$final_path/settings.$previous_version.old.py" "$settings"
-	ynh_store_file_checksum "$settings"
-fi
-
 old_settings="./settings.$previous_version.old.py"
 settings_diff="$final_path/settings.${previous_version}_${current_version}.diff"
 
@@ -186,9 +162,7 @@ settings_diff="$final_path/settings.${previous_version}_${current_version}.diff"
 	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
 	pip install --upgrade setuptools
 	pip install Weblate=="$current_version"
-	# prevent error "ImportError: No module named 'social'"
-	pip install -r "$final_path/venv/lib/python3.4/site-packages/weblate/requirements.txt"
-	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2 python-memcached phply
+	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 python-memcached phply
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
 )
@@ -261,19 +235,23 @@ fi
 		weblate loadpo --all --lang lt
 		weblate loadpo --all --lang lv
 	fi
-
-	if [[ "$migrate_py2to3" = true ]]
-	then
-		weblate rebuild_index --clean --all
-	fi
 )
 
 # Recalculate and store the config file checksum into the app settings
-ynh_store_file_checksum "$final_path/venv/lib/python3.4/site-packages/weblate/settings.py"
+ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 
 #=================================================
 # GENERIC FINALIZATION
 #=================================================
+# SECURE FILES AND DIRECTORIES
+#=================================================
+
+# Set right permissions for curl installation
+chown -R root:root "$final_path"
+chown -R "$app": "$final_path/data"
+
+mkdir -p "$final_path/avatar-cache"
+chown -R "$app": "$final_path/avatar-cache"
 
 #=================================================
 # SETUP SSOWAT

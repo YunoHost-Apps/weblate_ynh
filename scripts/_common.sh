@@ -82,6 +82,8 @@ ynh_remove_uwsgi_service () {
 		yunohost service remove "uwsgi-app@$app.socket"
 
 		ynh_secure_remove "$finaluwsgiini"
+		ynh_secure_remove "/var/run/uwsgi/$app.socket"
+		ynh_secure_remove "/var/log/uwsgi/app/$app"
 	fi
 }
 
