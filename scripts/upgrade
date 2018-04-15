@@ -136,7 +136,8 @@ chsh --shell /bin/bash "$app"
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
 	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
-	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached
+	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached \
+	mailutils
 
 #=================================================
 # SPECIFIC SETUP uwsgi
