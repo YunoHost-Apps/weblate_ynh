@@ -166,7 +166,8 @@ ynh_psql_connect_as() {
 	user="$1"
 	pwd="$2"
 	db="$3"
-	su --command="PGUSER=\"${user}\" PGPASSWORD=\"${pwd}\" psql \"${db}\"" postgres
+	sudo --login --user=postgres PGUSER="$user" PGPASSWORD="$pwd" psql "$db"
+	echo "ynh_psql_connect_as" && pwd && ls -lah $(pwd)
 }
 
 # # Execute a command as root user
@@ -176,7 +177,8 @@ ynh_psql_connect_as() {
 # | arg: db - the database to connect to
 ynh_psql_execute_as_root () {
 	sql="$1"
-	su --command="psql" postgres <<< "$sql"
+	sudo --login --user=postgres psql <<< "$sql"
+	echo "ynh_psql_execute_as_root" && pwd && ls -lah $(pwd)
 }
 
 # Execute a command from a file as root user
@@ -187,7 +189,8 @@ ynh_psql_execute_as_root () {
 ynh_psql_execute_file_as_root() {
 	file="$1"
 	db="$2"
-	su -c "psql $db" postgres < "$file"
+	sudo --login --user=postgres psql "$db" < "$file"
+	echo "ynh_psql_execute_file_as_root" && pwd && ls -lah $(pwd)
 }
 
 # Create a database, an user and its password. Then store the password in the app's config
@@ -210,7 +213,7 @@ ynh_psql_setup_db () {
 	ynh_app_setting_set "$app" psqlpwd "$db_pwd"	# Store the password in the app's config
 }
 
-# Create a database and grant optionnaly privilegies to a user
+# Create a database and grant privilegies to a user
 #
 # usage: ynh_psql_create_db db [user [pwd]]
 # | arg: db - the database name to create
@@ -221,7 +224,7 @@ ynh_psql_create_db() {
 	user="$2"
 	pwd="$3"
 	ynh_psql_create_user "$user" "$pwd"
-	su --command="createdb --owner=\"${user}\" \"${db}\"" postgres
+	sudo --login --user=postgres createdb --owner="$user" "$db"
 }
 
 # Drop a database
@@ -232,8 +235,8 @@ ynh_psql_create_db() {
 ynh_psql_remove_db() {
 	db="$1"
 	user="$2"
-	su --command="dropdb \"${db}\"" postgres
-	ynh_psql_drop_user "${user}"
+	sudo --login --user=postgres dropdb "$db"
+	ynh_psql_drop_user "$user"
 }
 
 # Dump a database
@@ -245,7 +248,7 @@ ynh_psql_remove_db() {
 # | ret: the psqldump output
 ynh_psql_dump_db() {
 	db="$1"
-	su --command="pg_dump \"${db}\"" postgres
+	sudo --login --user=postgres pg_dump "$db"
 }
 
 
@@ -256,7 +259,7 @@ ynh_psql_dump_db() {
 ynh_psql_create_user() {
 	user="$1"
 	pwd="$2"
-        su --command="psql -c\"CREATE USER ${user} WITH PASSWORD '${pwd}'\"" postgres
+        sudo --login --user=postgres psql -c"CREATE USER $user WITH PASSWORD '$pwd'" postgres
 }
 
 # Drop a user
@@ -265,7 +268,7 @@ ynh_psql_create_user() {
 # | arg: user - the user name to drop
 ynh_psql_drop_user() {
 	user="$1"
-	su --command="dropuser \"${user}\"" postgres
+	sudo --login --user=postgres dropuser "$user"
 }
 
 # Send an email to inform the administrator
