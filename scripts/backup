@@ -51,19 +51,21 @@ ynh_backup "db.sql"
 #=================================================
 # SPECIFIC BACKUP
 #=================================================
-# BACKUP LOGROTATE
-#=================================================
-
-ynh_backup "/etc/logrotate.d/$app"
-
-#=================================================
 # BACKUP THE CRON FILE
 #=================================================
 
 ynh_backup "/etc/cron.d/$app"
 
 #=================================================
-# BACKUP THE SERVICE
+# BACKUP THE uwsgi files
 #=================================================
 
-ynh_backup "/etc/systemd/system/$app.service"
+ynh_backup "/etc/uwsgi/apps-available/$app.ini"
+ynh_backup "/etc/systemd/system/uwsgi-app@.socket"
+ynh_backup "/etc/systemd/system/uwsgi-app@.service"
+
+#=================================================
+# BACKUP THE hub binary file
+#=================================================
+
+ynh_backup /usr/bin/hub

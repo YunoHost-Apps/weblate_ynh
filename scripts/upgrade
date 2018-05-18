@@ -28,26 +28,16 @@ memc_port=$(ynh_app_setting_get "$app" memc_port)
 github_account=$(ynh_app_setting_get "$app" github_account)
 key=$(ynh_string_random)
 
-settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-
-#save memc_port if it doesn't exist
-if [[ -z "$memc_port" ]]
-then
-	memc_port=$(cat "$settings" \
-		| grep "'LOCATION': '127.0.0.1:" \
-		| sed "s|.*:\\(.*\\)'.*|\\1|")
-	ynh_app_setting_set "$app" memc_port "$memc_port"
-fi
-
 #=================================================
 # Get previous version number
 #=================================================
 
 (
-	set +eu
+	set +o nounset
 	source "${final_path}/venv/bin/activate"
-	"${final_path}/venv/bin/pip" install --upgrade pip
-	"${final_path}/venv/bin/pip" freeze --local > freeze.pip
+	set -o nounset
+	pip install --upgrade pip
+	pip freeze --local > freeze.pip
 )
 previous_version=$(cat freeze.pip | grep "Weblate==" | sed "s|Weblate==||")
 
@@ -66,9 +56,43 @@ elif [ "$is_public" = "No" ]; then
 	is_public=0
 fi
 
+# (<2.17)
 if [ -z "$db_name" ]; then	# If db_name doesn't exist, create it
 	db_name=$(ynh_sanitize_dbid "$app")
 	ynh_app_setting_set "$app" db_name "$db_name"
+fi
+
+settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+
+# (<2.17) save memc_port if it doesn't exist
+if [[ -z "$memc_port" ]]
+then
+	memc_port=$(cat "$settings" \
+		| grep "'LOCATION': '127.0.0.1:" \
+		| sed "s|.*:\\(.*\\)'.*|\\1|")
+	ynh_app_setting_set "$app" memc_port "$memc_port"
+fi
+
+# (<2.18) migrade old uwsgi files if existing
+if [ -e "/etc/systemd/system/$app.service" ]
+then
+	systemctl stop "$app.service"
+	systemctl disable "$app.service"
+	yunohost service remove "$app.service"
+	ynh_secure_remove "$final_path/uwsgi.ini"
+	ynh_secure_remove "/etc/systemd/system/$app.service"
+fi
+
+# (<2.18) move hub to the correct folder
+if [ -e "$final_path/bin/hub" ]
+then
+	mv "$final_path/bin/hub" /usr/bin/
+	chown root:root /usr/bin/hub
+fi
+
+if [[ -d "$final_path/bin/" ]]
+then
+	ynh_secure_remove "$final_path/bin/"
 fi
 
 #=================================================
@@ -82,19 +106,12 @@ path_url=$(ynh_normalize_url_path "$path_url")
 # STANDARD UPGRADE STEPS
 #=================================================
 
-#=================================================
-# NGINX CONFIGURATION
-#=================================================
-
 # Create a dedicated nginx config
 ynh_add_nginx_config
 
 if [ "$path_url" == "/" ]
 then
 	# $finalnginxconf comes from ynh_add_nginx_config
-	# uwsgi_param is only needed for non-root installation
-	ynh_replace_string "uwsgi_param "     "#uwsgi_param "      "$finalnginxconf"
-	ynh_replace_string "uwsgi_modifier1 " "#uwsgi_modifier1 " "$finalnginxconf"
 	ynh_replace_string "location //"      "location /"        "$finalnginxconf"
 
 	# ynh panel is only comptable with non-root installation
@@ -114,21 +131,41 @@ chsh --shell /bin/bash "$app"
 #=================================================
 # SPECIFIC UPGRADE
 #=================================================
+# Update dependencies
+#=================================================
+
+ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
+	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
+	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached \
+	mailutils
+
+#=================================================
+# SPECIFIC SETUP uwsgi
+#=================================================
+
+ynh_add_uwsgi_service
 
 #=================================================
 # PIP INSTALLATION
 #=================================================
 
+# save old settings file
+cp "$settings" "$final_path/settings.$previous_version.old.py"
+
 old_settings="./settings.$previous_version.old.py"
 settings_diff="$final_path/settings.${previous_version}_${current_version}.diff"
 
 (
-	set +eu
+	set +o nounset
 	source "${final_path}/venv/bin/activate"
-	"${final_path}/venv/bin/pip" install Weblate=="$current_version" django==1.11.8
-	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 python-memcached phply
+	set -o nounset
+	pip install --upgrade pip
+	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
+	pip install --upgrade setuptools
+	pip install Weblate=="$current_version"
+	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2-binary python-memcached phply
 	# specific to YunoHost package:
-	"${final_path}/venv/bin/pip" install django_sendmail_backend
+	pip install django_sendmail_backend
 )
 
 check=$(ynh_check_if_checksum_is_different "$settings")
@@ -144,11 +181,10 @@ then
 	diff --unified "$old_settings" "$settings" > "$settings_diff"
 
 	# generate new defaults settings
-	cp ../conf/settings.py "$settings"
+	cp "../conf/settings_history/settings.$current_version.py" "$settings"
 	weblate_fill_settings "$settings"
 
 	# send diff to the server administrator
-	mail_subject="'$app' settings diff from $previous_version to $current_version"
 	mail_message="
 	Weblate was updated from version $previous_version to $current_version
 
@@ -166,24 +202,11 @@ then
 	For any issue, please file a bug in: https://github.com/YunoHost-Apps/weblate_ynh
 	"
 
-	# Email server admin - for ACTION
-	echo "$mail_message" | mail -s "$mail_subject" root -u root
-
-	# inform weblate's admin
-	mail_subject="'$app' was updated from $previous_version to $current_version"
-	mail_message="
-	Weblate was updated from version $previous_version to $current_version
-
-	A new settings.py has been created and a diff has been sent to root user.
-	Your administrator may have to update your settings.py to have a fully working installation.
-	"
-
-	# Email weblate's admin - for INFO
-	echo "$mail_subject" | mail -s "$mail_subject" "$admin_mail"
+	ynh_send_readme_to_admin "$mail_message" root "$admin_mail"
 else
 	echo "Settings.py was not modified, using the new default file for $current_version."
 	# generate new defaults settings
-	cp ../conf/settings.py "$settings"
+	cp "../conf/settings_history/settings.$current_version.py" "$settings"
 	weblate_fill_settings "$settings"
 fi
 
@@ -192,29 +215,44 @@ fi
 #=================================================
 
 (
-	set +eu
-	source ${final_path}/venv/bin/activate
+	set +o nounset
+	source "${final_path}/venv/bin/activate"
+	set -o nounset
 	export DJANGO_SETTINGS_MODULE="weblate.settings"
 	cd "${final_path}"
 	weblate migrate --noinput
 	weblate collectstatic --noinput
 	weblate setuplang
 	weblate setupgroups
+
+	if [[ $previous_version = "2.16" ]] || \
+		[[ $previous_version = "2.17.1" ]] || \
+		[[ $previous_version = "2.18"   ]]
+	then
+		weblate loadpo --all --lang dsb
+		weblate loadpo --all --lang he
+		weblate loadpo --all --lang hsb
+		weblate loadpo --all --lang kw
+		weblate loadpo --all --lang lt
+		weblate loadpo --all --lang lv
+	fi
 )
 
 # Recalculate and store the config file checksum into the app settings
 ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 
 #=================================================
-# SETUP LOGROTATE
-#=================================================
-
-# Use logrotate to manage app-specific logfile(s)
-ynh_use_logrotate
-
-#=================================================
 # GENERIC FINALIZATION
 #=================================================
+# SECURE FILES AND DIRECTORIES
+#=================================================
+
+# Set right permissions for curl installation
+chown -R root:root "$final_path"
+chown -R "$app": "$final_path/data"
+
+mkdir -p "$final_path/avatar-cache"
+chown -R "$app": "$final_path/avatar-cache"
 
 #=================================================
 # SETUP SSOWAT
@@ -240,6 +278,4 @@ fi
 # RELOAD NGINX
 #=================================================
 
-systemctl stop "$app.service"
-systemctl start "$app.service"
 systemctl reload nginx

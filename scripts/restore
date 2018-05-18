@@ -76,7 +76,8 @@ chown -R "$app": "$final_path"
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
 	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
-	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached
+	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached \
+	mailutils
 
 #=================================================
 # RESTORE THE PostgreSQL DATABASE
@@ -87,17 +88,36 @@ ynh_psql_setup_db "$db_name" "$db_name" "$db_pwd"
 ynh_psql_execute_file_as_root ./db.sql "$db_name"
 
 #=================================================
-# RESTORE THE SERVICE
+# RESTORE THE UWSGI MECANICS
 #=================================================
 
-ynh_restore_file "/etc/systemd/system/$app.service"
-systemctl enable "$app.service"
+ynh_restore_file "/etc/systemd/system/uwsgi-app@.socket"
+ynh_restore_file "/etc/systemd/system/uwsgi-app@.service"
+
+# make sure the folder for sockets exists and set authorizations
+mkdir -p /var/run/uwsgi/
+chown root:www-data /var/run/uwsgi/
+chmod -R 775 /var/run/uwsgi/
+
+# make sure the folder for logs exists and set authorizations
+mkdir -p /var/log/uwsgi/app/
+chown root:www-data /var/log/uwsgi/app/
+chmod -R 775 /var/log/uwsgi/app/
 
 #=================================================
-# ADVERTISE SERVICE IN ADMIN PANEL
+# RESTORE Weblate service
 #=================================================
 
-yunohost service add "$app.service" --log "/var/log/$app/APP.log"
+usermod --append --groups www-data "$app"
+
+ynh_restore_file "/etc/uwsgi/apps-available/$app.ini"
+
+systemctl enable "uwsgi-app@$app.socket"
+systemctl start "uwsgi-app@$app.socket"
+systemctl daemon-reload
+
+# Add as a service
+yunohost service add "uwsgi-app@$app.socket" --log "/var/log/uwsgi/app/$app"
 
 #=================================================
 # RESTORE THE CRON FILE
@@ -106,10 +126,10 @@ yunohost service add "$app.service" --log "/var/log/$app/APP.log"
 ynh_restore_file "/etc/cron.d/$app"
 
 #=================================================
-# RESTORE THE LOGROTATE CONFIGURATION
+# RESTORE THE HUB BINARY FILE
 #=================================================
 
-ynh_restore_file "/etc/logrotate.d/$app"
+ynh_restore_file "/usr/bin/hub"
 
 #=================================================
 # GENERIC FINALIZATION
@@ -118,5 +138,3 @@ ynh_restore_file "/etc/logrotate.d/$app"
 #=================================================
 
 systemctl reload nginx
-systemctl stop "$app.service"
-systemctl start "$app.service"

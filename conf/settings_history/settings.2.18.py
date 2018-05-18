@@ -165,6 +165,9 @@ SECRET_KEY = '__KEY__'  # noqa
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+        ],
         'OPTIONS': {
             'context_processors': [
                 'django.contrib.auth.context_processors.auth',
@@ -310,7 +313,8 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 # Middleware
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -321,7 +325,7 @@ MIDDLEWARE_CLASSES = (
     'social_django.middleware.SocialAuthExceptionMiddleware',
     'weblate.accounts.middleware.RequireLoginMiddleware',
     'weblate.middleware.SecurityMiddleware',
-)
+]
 
 ROOT_URLCONF = 'weblate.urls'
 
@@ -371,7 +375,10 @@ DEFAULT_EXCEPTION_REPORTER_FILTER = \
 HAVE_SYSLOG = False
 if platform.system() != 'Windows':
     try:
-        SysLogHandler(address='/dev/log', facility=SysLogHandler.LOG_LOCAL2)
+        handler = SysLogHandler(
+            address='/dev/log', facility=SysLogHandler.LOG_LOCAL2
+        )
+        handler.close()
         HAVE_SYSLOG = True
     except IOError:
         HAVE_SYSLOG = False
@@ -560,8 +567,6 @@ EMAIL_SEND_HTML = True
 # Subject of emails includes site title
 EMAIL_SUBJECT_PREFIX = '[{0}] '.format(SITE_TITLE)
 
-EMAIL_BACKEND = 'django_sendmail_backend.backends.EmailBackend'
-
 # Enable remote hooks
 ENABLE_HOOKS = True
 
@@ -576,11 +581,6 @@ LAZY_COMMITS = True
 
 # Offload indexing
 OFFLOAD_INDEXING = True
-
-# Translation locking
-AUTO_LOCK = True
-AUTO_LOCK_TIME = 60
-LOCK_TIME = 15 * 60
 
 # Use simple language codes for default language/country combinations
 SIMPLIFY_LANGUAGES = True

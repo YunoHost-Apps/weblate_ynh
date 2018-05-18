@@ -78,7 +78,8 @@ ynh_app_setting_set "$app" github_token "$github_token"
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
 	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
-	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached
+	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached \
+	mailutils
 
 #=================================================
 # CREATE A PostgreSQL DATABASE
@@ -105,9 +106,6 @@ ynh_add_nginx_config
 if [ "$path_url" == "/" ]
 then
 	# $finalnginxconf comes from ynh_add_nginx_config
-	# uwsgi_param is only needed for non-root installation
-	ynh_replace_string "uwsgi_param "     "#uwsgi_param "      "$finalnginxconf"
-	ynh_replace_string "uwsgi_modifier1 " "#uwsgi_modifier1 " "$finalnginxconf"
 	ynh_replace_string "location //"      "location /"        "$finalnginxconf"
 
 	# ynh panel is only comptable with non-root installation
@@ -159,8 +157,7 @@ esac
 [[ $(sha256sum "$file_bin" | cut -d' ' -f1) = "$sha256sum" ]] || ynh_die "Hub's sha256sum failed (arch: ${arch})"
 
 tar --extract --file "$file_bin" "$version/bin/hub"
-mkdir "$final_path/bin/"
-mv "$version/bin/hub" "$final_path/bin/"
+mv "$version/bin/hub" /usr/bin/
 
 mkdir "$final_path/.config/"
 cp ../conf/hub_config "$final_path/.config/hub"
@@ -169,7 +166,6 @@ ynh_replace_string "__GITHUBTOKEN__" "$github_token"   "$final_path/.config/hub"
 
 cat <<EOF > "$final_path/.bashrc"
 alias git=hub
-PATH="$PATH:~/bin"
 EOF
 
 #=================================================
@@ -178,20 +174,7 @@ EOF
 # SPECIFIC SETUP uwsgi
 #=================================================
 
-# Copy Files
-cp ../conf/uwsgi.ini "$final_path/uwsgi.ini"
-ynh_replace_string "__NAME__" "$app" "$final_path/uwsgi.ini"
-ynh_replace_string "__FINALPATH__" "$final_path" "$final_path/uwsgi.ini"
-
-cp ../conf/uwsgi_service "/etc/systemd/system/$app.service"
-ynh_replace_string "__NAME__" "$app" "/etc/systemd/system/$app.service"
-ynh_replace_string "__FINALPATH__" "$final_path" "/etc/systemd/system/$app.service"
-
-# Start service
-systemctl enable "$app.service"
-
-# Add weblate as a service
-yunohost service add "$app.service" --log "/var/log/$app/APP.log"
+ynh_add_uwsgi_service
 
 #=================================================
 # PIP INSTALLATION
@@ -199,12 +182,16 @@ yunohost service add "$app.service" --log "/var/log/$app/APP.log"
 virtualenv "${final_path}/venv"
 #run source in a 'sub shell'
 (
-	set +eu
+	set +o nounset
 	source "${final_path}/venv/bin/activate"
-	"${final_path}/venv/bin/pip" install Weblate=="$current_version" django==1.11.8
-	"${final_path}/venv/bin/pip" install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2 python-memcached phply
+	set -o nounset
+	pip install --upgrade pip
+	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
+	pip install --upgrade setuptools
+	pip install Weblate=="$current_version"
+	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2-binary python-memcached phply
 	# specific to YunoHost package:
-	"${final_path}/venv/bin/pip" install django_sendmail_backend
+	pip install django_sendmail_backend
 )
 
 #=================================================
@@ -217,7 +204,7 @@ admin_mail=$(ynh_user_get_info "$admin" mail)
 key=$(ynh_string_random)
 memc_port=$(ynh_find_port 8080)
 settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-cp ../conf/settings.py "$settings"
+cp "../conf/settings_history/settings.$current_version.py" "$settings"
 
 weblate_fill_settings "$settings"
 ynh_app_setting_set "$app" memc_port "$memc_port"
@@ -227,8 +214,9 @@ ynh_app_setting_set "$app" memc_port "$memc_port"
 # https://docs.weblate.org/en/latest/admin/install.html#filling-up-the-database
 #==========================================
 (
-	set +eu
+	set +o nounset
 	source "${final_path}/venv/bin/activate"
+	set -o nounset
 	export DJANGO_SETTINGS_MODULE="weblate.settings"
 	# the user needs to be weblate for postgresql
 	weblate migrate --noinput
@@ -261,14 +249,10 @@ ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/se
 #=================================================
 
 # Set permissions to app files
-chown -R "$app": "$final_path"
+chown -R "$app": "$final_path/data"
 
-#=================================================
-# SETUP LOGROTATE
-#=================================================
-
-# Use logrotate to manage application logfile(s)
-ynh_use_logrotate
+mkdir -p "$final_path/avatar-cache"
+chown -R "$app": "$final_path/avatar-cache"
 
 #=================================================
 # SETUP SSOWAT
@@ -294,5 +278,15 @@ fi
 # RELOAD NGINX
 #=================================================
 
-systemctl start "$app.service"
 systemctl reload nginx
+
+#=================================================
+# SEND A README FOR THE ADMIN
+#=================================================
+
+message="
+Weblate settings file          : $settings
+If you facing an issue or want to improve this app, please open a new issue in this project: https://github.com/YunoHost-Apps/weblate_ynh
+"
+
+ynh_send_readme_to_admin "$message" "$admin"
