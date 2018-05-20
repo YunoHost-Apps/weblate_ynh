@@ -61,7 +61,6 @@ ynh_backup "/etc/cron.d/$app"
 #=================================================
 
 ynh_backup "/etc/uwsgi/apps-available/$app.ini"
-ynh_backup "/etc/systemd/system/uwsgi-app@.socket"
 ynh_backup "/etc/systemd/system/uwsgi-app@.service"
 
 #=================================================

@@ -6,6 +6,7 @@ After=syslog.target
 ExecStart=/usr/bin/uwsgi \
         --ini /etc/uwsgi/apps-available/%i.ini \
         --socket /var/run/uwsgi/%i.socket \
+        --chmod-socket=775 \
         --logto /var/log/uwsgi/app/%i
 User=%i
 Group=www-data
@@ -14,3 +15,6 @@ KillSignal=SIGQUIT
 Type=notify
 StandardError=syslog
 NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target

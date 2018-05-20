@@ -5,13 +5,7 @@ current_version="2.20"
 ynh_check_global_uwsgi_config () {
 	uwsgi --version || ynh_die "You need to add uwsgi (and appropriate plugin) as a dependency"
 
-	if [ -f /etc/systemd/system/uwsgi-app@.service ];
-	then
-		echo "Uwsgi generic file is already installed"
-	else
-		cp ../conf/uwsgi-app@.socket /etc/systemd/system/uwsgi-app@.socket
-		cp ../conf/uwsgi-app@.service /etc/systemd/system/uwsgi-app@.service
-	fi
+	cp ../conf/uwsgi-app@.service /etc/systemd/system/uwsgi-app@.service
 
 	# make sure the folder for sockets exists and set authorizations
 	mkdir -p /var/run/uwsgi/
@@ -63,12 +57,12 @@ ynh_add_uwsgi_service () {
 	ynh_store_file_checksum "$finaluwsgiini"
 
 	chown root: "$finaluwsgiini"
-	systemctl enable "uwsgi-app@$app.socket"
-	systemctl start "uwsgi-app@$app.socket"
+
 	systemctl daemon-reload
+	systemctl enable "uwsgi-app@$app.service"
 
 	# Add as a service
-	yunohost service add "uwsgi-app@$app.socket" --log "/var/log/uwsgi/app/$app"
+	yunohost service add "uwsgi-app@$app.service" --log "/var/log/uwsgi/app/$app"
 }
 
 # Remove the dedicated uwsgi ini file
@@ -77,12 +71,11 @@ ynh_add_uwsgi_service () {
 ynh_remove_uwsgi_service () {
 	finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
 	if [ -e "$finaluwsgiini" ]; then
-		systemctl stop "uwsgi-app@$app.socket"
-		systemctl disable "uwsgi-app@$app.socket"
-		yunohost service remove "uwsgi-app@$app.socket"
+		systemctl stop "uwsgi-app@$app.service"
+		systemctl disable "uwsgi-app@$app.service"
+		yunohost service remove "uwsgi-app@$app.service"
 
 		ynh_secure_remove "$finaluwsgiini"
-		ynh_secure_remove "/var/run/uwsgi/$app.socket"
 		ynh_secure_remove "/var/log/uwsgi/app/$app"
 	fi
 }
@@ -124,6 +117,18 @@ ynh_check_if_checksum_is_different() {
 	echo "$check"
 }
 
+#=================================================
+#
+# POSTGRES HELPERS
+#
+# Point of contact : Jean-Baptiste Holcroft <jean-baptiste@holcroft.fr>
+#=================================================
+
+# Create a master password and set up global settings
+# Please always call this script in install and restore scripts
+#
+# usage: ynh_psql_test_if_first_run
+
 ynh_psql_test_if_first_run() {
 	if [ -f /etc/yunohost/psql ];
 	then
@@ -144,8 +149,12 @@ ynh_psql_test_if_first_run() {
 		fi
 
 		systemctl start postgresql
-                su --command="psql -c\"ALTER user postgres WITH PASSWORD '${pgsql}'\"" postgres
-		# we can't use peer since YunoHost create users with nologin
+		sudo --login --user=postgres psql -c"ALTER user postgres WITH PASSWORD '$pgsql'" postgres
+
+		# force all user to connect to local database using passwords
+		# https://www.postgresql.org/docs/current/static/auth-pg-hba-conf.html#EXAMPLE-PG-HBA.CONF
+		# Note: we can't use peer since YunoHost create users with nologin
+		#  See: https://github.com/YunoHost/yunohost/blob/unstable/data/helpers.d/user
 		sed -i '/local\s*all\s*all\s*peer/i \
 		local all all password' "$pg_hba"
 		systemctl enable postgresql
@@ -167,7 +176,6 @@ ynh_psql_connect_as() {
 	pwd="$2"
 	db="$3"
 	sudo --login --user=postgres PGUSER="$user" PGPASSWORD="$pwd" psql "$db"
-	echo "ynh_psql_connect_as" && pwd && ls -lah $(pwd)
 }
 
 # # Execute a command as root user
@@ -178,7 +186,6 @@ ynh_psql_connect_as() {
 ynh_psql_execute_as_root () {
 	sql="$1"
 	sudo --login --user=postgres psql <<< "$sql"
-	echo "ynh_psql_execute_as_root" && pwd && ls -lah $(pwd)
 }
 
 # Execute a command from a file as root user
@@ -190,7 +197,6 @@ ynh_psql_execute_file_as_root() {
 	file="$1"
 	db="$2"
 	sudo --login --user=postgres psql "$db" < "$file"
-	echo "ynh_psql_execute_file_as_root" && pwd && ls -lah $(pwd)
 }
 
 # Create a database, an user and its password. Then store the password in the app's config
@@ -204,7 +210,6 @@ ynh_psql_execute_file_as_root() {
 # | arg: pwd - Password of the database. If not given, a password will be generated
 ynh_psql_setup_db () {
 	db_user="$1"
-	app="$1"
 	db_name="$2"
 	new_db_pwd=$(ynh_string_random)	# Generate a random password
 	# If $3 is not given, use new_db_pwd instead for db_pwd.
