@@ -84,14 +84,13 @@ ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
 #=================================================
 
 ynh_psql_test_if_first_run
-ynh_psql_setup_db "$db_name" "$db_name" "$db_pwd"
+ynh_psql_create_db "$db_name" "$db_name" "$db_pwd"
 ynh_psql_execute_file_as_root ./db.sql "$db_name"
 
 #=================================================
 # RESTORE THE UWSGI MECANICS
 #=================================================
 
-ynh_restore_file "/etc/systemd/system/uwsgi-app@.socket"
 ynh_restore_file "/etc/systemd/system/uwsgi-app@.service"
 
 # make sure the folder for sockets exists and set authorizations
@@ -112,12 +111,11 @@ usermod --append --groups www-data "$app"
 
 ynh_restore_file "/etc/uwsgi/apps-available/$app.ini"
 
-systemctl enable "uwsgi-app@$app.socket"
-systemctl start "uwsgi-app@$app.socket"
 systemctl daemon-reload
+systemctl enable "uwsgi-app@$app.service"
 
 # Add as a service
-yunohost service add "uwsgi-app@$app.socket" --log "/var/log/uwsgi/app/$app"
+yunohost service add "uwsgi-app@$app.service" --log "/var/log/uwsgi/app/$app"
 
 #=================================================
 # RESTORE THE CRON FILE
@@ -133,6 +131,12 @@ ynh_restore_file "/usr/bin/hub"
 
 #=================================================
 # GENERIC FINALIZATION
+#=================================================
+# Start weblate
+#=================================================
+
+systemctl start "uwsgi-app@$app.service"
+
 #=================================================
 # RELOAD NGINX & uwsgi
 #=================================================

@@ -83,6 +83,15 @@ then
 	ynh_secure_remove "/etc/systemd/system/$app.service"
 fi
 
+# (<2.20) remove your old sockets!
+if [ -e "/etc/systemd/system/uwsgi-app@.socket" ]
+then
+	systemctl stop "uwsgi-app@$app.socket"
+	yunohost service remove "uwsgi-app@$app.socket"
+	ynh_secure_remove "/etc/systemd/system/uwsgi-app@.socket"
+	systemctl daemon-reload
+fi
+
 # (<2.18) move hub to the correct folder
 if [ -e "$final_path/bin/hub" ]
 then
@@ -144,6 +153,13 @@ ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
 #=================================================
 
 ynh_add_uwsgi_service
+
+# root install doesn't require uwsgi to handle script names
+if [ "$path_url" == "/" ]
+then
+	ynh_replace_string "manage-script-name = true" "manage-script-name = false" "$finaluwsgiini"
+	ynh_store_file_checksum "$finaluwsgiini"
+fi
 
 #=================================================
 # PIP INSTALLATION
@@ -273,6 +289,12 @@ then
 
 	ynh_store_file_checksum "$finalnginxconf"
 fi
+
+#=================================================
+# Restart weblate
+#=================================================
+
+systemctl start "uwsgi-app@$app.service"
 
 #=================================================
 # RELOAD NGINX

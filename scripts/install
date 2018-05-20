@@ -85,14 +85,13 @@ ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
 # CREATE A PostgreSQL DATABASE
 #=================================================
 
+db_name=$(ynh_sanitize_dbid "$app")
+ynh_app_setting_set "$app" db_name "$db_name"
+
 ynh_psql_test_if_first_run
 
-db_name=$(ynh_sanitize_dbid "$app")
-db_user_pwd=$(ynh_string_random)
 # Initialize database and store postgres password for upgrade
-ynh_psql_create_db "$db_name" "$app" "$db_user_pwd"
-ynh_app_setting_set "$app" db_name "$db_name"
-ynh_app_setting_set "$app" psqlpwd "$db_user_pwd"
+ynh_psql_setup_db "$db_name" "$app"
 
 systemctl reload postgresql
 
@@ -175,6 +174,13 @@ EOF
 #=================================================
 
 ynh_add_uwsgi_service
+
+# root install doesn't require uwsgi to handle script names
+if [ "$path_url" == "/" ]
+then
+	ynh_replace_string "manage-script-name = true" "manage-script-name = false" "$finaluwsgiini"
+	ynh_store_file_checksum "$finaluwsgiini"
+fi
 
 #=================================================
 # PIP INSTALLATION
@@ -273,6 +279,12 @@ then
 
 	ynh_store_file_checksum "$finalnginxconf"
 fi
+
+#=================================================
+# Start weblate
+#=================================================
+
+systemctl start "uwsgi-app@$app.service"
 
 #=================================================
 # RELOAD NGINX
