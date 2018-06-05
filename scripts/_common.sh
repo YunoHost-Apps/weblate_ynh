@@ -1,6 +1,6 @@
 #!/bin/bash
 
-current_version="2.20"
+current_version="3.0"
 
 ynh_check_global_uwsgi_config () {
 	uwsgi --version || ynh_die "You need to add uwsgi (and appropriate plugin) as a dependency"

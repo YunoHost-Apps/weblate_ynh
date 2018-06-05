@@ -8,6 +8,16 @@ The YunoHost team uses [Weblate](https://weblate.org) for translations: https://
 
 An admin user is created at installation, the login is what you provided at installation, the password is **weblate**.
 
+## Weblate 3.0 upgrade
+
+This upgrade is a major one, remember to read this page before upgrading: https://docs.weblate.org/en/latest/admin/upgrade.html#upgrade-3
+
+After upgrading:
+
+ * All existing users and groups have been migrated to new model.
+ * Any per user permissions are removed, please assign users to appropriate groups and roles to grant them permissions.
+ * Any custom groups will not have any permissions after upgrade, please grant the permissions again.
+
 ## Github
 
 You'll need to give weblate a github user and a token. Please read [github's documentation about token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/).
