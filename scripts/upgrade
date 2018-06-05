@@ -203,6 +203,8 @@ then
 	# send diff to the server administrator
 	mail_message="
 	Weblate was updated from version $previous_version to $current_version
+	This is a MAJOR upgrade, please read this:
+	https://docs.weblate.org/en/latest/admin/upgrade.html#upgrade-3
 
 	A new settings.py has been created in:
 	$settings
@@ -236,6 +238,17 @@ fi
 	set -o nounset
 	export DJANGO_SETTINGS_MODULE="weblate.settings"
 	cd "${final_path}"
+
+	# https://docs.weblate.org/en/latest/admin/upgrade.html#upgrade-3
+	# https://github.com/WeblateOrg/docker/blob/386aa8d98bb57dfec3707680827d4e4f4d79e3fd/start#L81-L88
+	weblate showmigrations --plan > /tmp/migrations.txt
+	if  grep -Fq '[X]  auth.0001_initial' /tmp/migrations.txt && grep -Fq '[ ]  weblate_auth.0001_initial' /tmp/migrations.txt ; then
+		ynh_replace_string "AUTH_USER_MODEL" "#AUTH_USER_MODEL" "$settings"
+		weblate migrate weblate_auth 0001
+		ynh_replace_string "#AUTH_USER_MODEL" "AUTH_USER_MODEL" "$settings"
+	fi
+	ynh_secure_remove /tmp/migrations.txt
+
 	weblate migrate --noinput
 	weblate collectstatic --noinput
 	weblate setuplang

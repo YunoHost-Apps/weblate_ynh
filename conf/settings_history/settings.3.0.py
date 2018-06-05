@@ -207,6 +207,9 @@ AUTHENTICATION_BACKENDS = (
     'weblate.accounts.auth.WeblateUserBackend',
 )
 
+# Custom user model
+AUTH_USER_MODEL = 'weblate_auth.User'
+
 # Social auth backends setup
 SOCIAL_AUTH_GITHUB_KEY = ''
 SOCIAL_AUTH_GITHUB_SECRET = ''
@@ -308,7 +311,7 @@ AUTH_PASSWORD_VALIDATORS = [
     #     'NAME': 'zxcvbn_password.ZXCVBNValidator',
     #     'OPTIONS': {
     #         'min_score': 3,
-    #         'user_attributes': ('username', 'email', 'first_name')
+    #         'user_attributes': ('username', 'email', 'full_name')
     #     }
     # },
 ]
@@ -348,6 +351,10 @@ INSTALLED_APPS = (
     'rest_framework',
     'rest_framework.authtoken',
     'weblate.addons',
+    'weblate.auth',
+    'weblate.checks',
+    'weblate.formats',
+    'weblate.machinery',
     'weblate.trans',
     'weblate.lang',
     'weblate.langdata',
@@ -356,6 +363,7 @@ INSTALLED_APPS = (
     'weblate.screenshots',
     'weblate.accounts',
     'weblate.utils',
+    'weblate.vcs',
     'weblate.wladmin',
     'weblate',
 
@@ -498,18 +506,18 @@ if not HAVE_SYSLOG:
     del LOGGING['handlers']['syslog']
 
 # List of machine translations
-# MACHINE_TRANSLATION_SERVICES = (
-#     'weblate.trans.machine.apertium.ApertiumAPYTranslation',
-#     'weblate.trans.machine.deepl.DeepLTranslation',
-#     'weblate.trans.machine.glosbe.GlosbeTranslation',
-#     'weblate.trans.machine.google.GoogleTranslation',
-#     'weblate.trans.machine.microsoft.MicrosoftCognitiveTranslation',
-#     'weblate.trans.machine.mymemory.MyMemoryTranslation',
-#     'weblate.trans.machine.tmserver.AmagamaTranslation',
-#     'weblate.trans.machine.tmserver.TMServerTranslation',
-#     'weblate.trans.machine.yandex.YandexTranslation',
-#     'weblate.trans.machine.weblatetm.WeblateTranslation',
-#     'weblate.trans.machine.saptranslationhub.SAPTranslationHub',
+# MT_SERVICES = (
+#     'weblate.machinery.apertium.ApertiumAPYTranslation',
+#     'weblate.machinery.deepl.DeepLTranslation',
+#     'weblate.machinery.glosbe.GlosbeTranslation',
+#     'weblate.machinery.google.GoogleTranslation',
+#     'weblate.machinery.microsoft.MicrosoftCognitiveTranslation',
+#     'weblate.machinery.mymemory.MyMemoryTranslation',
+#     'weblate.machinery.tmserver.AmagamaTranslation',
+#     'weblate.machinery.tmserver.TMServerTranslation',
+#     'weblate.machinery.yandex.YandexTranslation',
+#     'weblate.machinery.weblatetm.WeblateTranslation',
+#     'weblate.machinery.saptranslationhub.SAPTranslationHub',
 #     'weblate.memory.machine.WeblateMemory',
 # )
 
@@ -615,36 +623,36 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 # List of quality checks
 # CHECK_LIST = (
-#     'weblate.trans.checks.same.SameCheck',
-#     'weblate.trans.checks.chars.BeginNewlineCheck',
-#     'weblate.trans.checks.chars.EndNewlineCheck',
-#     'weblate.trans.checks.chars.BeginSpaceCheck',
-#     'weblate.trans.checks.chars.EndSpaceCheck',
-#     'weblate.trans.checks.chars.EndStopCheck',
-#     'weblate.trans.checks.chars.EndColonCheck',
-#     'weblate.trans.checks.chars.EndQuestionCheck',
-#     'weblate.trans.checks.chars.EndExclamationCheck',
-#     'weblate.trans.checks.chars.EndEllipsisCheck',
-#     'weblate.trans.checks.chars.EndSemicolonCheck',
-#     'weblate.trans.checks.chars.MaxLengthCheck',
-#     'weblate.trans.checks.format.PythonFormatCheck',
-#     'weblate.trans.checks.format.PythonBraceFormatCheck',
-#     'weblate.trans.checks.format.PHPFormatCheck',
-#     'weblate.trans.checks.format.CFormatCheck',
-#     'weblate.trans.checks.format.PerlFormatCheck',
-#     'weblate.trans.checks.format.JavascriptFormatCheck',
-#     'weblate.trans.checks.consistency.PluralsCheck',
-#     'weblate.trans.checks.consistency.SamePluralsCheck',
-#     'weblate.trans.checks.consistency.ConsistencyCheck',
-#     'weblate.trans.checks.consistency.TranslatedCheck',
-#     'weblate.trans.checks.chars.NewlineCountingCheck',
-#     'weblate.trans.checks.markup.BBCodeCheck',
-#     'weblate.trans.checks.chars.ZeroWidthSpaceCheck',
-#     'weblate.trans.checks.markup.XMLValidityCheck',
-#     'weblate.trans.checks.markup.XMLTagsCheck',
-#     'weblate.trans.checks.source.OptionalPluralCheck',
-#     'weblate.trans.checks.source.EllipsisCheck',
-#     'weblate.trans.checks.source.MultipleFailingCheck',
+#     'weblate.checks.same.SameCheck',
+#     'weblate.checks.chars.BeginNewlineCheck',
+#     'weblate.checks.chars.EndNewlineCheck',
+#     'weblate.checks.chars.BeginSpaceCheck',
+#     'weblate.checks.chars.EndSpaceCheck',
+#     'weblate.checks.chars.EndStopCheck',
+#     'weblate.checks.chars.EndColonCheck',
+#     'weblate.checks.chars.EndQuestionCheck',
+#     'weblate.checks.chars.EndExclamationCheck',
+#     'weblate.checks.chars.EndEllipsisCheck',
+#     'weblate.checks.chars.EndSemicolonCheck',
+#     'weblate.checks.chars.MaxLengthCheck',
+#     'weblate.checks.format.PythonFormatCheck',
+#     'weblate.checks.format.PythonBraceFormatCheck',
+#     'weblate.checks.format.PHPFormatCheck',
+#     'weblate.checks.format.CFormatCheck',
+#     'weblate.checks.format.PerlFormatCheck',
+#     'weblate.checks.format.JavascriptFormatCheck',
+#     'weblate.checks.consistency.PluralsCheck',
+#     'weblate.checks.consistency.SamePluralsCheck',
+#     'weblate.checks.consistency.ConsistencyCheck',
+#     'weblate.checks.consistency.TranslatedCheck',
+#     'weblate.checks.chars.NewlineCountingCheck',
+#     'weblate.checks.markup.BBCodeCheck',
+#     'weblate.checks.chars.ZeroWidthSpaceCheck',
+#     'weblate.checks.markup.XMLValidityCheck',
+#     'weblate.checks.markup.XMLTagsCheck',
+#     'weblate.checks.source.OptionalPluralCheck',
+#     'weblate.checks.source.EllipsisCheck',
+#     'weblate.checks.source.MultipleFailingCheck',
 # )
 
 # List of automatic fixups
@@ -662,19 +670,15 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 #     'weblate.addons.gettext.UpdateConfigureAddon',
 #     'weblate.addons.gettext.MsgmergeAddon',
 #     'weblate.addons.gettext.GettextCustomizeAddon',
+#     'weblate.addons.gettext.GettextAuthorComments',
 #     'weblate.addons.cleanup.CleanupAddon',
+#     'weblate.addons.consistency.LangaugeConsistencyAddon',
+#     'weblate.addons.discovery.DiscoveryAddon',
 #     'weblate.addons.flags.SourceEditAddon',
 #     'weblate.addons.flags.TargetEditAddon',
-#     'weblate.addons.json.JSONCustomizeAddon',
 #     'weblate.addons.generate.GenerateFileAddon',
+#     'weblate.addons.json.JSONCustomizeAddon',
 #     'weblate.addons.properties.PropertiesSortAddon',
-# )
-
-
-# List of scripts to use in custom processing
-# POST_UPDATE_SCRIPTS = (
-# )
-# PRE_COMMIT_SCRIPTS = (
 # )
 
 # E-mail address that error messages come from.
@@ -728,7 +732,7 @@ REST_FRAMEWORK = {
     ),
     'PAGE_SIZE': 20,
     'VIEW_DESCRIPTION_FUNCTION': 'weblate.api.views.get_view_description',
-    'UNAUTHENTICATED_USER': 'weblate.accounts.models.get_anonymous',
+    'UNAUTHENTICATED_USER': 'weblate.auth.models.get_anonymous',
 }
 
 # Example for restricting access to logged in users
@@ -751,4 +755,3 @@ REST_FRAMEWORK = {
 
 # Force sane test runner
 TEST_RUNNER = 'django.test.runner.DiscoverRunner'
-
