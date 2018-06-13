@@ -271,6 +271,13 @@ fi
 ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 
 #=================================================
+# SETUP CRON
+#=================================================
+cp ../conf/cron "/etc/cron.d/$app"
+ynh_replace_string "__APP__"       "$app"         "/etc/cron.d/$app"
+ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
+
+#=================================================
 # GENERIC FINALIZATION
 #=================================================
 # SECURE FILES AND DIRECTORIES
