@@ -8,8 +8,6 @@
 source _common.sh
 source /usr/share/yunohost/helpers
 
-ynh_abort_if_errors
-
 #=================================================
 # LOAD SETTINGS
 #=================================================
@@ -42,8 +40,10 @@ key=$(ynh_string_random 50)
 )
 previous_version=$(cat freeze.pip | grep "Weblate==" | sed "s|Weblate==||")
 
-previous_version_file="../conf/settings_history/settings.$previous_version.py"
-test -e "$previous_version_file" || ynh_die "Previous version unknown: $previous_version"
+ynh_secure_remove freeze.pip
+
+previous_version_template="../conf/settings_history/settings.$previous_version.py"
+test -e "$previous_version_template" || ynh_die "Previous version unknown: $previous_version"
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
@@ -134,6 +134,19 @@ then
 fi
 
 #=================================================
+# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
+#=================================================
+
+# Backup the current version of the app
+ynh_backup_before_upgrade
+ynh_clean_setup () {
+	# restore it if the upgrade fails
+	ynh_restore_upgradebackup
+}
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
+
+#=================================================
 # CHECK THE PATH
 #=================================================
 
@@ -194,12 +207,6 @@ fi
 # PIP INSTALLATION
 #=================================================
 
-# save old settings file
-cp "$settings" "$final_path/settings.$previous_version.old.py"
-
-old_settings="./settings.$previous_version.old.py"
-settings_diff="$final_path/settings.${previous_version}_${current_version}.diff"
-
 (
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
@@ -213,36 +220,44 @@ settings_diff="$final_path/settings.${previous_version}_${current_version}.diff"
 	pip install django_sendmail_backend
 )
 
+#=================================================
+# CONFIG FILE UPGRADE
+#=================================================
+
+# save old settings file
+
+old_settings="$final_path/settings.$previous_version.old.py"
+
+cp "$settings" "$old_settings"
+
 check=$(ynh_check_if_checksum_is_different "$settings")
 
 if [[ "$check" -eq 1 ]]
 then
 	echo "Settings.py was modified localy, running diff before using the new default file for $current_version."
 	# generate previous defaults settings
-	cp "$previous_version_file" "$old_settings"
+	cp "$previous_version_template" "$old_settings"
 	weblate_fill_settings "$old_settings"
 
 	# store diff between defaults and local settings
-	diff --unified "$old_settings" "$settings" > "$settings_diff"
-
-	# generate new defaults settings
-	cp "../conf/settings_history/settings.$current_version.py" "$settings"
-	weblate_fill_settings "$settings"
+	set +eu
+	diff --unified "$old_settings" "$settings" > "$final_path/settings.${previous_version}_${current_version}.diff"
+	set -eu
 
 	# send diff to the server administrator
 	mail_message="
 	Weblate was updated from version $previous_version to $current_version
-	This is a MAJOR upgrade, please read this:
-	https://docs.weblate.org/en/latest/admin/upgrade.html#upgrade-3
+	Please read:
+	https://docs.weblate.org/en/latest/admin/upgrade.html
 
-	A new settings.py has been created in:
+	A new settings.py has been created:
 	$settings
 
 	You may have changed your defaults settings.
-	To help you to apply it again, here is a diff file with every changes you did.
+	To help you, here is a diff file with every changes you did.
 
 	Diff has been created in:
-	$settings_diff
+	$final_path/settings.${previous_version}_${current_version}.diff
 
 	Please note secret key is updated, this is normal.
 
@@ -252,10 +267,13 @@ then
 	ynh_send_readme_to_admin "$mail_message" root "$admin_mail"
 else
 	echo "Settings.py was not modified, using the new default file for $current_version."
-	# generate new defaults settings
-	cp "../conf/settings_history/settings.$current_version.py" "$settings"
-	weblate_fill_settings "$settings"
 fi
+
+# generate new defaults settings
+cp "../conf/settings_history/settings.$current_version.py" "$settings"
+weblate_fill_settings "$settings"
+
+ynh_secure_remove "$old_settings"
 
 #=================================================
 # Run migration scripts

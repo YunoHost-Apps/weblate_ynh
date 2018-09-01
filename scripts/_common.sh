@@ -82,7 +82,7 @@ ynh_remove_uwsgi_service () {
 
 
 weblate_fill_settings() {
-	settings="$1"
+	local settings="$1"
 
 	ynh_replace_string "__NAME__"       "$app"            "$settings"
 	ynh_replace_string "__DB_PWD__"     "$db_pwd"         "$settings"
