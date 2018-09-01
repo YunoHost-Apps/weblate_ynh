@@ -26,6 +26,7 @@ admin=$(ynh_app_setting_get "$app" admin)
 admin_mail=$(ynh_user_get_info "$admin" mail)
 memc_port=$(ynh_app_setting_get "$app" memc_port)
 github_account=$(ynh_app_setting_get "$app" github_account)
+migration311=$(ynh_app_setting_get "$app" migration311)
 key=$(ynh_string_random)
 
 #=================================================
@@ -84,7 +85,7 @@ then
 fi
 
 # (<2.20) remove your old sockets!
-if [ -e "/etc/systemd/system/uwsgi-app@.socket" ]
+if [ -e "/etc/systemd/system/uwsgi-app@$app.socket" ]
 then
 	systemctl stop "uwsgi-app@$app.socket"
 	yunohost service remove "uwsgi-app@$app.socket"
@@ -102,6 +103,34 @@ fi
 if [[ -d "$final_path/bin/" ]]
 then
 	ynh_secure_remove "$final_path/bin/"
+fi
+
+# Weblate requires an update to 3.0 before 3.1
+# the upgrade hook will launch this script again to make sure it works
+if [[ -z "$migration311" ]]
+then
+	# $migration311 is not set, version is <3.0
+	migration311="two_steps_upgrade_3.0to3.1-needed"
+
+	mig_type=$(cat "/etc/yunohost/apps/$YNH_APP_ID/status.json" | sed -e 's/.*"type":.*"\(.\+\)".*/\1/gi')
+
+	if [ "$mig_type" = "file" ]
+	then
+		mig_parm=$(cat "/etc/yunohost/apps/$YNH_APP_ID/status.json" | sed -e 's/.*"path": "\(.\+\)",.*/\1/gi')
+	else
+		mig_parm=$(cat "/etc/yunohost/apps/$YNH_APP_ID/status.json" | sed -e 's/.*"url": "\(.\+\)", "type".*/\1/gi')
+	fi
+
+	ynh_app_setting_set "$app" migration311 "$migration311"
+	ynh_app_setting_set "$app" migration311_type "$mig_type"
+	ynh_app_setting_set "$app" migration311_parm "$mig_parm"
+	current_version="3.0.1"
+fi
+
+# Make sure the uwsgi service is stoped
+if [[ -e "/var/run/uwsgi/$app.socket" ]]
+then
+	systemctl stop "uwsgi-app@$app.service"
 fi
 
 #=================================================
@@ -241,13 +270,18 @@ fi
 
 	# https://docs.weblate.org/en/latest/admin/upgrade.html#upgrade-3
 	# https://github.com/WeblateOrg/docker/blob/386aa8d98bb57dfec3707680827d4e4f4d79e3fd/start#L81-L88
-	weblate showmigrations --plan > /tmp/migrations.txt
-	if  grep -Fq '[X]  auth.0001_initial' /tmp/migrations.txt && grep -Fq '[ ]  weblate_auth.0001_initial' /tmp/migrations.txt ; then
-		ynh_replace_string "AUTH_USER_MODEL" "#AUTH_USER_MODEL" "$settings"
-		weblate migrate weblate_auth 0001
-		ynh_replace_string "#AUTH_USER_MODEL" "AUTH_USER_MODEL" "$settings"
+	if [[ $current_version = "3.0.1" ]]
+	then
+		weblate showmigrations --plan > /tmp/migrations.txt
+		if  grep -Fq '[X]  auth.0001_initial' /tmp/migrations.txt && grep -Fq '[ ]  weblate_auth.0001_initial' /tmp/migrations.txt ; then
+			ynh_replace_string "AUTH_USER_MODEL" "#AUTH_USER_MODEL" "$settings"
+			weblate migrate weblate_auth 0001
+			ynh_replace_string "#AUTH_USER_MODEL" "AUTH_USER_MODEL" "$settings"
+		fi
+
+		ynh_secure_remove /tmp/migrations.txt
 	fi
-	ynh_secure_remove /tmp/migrations.txt
+
 
 	weblate migrate --noinput
 	weblate collectstatic --noinput

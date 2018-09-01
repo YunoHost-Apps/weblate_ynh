@@ -27,7 +27,7 @@ from logging.handlers import SysLogHandler
 # Django settings for Weblate project.
 #
 
-DEBUG = FALSE
+DEBUG = False
 
 ADMINS = (
     ('__ADMIN__', '__ADMINMAIL__'),
