@@ -27,7 +27,7 @@ admin_mail=$(ynh_user_get_info "$admin" mail)
 memc_port=$(ynh_app_setting_get "$app" memc_port)
 github_account=$(ynh_app_setting_get "$app" github_account)
 migration311=$(ynh_app_setting_get "$app" migration311)
-key=$(ynh_string_random)
+key=$(ynh_string_random 50)
 
 #=================================================
 # Get previous version number
