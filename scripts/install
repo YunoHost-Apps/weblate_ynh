@@ -207,7 +207,7 @@ virtualenv "${final_path}/venv"
 #=================================================
 db_pwd=$(ynh_app_setting_get "$app" psqlpwd)
 admin_mail=$(ynh_user_get_info "$admin" mail)
-key=$(ynh_string_random 50)
+key=$(ynh_string_random 24)$(ynh_string_random 24)$(ynh_string_random 2)
 memc_port=$(ynh_find_port 8080)
 settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
 cp "../conf/settings_history/settings.$current_version.py" "$settings"
