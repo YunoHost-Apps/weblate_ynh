@@ -8,8 +8,6 @@
 source _common.sh
 source /usr/share/yunohost/helpers
 
-ynh_abort_if_errors
-
 #=================================================
 # LOAD SETTINGS
 #=================================================
@@ -26,7 +24,8 @@ admin=$(ynh_app_setting_get "$app" admin)
 admin_mail=$(ynh_user_get_info "$admin" mail)
 memc_port=$(ynh_app_setting_get "$app" memc_port)
 github_account=$(ynh_app_setting_get "$app" github_account)
-key=$(ynh_string_random)
+migration311=$(ynh_app_setting_get "$app" migration311)
+key=$(ynh_string_random 24)$(ynh_string_random 24)$(ynh_string_random 2)
 
 #=================================================
 # Get previous version number
@@ -41,8 +40,10 @@ key=$(ynh_string_random)
 )
 previous_version=$(cat freeze.pip | grep "Weblate==" | sed "s|Weblate==||")
 
-previous_version_file="../conf/settings_history/settings.$previous_version.py"
-test -e "$previous_version_file" || ynh_die "Previous version unknown: $previous_version"
+ynh_secure_remove freeze.pip
+
+previous_version_template="../conf/settings_history/settings.$previous_version.py"
+test -e "$previous_version_template" || ynh_die "Previous version unknown: $previous_version"
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
@@ -84,7 +85,7 @@ then
 fi
 
 # (<2.20) remove your old sockets!
-if [ -e "/etc/systemd/system/uwsgi-app@.socket" ]
+if [ -e "/etc/systemd/system/uwsgi-app@$app.socket" ]
 then
 	systemctl stop "uwsgi-app@$app.socket"
 	yunohost service remove "uwsgi-app@$app.socket"
@@ -103,6 +104,47 @@ if [[ -d "$final_path/bin/" ]]
 then
 	ynh_secure_remove "$final_path/bin/"
 fi
+
+# Weblate requires an update to 3.0 before 3.1
+# the upgrade hook will launch this script again to make sure it works
+if [[ -z "$migration311" ]]
+then
+	# $migration311 is not set, version is <3.0
+	migration311="two_steps_upgrade_3.0to3.1-needed"
+
+	mig_type=$(cat "/etc/yunohost/apps/$YNH_APP_ID/status.json" | sed -e 's/.*"type":.*"\(.\+\)".*/\1/gi')
+
+	if [ "$mig_type" = "file" ]
+	then
+		mig_parm=$(cat "/etc/yunohost/apps/$YNH_APP_ID/status.json" | sed -e 's/.*"path": "\(.\+\)",.*/\1/gi')
+	else
+		mig_parm=$(cat "/etc/yunohost/apps/$YNH_APP_ID/status.json" | sed -e 's/.*"url": "\(.\+\)", "type".*/\1/gi')
+	fi
+
+	ynh_app_setting_set "$app" migration311 "$migration311"
+	ynh_app_setting_set "$app" migration311_type "$mig_type"
+	ynh_app_setting_set "$app" migration311_parm "$mig_parm"
+	current_version="3.0.1"
+fi
+
+# Make sure the uwsgi service is stoped
+if [[ -e "/var/run/uwsgi/$app.socket" ]]
+then
+	systemctl stop "uwsgi-app@$app.service"
+fi
+
+#=================================================
+# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
+#=================================================
+
+# Backup the current version of the app
+ynh_backup_before_upgrade
+ynh_clean_setup () {
+	# restore it if the upgrade fails
+	ynh_restore_upgradebackup
+}
+# Exit if an error occurs during the execution of the script
+ynh_abort_if_errors
 
 #=================================================
 # CHECK THE PATH
@@ -165,12 +207,6 @@ fi
 # PIP INSTALLATION
 #=================================================
 
-# save old settings file
-cp "$settings" "$final_path/settings.$previous_version.old.py"
-
-old_settings="./settings.$previous_version.old.py"
-settings_diff="$final_path/settings.${previous_version}_${current_version}.diff"
-
 (
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
@@ -184,34 +220,44 @@ settings_diff="$final_path/settings.${previous_version}_${current_version}.diff"
 	pip install django_sendmail_backend
 )
 
+#=================================================
+# CONFIG FILE UPGRADE
+#=================================================
+
+# save old settings file
+
+old_settings="$final_path/settings.$previous_version.old.py"
+
+cp "$settings" "$old_settings"
+
 check=$(ynh_check_if_checksum_is_different "$settings")
 
 if [[ "$check" -eq 1 ]]
 then
 	echo "Settings.py was modified localy, running diff before using the new default file for $current_version."
 	# generate previous defaults settings
-	cp "$previous_version_file" "$old_settings"
+	cp "$previous_version_template" "$old_settings"
 	weblate_fill_settings "$old_settings"
 
 	# store diff between defaults and local settings
-	diff --unified "$old_settings" "$settings" > "$settings_diff"
-
-	# generate new defaults settings
-	cp "../conf/settings_history/settings.$current_version.py" "$settings"
-	weblate_fill_settings "$settings"
+	set +eu
+	diff --unified "$old_settings" "$settings" > "$final_path/settings.${previous_version}_${current_version}.diff"
+	set -eu
 
 	# send diff to the server administrator
 	mail_message="
 	Weblate was updated from version $previous_version to $current_version
+	Please read:
+	https://docs.weblate.org/en/latest/admin/upgrade.html
 
-	A new settings.py has been created in:
+	A new settings.py has been created:
 	$settings
 
 	You may have changed your defaults settings.
-	To help you to apply it again, here is a diff file with every changes you did.
+	To help you, here is a diff file with every changes you did.
 
 	Diff has been created in:
-	$settings_diff
+	$final_path/settings.${previous_version}_${current_version}.diff
 
 	Please note secret key is updated, this is normal.
 
@@ -221,10 +267,13 @@ then
 	ynh_send_readme_to_admin "$mail_message" root "$admin_mail"
 else
 	echo "Settings.py was not modified, using the new default file for $current_version."
-	# generate new defaults settings
-	cp "../conf/settings_history/settings.$current_version.py" "$settings"
-	weblate_fill_settings "$settings"
 fi
+
+# generate new defaults settings
+cp "../conf/settings_history/settings.$current_version.py" "$settings"
+weblate_fill_settings "$settings"
+
+ynh_secure_remove "$old_settings"
 
 #=================================================
 # Run migration scripts
@@ -236,6 +285,22 @@ fi
 	set -o nounset
 	export DJANGO_SETTINGS_MODULE="weblate.settings"
 	cd "${final_path}"
+
+	# https://docs.weblate.org/en/latest/admin/upgrade.html#upgrade-3
+	# https://github.com/WeblateOrg/docker/blob/386aa8d98bb57dfec3707680827d4e4f4d79e3fd/start#L81-L88
+	if [[ $current_version = "3.0.1" ]]
+	then
+		weblate showmigrations --plan > /tmp/migrations.txt
+		if  grep -Fq '[X]  auth.0001_initial' /tmp/migrations.txt && grep -Fq '[ ]  weblate_auth.0001_initial' /tmp/migrations.txt ; then
+			ynh_replace_string "AUTH_USER_MODEL" "#AUTH_USER_MODEL" "$settings"
+			weblate migrate weblate_auth 0001
+			ynh_replace_string "#AUTH_USER_MODEL" "AUTH_USER_MODEL" "$settings"
+		fi
+
+		ynh_secure_remove /tmp/migrations.txt
+	fi
+
+
 	weblate migrate --noinput
 	weblate collectstatic --noinput
 	weblate setuplang
@@ -256,6 +321,13 @@ fi
 
 # Recalculate and store the config file checksum into the app settings
 ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+
+#=================================================
+# SETUP CRON
+#=================================================
+cp ../conf/cron "/etc/cron.d/$app"
+ynh_replace_string "__APP__"       "$app"         "/etc/cron.d/$app"
+ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
 
 #=================================================
 # GENERIC FINALIZATION
