@@ -8,6 +8,7 @@ ExecStart=/usr/bin/uwsgi \
         --socket /var/run/uwsgi/%i.socket \
         --chmod-socket=775 \
         --logto /var/log/uwsgi/app/%i
+        --processes 4
 User=%i
 Group=www-data
 Restart=on-failure
