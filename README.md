@@ -53,3 +53,27 @@ Carefull, this application install PostgreSQL and change the default configurati
 ## LDAP connexion
 
 It doesn't work yet, but while [it looks doable](https://docs.weblate.org/en/latest/admin/auth.html?highlight=LDAP#ldap-authentication), I'm unsure it is a good idea to connect this kind of tools to your LDAP.
+
+## State of this package
+
+* works fine:
+[x] install/remove/backup/remove/upgrade with x86_64
+
+* to be confirmed:
+[ ] ARM support
+
+* to be added:
+[ ] strenghen uwsgi systemd security (https://github.com/YunoHost-Apps/kresus_ynh/pull/21/commits/0ce4979d5037b111aa9698ed5552135bf0ed7165)
+[ ] use jq instead of grep/sed
+[ ] change URL script
+[ ] use debian package for lxml (may unlock ARM support)
+[ ] Add configuration options using the YunoHost interface (https://forum.yunohost.org/t/yunohost-3-1-minor-stable-release-version-stable-mineure/5445)
+[ ] Add fail2ban script
+
+## Links
+
+ * Report a bug about this package: https://github.com/YunoHost-Apps/weblate_ynh
+ * Report a bug about Weblate itself: https://github.com/WeblateOrg/weblate
+ * Documentation: https://docs.weblate.org/
+ * Weblate website: https://weblate.org/
+ * YunoHost website: https://yunohost.org/
