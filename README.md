@@ -69,6 +69,10 @@ It doesn't work yet, but while [it looks doable](https://docs.weblate.org/en/lat
 [ ] use debian package for lxml (may unlock ARM support)
 [ ] Add configuration options using the YunoHost interface (https://forum.yunohost.org/t/yunohost-3-1-minor-stable-release-version-stable-mineure/5445)
 [ ] Add fail2ban script
+[ ] Use redis+hiredis for cache?
+[ ] Enable CHECK_LIST?
+[ ] Enable AUTOFIX_LIST?
+[ ] Enable Translation Memory?
 
 ## Links
 

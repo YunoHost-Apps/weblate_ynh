@@ -222,6 +222,8 @@ SOCIAL_AUTH_BITBUCKET_VERIFIED_EMAILS_ONLY = True
 SOCIAL_AUTH_FACEBOOK_KEY = ''
 SOCIAL_AUTH_FACEBOOK_SECRET = ''
 SOCIAL_AUTH_FACEBOOK_SCOPE = ['email', 'public_profile']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {'fields': 'id,name,email'}
+SOCIAL_AUTH_FACEBOOK_API_VERSION = '3.1'
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = ''
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = ''
@@ -329,7 +331,6 @@ MIDDLEWARE = [
     'social_django.middleware.SocialAuthExceptionMiddleware',
     'weblate.accounts.middleware.RequireLoginMiddleware',
     'weblate.middleware.SecurityMiddleware',
-    'weblate.wladmin.middleware.ConfigurationErrorsMiddleware',
 ]
 
 ROOT_URLCONF = 'weblate.urls'
@@ -507,16 +508,19 @@ if not HAVE_SYSLOG:
 # List of machine translations
 # MT_SERVICES = (
 #     'weblate.machinery.apertium.ApertiumAPYTranslation',
+#     'weblate.machinery.baidu.BaiduTranslation',
 #     'weblate.machinery.deepl.DeepLTranslation',
 #     'weblate.machinery.glosbe.GlosbeTranslation',
 #     'weblate.machinery.google.GoogleTranslation',
 #     'weblate.machinery.microsoft.MicrosoftCognitiveTranslation',
+#     'weblate.machinery.microsoftterminology.MicrosoftTerminologyService',
 #     'weblate.machinery.mymemory.MyMemoryTranslation',
 #     'weblate.machinery.tmserver.AmagamaTranslation',
 #     'weblate.machinery.tmserver.TMServerTranslation',
 #     'weblate.machinery.yandex.YandexTranslation',
 #     'weblate.machinery.weblatetm.WeblateTranslation',
 #     'weblate.machinery.saptranslationhub.SAPTranslationHub',
+#     'weblate.machinery.youdao.YoudaoTranslation',
 #     'weblate.memory.machine.WeblateMemory',
 # )
 
@@ -542,6 +546,14 @@ MT_MYMEMORY_KEY = None
 
 # Google API key for Google Translate API
 MT_GOOGLE_KEY = None
+
+# Baidu app key and secret
+MT_BAIDU_ID = None
+MT_BAIDU_SECRET = None
+
+# Youdao Zhiyun app key and secret
+MT_YOUDAO_ID = None
+MT_YOUDAO_SECRET = None
 
 # API key for Yandex Translate API
 MT_YANDEX_KEY = None
@@ -617,14 +629,8 @@ EMAIL_BACKEND = 'django_sendmail_backend.backends.EmailBackend'
 # Enable remote hooks
 ENABLE_HOOKS = True
 
-# Whether to run hooks in background
-BACKGROUND_HOOKS = True
-
 # Number of nearby messages to show in each direction
 NEARBY_MESSAGES = 5
-
-# Offload indexing
-OFFLOAD_INDEXING = True
 
 # Use simple language codes for default language/country combinations
 SIMPLIFY_LANGUAGES = True
@@ -652,6 +658,10 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 #     'weblate.checks.format.CFormatCheck',
 #     'weblate.checks.format.PerlFormatCheck',
 #     'weblate.checks.format.JavascriptFormatCheck',
+#     'weblate.checks.format.CSharpFormatCheck',
+#     'weblate.checks.format.JavaFormatCheck',
+#     'weblate.checks.format.JavaMessageFormatCheck',
+#     'weblate.checks.angularjs.AngularJSInterpolationCheck',
 #     'weblate.checks.consistency.PluralsCheck',
 #     'weblate.checks.consistency.SamePluralsCheck',
 #     'weblate.checks.consistency.ConsistencyCheck',
@@ -702,7 +712,6 @@ DEFAULT_FROM_EMAIL = '__ADMINMAIL__'
 # List of URLs your site is supposed to serve
 ALLOWED_HOSTS = ['__DOMAIN__']
 
-# Example configuration to use memcached for caching
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
@@ -717,6 +726,35 @@ CACHES = {
         },
     }
 }
+
+# Example configuration for caching
+# CACHES = {
+# Recommended redis + hiredis:
+#     'default': {
+#         'BACKEND': 'django_redis.cache.RedisCache',
+#         'LOCATION': 'redis://127.0.0.1:6379/0',
+#         # If redis is running on same host as Weblate, you might
+#         # want to use unix sockets instead:
+#         # 'LOCATION': 'unix:///var/run/redis/redis.sock?db=0',
+#         'OPTIONS': {
+#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#             'PARSER_CLASS': 'redis.connection.HiredisParser',
+#         }
+#     },
+# Memcached alternative:
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+#         'LOCATION': '127.0.0.1:11211',
+#     },
+#     'avatar': {
+#         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+#         'LOCATION': os.path.join(DATA_DIR, 'avatar-cache'),
+#         'TIMEOUT': 3600,
+#         'OPTIONS': {
+#             'MAX_ENTRIES': 1000,
+#         },
+#     }
+# }
 
 # REST framework settings for API
 REST_FRAMEWORK = {
@@ -766,5 +804,16 @@ REST_FRAMEWORK = {
 #    r'/legal/(.*)$',           # Optional for legal app
 # )
 
-# Force sane test runner
-TEST_RUNNER = 'django.test.runner.DiscoverRunner'
+# Celery worker configuration for testing
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_BROKER_URL = 'memory://'
+# Celery worker configuration for production
+# CELERY_TASK_ALWAYS_EAGER = False
+# CELERY_BROKER_URL = 'redis://localhost:6379'
+
+# Celery settings, it is not recommended to change these
+CELERY_WORKER_PREFETCH_MULTIPLIER = 0
+CELERY_BEAT_SCHEDULE_FILENAME = os.path.join(
+    DATA_DIR, 'celery', 'beat-schedule'
+)
+
