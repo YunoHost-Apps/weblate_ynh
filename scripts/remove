@@ -18,6 +18,12 @@ domain=$(ynh_app_setting_get "$app" domain)
 db_name=$(ynh_app_setting_get "$app" db_name)
 
 #=================================================
+# STOP WEBLATE'S SERVICE
+#=================================================
+
+systemctl stop "uwsgi-app@$app.service"
+
+#=================================================
 # REMOVE THE PostgreSQL DATABASE
 #=================================================
 
