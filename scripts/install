@@ -198,7 +198,7 @@ virtualenv "${final_path}/venv"
 	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2-binary python-memcached phply
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
-	# fix https://github.com/WeblateOrg/weblate/issues/2294
+	# Fix ImportError: No module named backports
 	pip install backports.csv
 )
 

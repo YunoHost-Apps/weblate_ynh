@@ -8,9 +8,9 @@ ynh_check_global_uwsgi_config () {
 	cp ../conf/uwsgi-app@.service /etc/systemd/system/uwsgi-app@.service
 
 	# make sure the folder for sockets exists and set authorizations
-	mkdir -p /var/run/uwsgi/
-	chown root:www-data /var/run/uwsgi/
-	chmod -R 775 /var/run/uwsgi/
+	# make sure it exists on every startup
+	echo "d     /var/run/uwsgi   0775 root www-data" > /usr/lib/tmpfiles.d/uwsgi.conf
+	systemd-tmpfiles --create
 
 	# make sure the folder for logs exists and set authorizations
 	mkdir -p /var/log/uwsgi/app/
