@@ -56,6 +56,7 @@ BASE_DIR = '__FINALPATH__'
 
 # Data directory
 DATA_DIR = os.path.join(BASE_DIR, 'data')
+TTF_PATH = '/usr/share/fonts-droid-fallback/truetype/'
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
