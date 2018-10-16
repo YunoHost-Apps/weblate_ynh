@@ -107,7 +107,7 @@ fi
 
 # Weblate requires an update to 3.0 before 3.1
 # the upgrade hook will launch this script again to make sure it works
-if [[ -z "$migration311" ]]
+if [[ -z "$migration311" && $previous_version = "2.20" ]]
 then
 	# $migration311 is not set, version is <3.0
 	migration311="two_steps_upgrade_3.0to3.1-needed"
