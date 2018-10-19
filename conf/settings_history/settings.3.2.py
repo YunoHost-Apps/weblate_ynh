@@ -56,7 +56,7 @@ BASE_DIR = '__FINALPATH__'
 
 # Data directory
 DATA_DIR = os.path.join(BASE_DIR, 'data')
-TTF_PATH = '__FINALPATH__/venv/lib/python2.7/site-packages/weblate/ttf/'
+TTF_PATH = '__FINALPATH__/venv/lib/python3.5/site-packages/weblate/ttf/'
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -715,8 +715,12 @@ ALLOWED_HOSTS = ['__DOMAIN__']
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': '127.0.0.1:__MEMCPORT__',
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/_REDIS_DB__',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            'PARSER_CLASS': 'redis.connection.HiredisParser',
+        }
     },
     'avatar': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
@@ -806,11 +810,11 @@ REST_FRAMEWORK = {
 # )
 
 # Celery worker configuration for testing
-CELERY_TASK_ALWAYS_EAGER = True
-CELERY_BROKER_URL = 'memory://'
+# CELERY_TASK_ALWAYS_EAGER = True
+# CELERY_BROKER_URL = 'memory://'
 # Celery worker configuration for production
-# CELERY_TASK_ALWAYS_EAGER = False
-# CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_TASK_ALWAYS_EAGER = False
+CELERY_BROKER_URL = 'redis://localhost:6379/__REDIS_DB__'
 
 # Celery settings, it is not recommended to change these
 CELERY_WORKER_PREFETCH_MULTIPLIER = 0

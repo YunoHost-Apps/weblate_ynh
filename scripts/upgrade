@@ -186,9 +186,9 @@ chsh --shell /bin/bash "$app"
 #=================================================
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
-	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
-	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached \
-	mailutils
+	libjpeg-dev libz-dev libyaml-dev python3-dev python3-pip python3-virtualenv \
+	postgresql libpq-dev uwsgi uwsgi-plugin-python3 memcached \
+	mailutils python-celery-common virtualenv redis-server
 
 #=================================================
 # SPECIFIC SETUP uwsgi
@@ -215,12 +215,10 @@ fi
 	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
 	pip install --upgrade setuptools
 	pip install Weblate=="$current_version"
-	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2-binary python-memcached phply
+	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
-	# Fix ImportError: No module named backports
-	pip install backports.csv
-)
+))
 
 #=================================================
 # CONFIG FILE UPGRADE

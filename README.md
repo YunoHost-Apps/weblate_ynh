@@ -63,13 +63,11 @@ It doesn't work yet, but while [it looks doable](https://docs.weblate.org/en/lat
 [ ] ARM support
 
 * to be added:
-[ ] strenghen uwsgi systemd security (https://github.com/YunoHost-Apps/kresus_ynh/pull/21/commits/0ce4979d5037b111aa9698ed5552135bf0ed7165)
 [ ] use jq instead of grep/sed
 [ ] change URL script
 [ ] use debian package for lxml (may unlock ARM support)
 [ ] Add configuration options using the YunoHost interface (https://forum.yunohost.org/t/yunohost-3-1-minor-stable-release-version-stable-mineure/5445)
 [ ] Add fail2ban script
-[ ] Use redis+hiredis for cache?
 [ ] Enable CHECK_LIST?
 [ ] Enable AUTOFIX_LIST?
 [ ] Enable Translation Memory?

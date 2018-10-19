@@ -75,9 +75,9 @@ chown -R "$app": "$final_path"
 #=================================================
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
-	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
-	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached \
-	mailutils
+	libjpeg-dev libz-dev libyaml-dev python3-dev python3-pip python3-virtualenv \
+	postgresql libpq-dev uwsgi uwsgi-plugin-python3 memcached \
+	mailutils python-celery-common virtualenv redis-server
 
 #=================================================
 # RESTORE THE PostgreSQL DATABASE
@@ -124,6 +124,13 @@ yunohost service add "uwsgi-app@$app.service" --log "/var/log/uwsgi/app/$app"
 ynh_restore_file "/etc/cron.d/$app"
 
 #=================================================
+# RESTORE THE TMPFILES.D
+#=================================================
+
+ynh_restore_file "/usr/lib/tmpfiles.d/$app.conf"
+systemd-tmpfiles --create
+
+#=================================================
 # RESTORE THE HUB BINARY FILE
 #=================================================
 
@@ -135,6 +142,7 @@ ynh_restore_file "/usr/bin/hub"
 # Start weblate
 #=================================================
 
+systemctl start "$app-celery"
 systemctl start "uwsgi-app@$app.service"
 
 #=================================================
