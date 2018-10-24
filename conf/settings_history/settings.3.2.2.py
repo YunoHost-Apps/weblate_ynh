@@ -716,7 +716,7 @@ ALLOWED_HOSTS = ['__DOMAIN__']
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/_REDIS_DB__',
+        'LOCATION': 'redis://127.0.0.1:6379/__REDIS_DB__',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'PARSER_CLASS': 'redis.connection.HiredisParser',
@@ -814,7 +814,7 @@ REST_FRAMEWORK = {
 # CELERY_BROKER_URL = 'memory://'
 # Celery worker configuration for production
 CELERY_TASK_ALWAYS_EAGER = False
-CELERY_BROKER_URL = 'redis://localhost:6379/__REDIS_DB__'
+CELERY_BROKER_URL = 'redis://127.0.0.1:6379/__REDIS_DB__'
 
 # Celery settings, it is not recommended to change these
 CELERY_WORKER_PREFETCH_MULTIPLIER = 0

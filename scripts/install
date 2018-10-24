@@ -257,10 +257,8 @@ ynh_store_file_checksum "$final_path/venv/lib/python3.5/site-packages/weblate/se
 celeryconf="$final_path/celery-weblate"
 cp ../conf/celery-weblate "$celeryconf"
 
-ynh_replace_string "__APP__"  "$app"  "$celeryconf"
-
-echo "d     /var/run/celery-$app   0775 $app $app" > "/usr/lib/tmpfiles.d/$app.conf"
-systemd-tmpfiles --create
+ynh_replace_string "__APP__"        "$app"         "$celeryconf"
+ynh_replace_string "__FINALPATH__"  "$final_path"  "$celeryconf"
 
 ynh_add_systemd_config "$app-celery" "celery-weblate.service"
 

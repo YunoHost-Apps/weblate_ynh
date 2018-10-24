@@ -62,11 +62,10 @@ ynh_remove_nginx_config
 ynh_secure_remove "/etc/cron.d/$app"
 
 #=================================================
-# REMOVE TMPFILES.D
+# REMOVE CELERY FILES
 #=================================================
 
-ynh_secure_remove "/var/run/celery-$app"
-ynh_secure_remove "/usr/lib/tmpfiles.d/$app.conf"
+ynh_secure_remove "/var/run/$app-celery"
 
 #=================================================
 # REMOVE uwsgi and systemd files

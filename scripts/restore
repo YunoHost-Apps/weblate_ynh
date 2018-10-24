@@ -124,13 +124,6 @@ yunohost service add "uwsgi-app@$app.service" --log "/var/log/uwsgi/app/$app"
 ynh_restore_file "/etc/cron.d/$app"
 
 #=================================================
-# RESTORE THE TMPFILES.D
-#=================================================
-
-ynh_restore_file "/usr/lib/tmpfiles.d/$app.conf"
-systemd-tmpfiles --create
-
-#=================================================
 # RESTORE THE HUB BINARY FILE
 #=================================================
 
