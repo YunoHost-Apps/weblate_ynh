@@ -117,6 +117,8 @@ systemctl enable "uwsgi-app@$app.service"
 # Add as a service
 yunohost service add "uwsgi-app@$app.service" --log "/var/log/uwsgi/app/$app"
 
+ynh_restore_file "/etc/systemd/system/$app-celery.service"
+
 #=================================================
 # RESTORE THE CRON FILE
 #=================================================
@@ -135,7 +137,7 @@ ynh_restore_file "/usr/bin/hub"
 # Start weblate
 #=================================================
 
-systemctl start "$app-celery"
+systemctl start "$app-celery.service"
 systemctl start "uwsgi-app@$app.service"
 
 #=================================================
