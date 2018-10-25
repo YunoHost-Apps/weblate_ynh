@@ -26,6 +26,7 @@ memc_port=$(ynh_app_setting_get "$app" memc_port)
 github_account=$(ynh_app_setting_get "$app" github_account)
 migration311=$(ynh_app_setting_get "$app" migration311)
 key=$(ynh_string_random 24)$(ynh_string_random 24)$(ynh_string_random 2)
+redis_db=$(ynh_app_setting_get "$app" redis_db)
 
 #=================================================
 # Get previous version number
@@ -63,7 +64,19 @@ if [ -z "$db_name" ]; then	# If db_name doesn't exist, create it
 	ynh_app_setting_set "$app" db_name "$db_name"
 fi
 
-settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+if [ -e "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py" ]; then
+	settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+	mv "$settings" "$final_path/settings.py"
+	ln -s "$final_path/settings.py" "$settings"
+fi
+
+if [ -e "$final_path/venv/lib/python3.5/site-packages/weblate/settings.py" ]; then
+	settings="$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
+	mv "$settings" "$final_path/settings.py"
+	ln -s "$final_path/settings.py" "$settings"
+fi
+
+settings="$final_path/settings.py"
 
 # (<2.17) save memc_port if it doesn't exist
 if [[ -z "$memc_port" ]]
@@ -131,6 +144,17 @@ fi
 if [[ -e "/var/run/uwsgi/$app.socket" ]]
 then
 	systemctl stop "uwsgi-app@$app.service"
+fi
+
+if [[ -e "/var/run/$app-celery/$app-w1.pid" ]]
+then
+	systemctl stop "$app-celery.service"
+fi
+
+# (<3.2)
+if [ -z "$redis_db" ]; then
+	redis_db=$(ynh_redis_get_free_db)
+	ynh_app_setting_set "$app" redis_db "$redis_db"
 fi
 
 #=================================================
@@ -207,6 +231,8 @@ fi
 # PIP INSTALLATION
 #=================================================
 
+ynh_secure_remove "${final_path}/venv"
+virtualenv --python=python3 "${final_path}/venv"
 (
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
@@ -218,7 +244,7 @@ fi
 	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
-))
+)
 
 #=================================================
 # CONFIG FILE UPGRADE
@@ -367,6 +393,7 @@ fi
 #=================================================
 
 systemctl start "uwsgi-app@$app.service"
+systemctl start "$app-celery.service"
 
 #=================================================
 # RELOAD NGINX
