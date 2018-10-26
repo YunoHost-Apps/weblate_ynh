@@ -64,19 +64,15 @@ if [ -z "$db_name" ]; then	# If db_name doesn't exist, create it
 	ynh_app_setting_set "$app" db_name "$db_name"
 fi
 
+# (<3.2)
+migrate_to_python3=0
 if [ -e "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py" ]; then
 	settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-	mv "$settings" "$final_path/settings.py"
-	ln -s "$final_path/settings.py" "$settings"
-fi
-
-if [ -e "$final_path/venv/lib/python3.5/site-packages/weblate/settings.py" ]; then
+	migrate_to_python3=1
+	cp "$settings" "$final_path/settings.py"
+else
 	settings="$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
-	mv "$settings" "$final_path/settings.py"
-	ln -s "$final_path/settings.py" "$settings"
 fi
-
-settings="$final_path/settings.py"
 
 # (<2.17) save memc_port if it doesn't exist
 if [[ -z "$memc_port" ]]
@@ -231,8 +227,12 @@ fi
 # PIP INSTALLATION
 #=================================================
 
-ynh_secure_remove "${final_path}/venv"
-virtualenv --python=python3 "${final_path}/venv"
+if [ "$migrate_to_python3" -eq 1 ]
+then
+	ynh_secure_remove "${final_path}/venv"
+	virtualenv --python=python3 "${final_path}/venv"
+fi
+
 (
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
@@ -245,6 +245,12 @@ virtualenv --python=python3 "${final_path}/venv"
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
 )
+
+if [ "$migrate_to_python3" -eq 1 ]
+then
+	mv "$final_path/settings.py" "$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
+	settings="$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
+fi
 
 #=================================================
 # CONFIG FILE UPGRADE
@@ -302,6 +308,18 @@ weblate_fill_settings "$settings"
 ynh_secure_remove "$old_settings"
 
 #=================================================
+# ACTIVATE CELERY
+#=================================================
+
+celeryconf="$final_path/celery-weblate"
+cp ../conf/celery-weblate "$celeryconf"
+
+ynh_replace_string "__APP__"        "$app"         "$celeryconf"
+ynh_replace_string "__FINALPATH__"  "$final_path"  "$celeryconf"
+
+ynh_add_systemd_config "$app-celery" "celery-weblate.service"
+
+#=================================================
 # Run migration scripts
 #=================================================
 
@@ -346,7 +364,7 @@ ynh_secure_remove "$old_settings"
 )
 
 # Recalculate and store the config file checksum into the app settings
-ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+ynh_store_file_checksum "$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
 
 #=================================================
 # SETUP CRON
