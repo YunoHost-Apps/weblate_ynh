@@ -18,10 +18,11 @@ domain=$(ynh_app_setting_get "$app" domain)
 db_name=$(ynh_app_setting_get "$app" db_name)
 
 #=================================================
-# STOP WEBLATE'S SERVICE
+# STOP WEBLATE'S SERVICES
 #=================================================
 
 systemctl stop "uwsgi-app@$app.service"
+systemctl stop "$app-celery.service"
 
 #=================================================
 # REMOVE THE PostgreSQL DATABASE
@@ -61,10 +62,17 @@ ynh_remove_nginx_config
 ynh_secure_remove "/etc/cron.d/$app"
 
 #=================================================
+# REMOVE CELERY FILES
+#=================================================
+
+ynh_secure_remove "/var/run/$app-celery"
+
+#=================================================
 # REMOVE uwsgi and systemd files
 #=================================================
 
 ynh_remove_uwsgi_service
+ynh_remove_systemd_config "$app-celery"
 
 #=================================================
 # GENERIC FINALIZATION

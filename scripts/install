@@ -77,9 +77,9 @@ ynh_app_setting_set "$app" github_token "$github_token"
 #=================================================
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
-	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
-	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached \
-	mailutils
+	libjpeg-dev libz-dev libyaml-dev python3-dev python3-pip python3-virtualenv \
+	postgresql libpq-dev uwsgi uwsgi-plugin-python3 \
+	mailutils python-celery-common virtualenv redis-server
 
 #=================================================
 # CREATE A PostgreSQL DATABASE
@@ -185,7 +185,7 @@ fi
 #=================================================
 # PIP INSTALLATION
 #=================================================
-virtualenv "${final_path}/venv"
+virtualenv --python=python3 "${final_path}/venv"
 #run source in a 'sub shell'
 (
 	set +o nounset
@@ -195,11 +195,9 @@ virtualenv "${final_path}/venv"
 	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
 	pip install --upgrade setuptools
 	pip install Weblate=="$current_version"
-	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2-binary python-memcached phply
+	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
-	# Fix ImportError: No module named backports
-	pip install backports.csv
 )
 
 #=================================================
@@ -210,12 +208,13 @@ virtualenv "${final_path}/venv"
 db_pwd=$(ynh_app_setting_get "$app" psqlpwd)
 admin_mail=$(ynh_user_get_info "$admin" mail)
 key=$(ynh_string_random 24)$(ynh_string_random 24)$(ynh_string_random 2)
-memc_port=$(ynh_find_port 8080)
-settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+redis_db=$(ynh_redis_get_free_db)
+
+settings="$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
 cp "../conf/settings_history/settings.$current_version.py" "$settings"
 
 weblate_fill_settings "$settings"
-ynh_app_setting_set "$app" memc_port "$memc_port"
+ynh_app_setting_set "$app" redis_db "$redis_db"
 
 #=================================================
 # SPECIFIC SETUP Filling up the database
@@ -249,7 +248,19 @@ ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
 #=================================================
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+ynh_store_file_checksum "$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
+
+#=================================================
+# ACTIVATE CELERY
+#=================================================
+
+celeryconf="$final_path/celery-weblate"
+cp ../conf/celery-weblate "$celeryconf"
+
+ynh_replace_string "__APP__"        "$app"         "$celeryconf"
+ynh_replace_string "__FINALPATH__"  "$final_path"  "$celeryconf"
+
+ynh_add_systemd_config "$app-celery" "celery-weblate.service"
 
 #=================================================
 # GENERIC FINALIZATION
@@ -287,6 +298,7 @@ fi
 # Start weblate
 #=================================================
 
+systemctl start "$app-celery"
 systemctl start "uwsgi-app@$app.service"
 
 #=================================================

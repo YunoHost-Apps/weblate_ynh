@@ -3,12 +3,12 @@
 	"id": "weblate",
 	"packaging_format": 1,
 	"requirements": {
-		"yunohost": ">= 3.1.0"
+		"yunohost": ">= 3.2.0"
 	},
 	"description": {
 		"en": "A translation platform using Git and Python"
 	},
-	"version": "3.1.1~ynh3",
+	"version": "3.2.2~ynh1",
 	"url": "https://weblate.org",
 	"license": "AGPL-3.0",
 	"maintainer": {

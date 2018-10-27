@@ -26,6 +26,7 @@ memc_port=$(ynh_app_setting_get "$app" memc_port)
 github_account=$(ynh_app_setting_get "$app" github_account)
 migration311=$(ynh_app_setting_get "$app" migration311)
 key=$(ynh_string_random 24)$(ynh_string_random 24)$(ynh_string_random 2)
+redis_db=$(ynh_app_setting_get "$app" redis_db)
 
 #=================================================
 # Get previous version number
@@ -63,7 +64,15 @@ if [ -z "$db_name" ]; then	# If db_name doesn't exist, create it
 	ynh_app_setting_set "$app" db_name "$db_name"
 fi
 
-settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+# (<3.2)
+migrate_to_python3=0
+if [ -e "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py" ]; then
+	settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+	migrate_to_python3=1
+	cp "$settings" "$final_path/settings.py"
+else
+	settings="$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
+fi
 
 # (<2.17) save memc_port if it doesn't exist
 if [[ -z "$memc_port" ]]
@@ -107,7 +116,7 @@ fi
 
 # Weblate requires an update to 3.0 before 3.1
 # the upgrade hook will launch this script again to make sure it works
-if [[ -z "$migration311" ]]
+if [[ -z "$migration311" && $previous_version = "2.20" ]]
 then
 	# $migration311 is not set, version is <3.0
 	migration311="two_steps_upgrade_3.0to3.1-needed"
@@ -131,6 +140,17 @@ fi
 if [[ -e "/var/run/uwsgi/$app.socket" ]]
 then
 	systemctl stop "uwsgi-app@$app.service"
+fi
+
+if [[ -e "/var/run/$app-celery/$app-w1.pid" ]]
+then
+	systemctl stop "$app-celery.service"
+fi
+
+# (<3.2)
+if [ -z "$redis_db" ]; then
+	redis_db=$(ynh_redis_get_free_db)
+	ynh_app_setting_set "$app" redis_db "$redis_db"
 fi
 
 #=================================================
@@ -186,9 +206,9 @@ chsh --shell /bin/bash "$app"
 #=================================================
 
 ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
-	libjpeg-dev libz-dev libyaml-dev python-dev python-pip python-virtualenv \
-	postgresql libpq-dev uwsgi uwsgi-plugin-python memcached \
-	mailutils
+	libjpeg-dev libz-dev libyaml-dev python3-dev python3-pip python3-virtualenv \
+	postgresql libpq-dev uwsgi uwsgi-plugin-python3 memcached \
+	mailutils python-celery-common virtualenv redis-server
 
 #=================================================
 # SPECIFIC SETUP uwsgi
@@ -207,6 +227,12 @@ fi
 # PIP INSTALLATION
 #=================================================
 
+if [ "$migrate_to_python3" -eq 1 ]
+then
+	ynh_secure_remove "${final_path}/venv"
+	virtualenv --python=python3 "${final_path}/venv"
+fi
+
 (
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
@@ -215,12 +241,16 @@ fi
 	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
 	pip install --upgrade setuptools
 	pip install Weblate=="$current_version"
-	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar pydns psycopg2-binary python-memcached phply
+	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
-	# Fix ImportError: No module named backports
-	pip install backports.csv
 )
+
+if [ "$migrate_to_python3" -eq 1 ]
+then
+	mv "$final_path/settings.py" "$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
+	settings="$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
+fi
 
 #=================================================
 # CONFIG FILE UPGRADE
@@ -278,6 +308,18 @@ weblate_fill_settings "$settings"
 ynh_secure_remove "$old_settings"
 
 #=================================================
+# ACTIVATE CELERY
+#=================================================
+
+celeryconf="$final_path/celery-weblate"
+cp ../conf/celery-weblate "$celeryconf"
+
+ynh_replace_string "__APP__"        "$app"         "$celeryconf"
+ynh_replace_string "__FINALPATH__"  "$final_path"  "$celeryconf"
+
+ynh_add_systemd_config "$app-celery" "celery-weblate.service"
+
+#=================================================
 # Run migration scripts
 #=================================================
 
@@ -322,7 +364,7 @@ ynh_secure_remove "$old_settings"
 )
 
 # Recalculate and store the config file checksum into the app settings
-ynh_store_file_checksum "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+ynh_store_file_checksum "$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
 
 #=================================================
 # SETUP CRON
@@ -369,6 +411,7 @@ fi
 #=================================================
 
 systemctl start "uwsgi-app@$app.service"
+systemctl start "$app-celery.service"
 
 #=================================================
 # RELOAD NGINX
