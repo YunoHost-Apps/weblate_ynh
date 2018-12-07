@@ -319,8 +319,12 @@ AUTH_PASSWORD_VALIDATORS = [
     # },
 ]
 
+# Allow new user registrations
+REGISTRATION_OPEN = True
+
 # Middleware
 MIDDLEWARE = [
+    'weblate.middleware.ProxyMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -516,6 +520,7 @@ if not HAVE_SYSLOG:
 #     'weblate.machinery.microsoft.MicrosoftCognitiveTranslation',
 #     'weblate.machinery.microsoftterminology.MicrosoftTerminologyService',
 #     'weblate.machinery.mymemory.MyMemoryTranslation',
+#     'weblate.machinery.netease.NeteaseSightTranslation',
 #     'weblate.machinery.tmserver.AmagamaTranslation',
 #     'weblate.machinery.tmserver.TMServerTranslation',
 #     'weblate.machinery.yandex.YandexTranslation',
@@ -556,6 +561,10 @@ MT_BAIDU_SECRET = None
 MT_YOUDAO_ID = None
 MT_YOUDAO_SECRET = None
 
+# Netease Sight (Jianwai) app key and secret
+MT_NETEASE_KEY = None
+MT_NETEASE_SECRET = None
+
 # API key for Yandex Translate API
 MT_YANDEX_KEY = None
 
@@ -577,7 +586,7 @@ ENABLE_HTTPS = True
 
 # Use HTTPS when creating redirect URLs for social authentication, see
 # documentation for more details:
-# http://python-social-auth-docs.readthedocs.io/en/latest/configuration/settings.html#processing-redirects-and-urlopen
+# https://python-social-auth-docs.readthedocs.io/en/latest/configuration/settings.html#processing-redirects-and-urlopen
 SOCIAL_AUTH_REDIRECT_IS_HTTPS = ENABLE_HTTPS
 
 # Make CSRF cookie HttpOnly, see documentation for more details:
@@ -615,8 +624,8 @@ LOGIN_REDIRECT_URL = '{0}/'.format(URL_PREFIX)
 ANONYMOUS_USER_NAME = 'anonymous'
 
 # Reverse proxy settings
-IP_BEHIND_REVERSE_PROXY = False
 IP_PROXY_HEADER = 'HTTP_X_FORWARDED_FOR'
+IP_BEHIND_REVERSE_PROXY = False
 IP_PROXY_OFFSET = 0
 
 # Sending HTML in mails
@@ -812,9 +821,11 @@ REST_FRAMEWORK = {
 # Celery worker configuration for testing
 # CELERY_TASK_ALWAYS_EAGER = True
 # CELERY_BROKER_URL = 'memory://'
+# CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
 # Celery worker configuration for production
 CELERY_TASK_ALWAYS_EAGER = False
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/__REDIS_DB__'
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 # Celery settings, it is not recommended to change these
 CELERY_WORKER_PREFETCH_MULTIPLIER = 0
