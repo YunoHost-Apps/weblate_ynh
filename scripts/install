@@ -170,19 +170,6 @@ EOF
 #=================================================
 # SPECIFIC SETUP
 #=================================================
-# SPECIFIC SETUP uwsgi
-#=================================================
-
-ynh_add_uwsgi_service
-
-# root install doesn't require uwsgi to handle script names
-if [ "$path_url" == "/" ]
-then
-	ynh_replace_string "manage-script-name = true" "manage-script-name = false" "$finaluwsgiini"
-	ynh_store_file_checksum "$finaluwsgiini"
-fi
-
-#=================================================
 # PIP INSTALLATION
 #=================================================
 virtualenv --python=python3 "${final_path}/venv"
@@ -250,6 +237,27 @@ ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
 # Calculate and store the config file checksum into the app settings
 ynh_store_file_checksum "$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
 
+# SPECIFIC SETUP uwsgi
+#=================================================
+
+finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
+cp ../conf/uwsgi.ini "$finaluwsgiini"
+
+ynh_replace_string "__FINALPATH__" "$final_path" "$finaluwsgiini"
+ynh_replace_string "__PATH__" "$path_url" "$finaluwsgiini"
+ynh_replace_string "__APP__" "$app" "$finaluwsgiini"
+
+
+# root install doesn't require uwsgi to handle script names
+if [ "$path_url" == "/" ]
+then
+	ynh_replace_string "manage-script-name = true" "manage-script-name = false" "$finaluwsgiini"
+fi
+
+ynh_add_systemd_config "$app" "weblate.service"
+
+ynh_store_file_checksum "$finaluwsgiini"
+
 #=================================================
 # ACTIVATE CELERY
 #=================================================
@@ -295,11 +303,18 @@ then
 fi
 
 #=================================================
+# ADVERTISE SERVICES IN ADMIN PANEL
+#=================================================
+
+yunohost service add "$app.service" --log "/var/log/uwsgi/app/$app"
+yunohost service add "$app-celery.service" --log "/var/log/$app-celery"
+
+#=================================================
 # Start weblate
 #=================================================
 
+systemctl start "$app.service"
 systemctl start "$app-celery"
-systemctl start "uwsgi-app@$app.service"
 
 #=================================================
 # RELOAD NGINX

@@ -177,6 +177,20 @@ path_url=$(ynh_normalize_url_path "$path_url")
 # STANDARD UPGRADE STEPS
 #=================================================
 
+finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
+if [ -e "$finaluwsgiini" ]; then
+	systemctl stop "uwsgi-app@$app.service"
+	systemctl disable "uwsgi-app@$app.service"
+	yunohost service remove "uwsgi-app@$app.service"
+
+	ynh_secure_remove "$finaluwsgiini"
+	ynh_secure_remove "/var/log/uwsgi/app/$app"
+fi
+
+#=================================================
+# STANDARD UPGRADE STEPS
+#=================================================
+
 # Create a dedicated nginx config
 ynh_add_nginx_config
 

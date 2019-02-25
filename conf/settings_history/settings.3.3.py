@@ -832,4 +832,3 @@ CELERY_WORKER_PREFETCH_MULTIPLIER = 0
 CELERY_BEAT_SCHEDULE_FILENAME = os.path.join(
     DATA_DIR, 'celery', 'beat-schedule'
 )
-

@@ -1,0 +1,33 @@
+[Unit]
+Description=__APP__ uWSGI app
+After=syslog.target
+
+[Service]
+Type=forking
+User=__APP__
+Group=www-data
+PermissionsStartOnly=true
+
+
+# https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
+RuntimeDirectory=__APP__
+
+ExecStartPre=/bin/mkdir -p /var/log/uwsgi/app/__APP__
+ExecStartPre=/bin/chown -R __APP__ /var/log/uwsgi/app/__APP__
+
+ExecStart=/usr/bin/uwsgi \
+        --ini /etc/uwsgi/apps-available/__APP__.ini \
+        --socket /var/run/__APP__/socket \
+        --chmod-socket=775 \
+        --logto /var/log/uwsgi/app/__APP__/weblate \
+        --processes 4
+
+
+Restart=on-failure
+KillSignal=SIGQUIT
+Type=notify
+StandardError=syslog
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
