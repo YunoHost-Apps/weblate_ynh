@@ -18,11 +18,31 @@ domain=$(ynh_app_setting_get "$app" domain)
 db_name=$(ynh_app_setting_get "$app" db_name)
 
 #=================================================
+# STANDARD REMOVE
+#=================================================
+# REMOVE SERVICE FROM ADMIN PANEL
+#=================================================
+
+# Remove a service from the admin panel, added by `yunohost service add`
+if yunohost service status | grep -q "$app"
+then
+	echo "Remove $app service"
+	yunohost service remove "$app"
+fi
+
+# Remove a service from the admin panel, added by `yunohost service add`
+if yunohost service status | grep -q "$app-celery"
+then
+	echo "Remove $app service"
+	yunohost service remove "$app-celery"
+fi
+
+#=================================================
 # STOP WEBLATE'S SERVICES
 #=================================================
 
-systemctl stop "uwsgi-app@$app.service"
-systemctl stop "$app-celery.service"
+ynh_remove_systemd_config "$app"
+ynh_remove_systemd_config "$app-celery"
 
 #=================================================
 # REMOVE THE PostgreSQL DATABASE
@@ -66,13 +86,6 @@ ynh_secure_remove "/etc/cron.d/$app"
 #=================================================
 
 ynh_secure_remove "/var/run/$app-celery"
-
-#=================================================
-# REMOVE uwsgi and systemd files
-#=================================================
-
-ynh_remove_uwsgi_service
-ynh_remove_systemd_config "$app-celery"
 
 #=================================================
 # GENERIC FINALIZATION

@@ -3,12 +3,12 @@
 	"id": "weblate",
 	"packaging_format": 1,
 	"requirements": {
-		"yunohost": ">= 3.2.0"
+		"yunohost": ">= 3.4.0"
 	},
 	"description": {
 		"en": "A translation platform using Git and Python"
 	},
-	"version": "3.2.2~ynh1",
+	"version": "3.5.1~ynh1",
 	"url": "https://weblate.org",
 	"license": "AGPL-3.0",
 	"maintainer": {
@@ -56,7 +56,7 @@
 			},
 			{
 				"name": "github_account",
-				"type": "text",
+				"type": "string",
 				"ask": {
 				    "en": "Github's username"
 				},
@@ -64,7 +64,7 @@
 			},
 			{
 				"name": "github_token",
-				"type": "text",
+				"type": "string",
 				"ask": {
 				    "en": "Github's token (oauth)"
 				},
