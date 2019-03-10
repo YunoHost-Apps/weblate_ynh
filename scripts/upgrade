@@ -83,37 +83,6 @@ then
 	ynh_app_setting_set "$app" memc_port "$memc_port"
 fi
 
-# (<2.18) migrade old uwsgi files if existing
-if [ -e "/etc/systemd/system/$app.service" ]
-then
-	systemctl stop "$app.service"
-	systemctl disable "$app.service"
-	yunohost service remove "$app.service"
-	ynh_secure_remove "$final_path/uwsgi.ini"
-	ynh_secure_remove "/etc/systemd/system/$app.service"
-fi
-
-# (<2.20) remove your old sockets!
-if [ -e "/etc/systemd/system/uwsgi-app@$app.socket" ]
-then
-	systemctl stop "uwsgi-app@$app.socket"
-	yunohost service remove "uwsgi-app@$app.socket"
-	ynh_secure_remove "/etc/systemd/system/uwsgi-app@.socket"
-	systemctl daemon-reload
-fi
-
-# (<2.18) move hub to the correct folder
-if [ -e "$final_path/bin/hub" ]
-then
-	mv "$final_path/bin/hub" /usr/bin/
-	chown root:root /usr/bin/hub
-fi
-
-if [[ -d "$final_path/bin/" ]]
-then
-	ynh_secure_remove "$final_path/bin/"
-fi
-
 # Weblate requires an update to 3.0 before 3.1
 # the upgrade hook will launch this script again to make sure it works
 if [[ -z "$migration311" && $previous_version = "2.20" ]]
@@ -136,17 +105,6 @@ then
 	current_version="3.0.1"
 fi
 
-# Make sure the uwsgi service is stoped
-if [[ -e "/var/run/uwsgi/$app.socket" ]]
-then
-	systemctl stop "uwsgi-app@$app.service"
-fi
-
-if [[ -e "/var/run/$app-celery/$app-w1.pid" ]]
-then
-	systemctl stop "$app-celery.service"
-fi
-
 # (<3.2)
 if [ -z "$redis_db" ]; then
 	redis_db=$(ynh_redis_get_free_db)
@@ -167,25 +125,50 @@ ynh_clean_setup () {
 ynh_abort_if_errors
 
 #=================================================
+# ENSURE DOWNWARD COMPATIBILITY - impacting system
+#=================================================
+
+# (<2.20) remove complex uwsgi systemd template
+if [ -e "/etc/systemd/system/uwsgi-app@.service" ]
+then
+	systemctl stop "uwsgi-app@$app"
+	yunohost service remove "uwsgi-app@$app.service"
+	ynh_secure_remove "/etc/systemd/system/uwsgi-app@.socket"
+	ynh_secure_remove "/etc/systemd/system/uwsgi-app@.service"
+	# remove old log file (used by the new service file)
+	ynh_secure_remove "/var/log/uwsgi/app/weblate"
+	systemctl daemon-reload
+fi
+
+# (<2.18) move hub to the correct folder
+if [ -e "$final_path/bin/hub" ]
+then
+	mv "$final_path/bin/hub" /usr/bin/
+	chown root:root /usr/bin/hub
+fi
+
+if [[ -d "$final_path/bin/" ]]
+then
+	ynh_secure_remove "$final_path/bin/"
+fi
+
+# Make sure the uwsgi service is stoped
+if [[ -e "/var/run/$app/socket" ]]
+then
+	systemctl stop "$app"
+fi
+
+if [[ -e "/var/run/$app-celery/$app-w1.pid" ]]
+then
+	systemctl stop "$app-celery"
+fi
+
+#=================================================
 # CHECK THE PATH
 #=================================================
 
 # Normalize the URL path syntax
 path_url=$(ynh_normalize_url_path "$path_url")
-
-#=================================================
-# STANDARD UPGRADE STEPS
-#=================================================
-
-finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
-if [ -e "$finaluwsgiini" ]; then
-	systemctl stop "uwsgi-app@$app.service"
-	systemctl disable "uwsgi-app@$app.service"
-	yunohost service remove "uwsgi-app@$app.service"
-
-	ynh_secure_remove "$finaluwsgiini"
-	ynh_secure_remove "/var/log/uwsgi/app/$app"
-fi
 
 #=================================================
 # STANDARD UPGRADE STEPS
@@ -228,14 +211,23 @@ ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
 # SPECIFIC SETUP uwsgi
 #=================================================
 
-ynh_add_uwsgi_service
+finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
+cp ../conf/uwsgi.ini "$finaluwsgiini"
+
+ynh_replace_string "__FINALPATH__" "$final_path" "$finaluwsgiini"
+ynh_replace_string "__PATH__" "$path_url" "$finaluwsgiini"
+ynh_replace_string "__APP__" "$app" "$finaluwsgiini"
+
 
 # root install doesn't require uwsgi to handle script names
 if [ "$path_url" == "/" ]
 then
 	ynh_replace_string "manage-script-name = true" "manage-script-name = false" "$finaluwsgiini"
-	ynh_store_file_checksum "$finaluwsgiini"
 fi
+
+ynh_add_systemd_config "$app" "weblate.service"
+
+ynh_store_file_checksum "$finaluwsgiini"
 
 #=================================================
 # PIP INSTALLATION
@@ -424,8 +416,8 @@ fi
 # Restart weblate
 #=================================================
 
-systemctl start "uwsgi-app@$app.service"
-systemctl start "$app-celery.service"
+systemctl start "$app"
+systemctl start "$app-celery"
 
 #=================================================
 # RELOAD NGINX

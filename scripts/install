@@ -237,6 +237,7 @@ ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
 # Calculate and store the config file checksum into the app settings
 ynh_store_file_checksum "$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
 
+#=================================================
 # SPECIFIC SETUP uwsgi
 #=================================================
 
@@ -306,14 +307,14 @@ fi
 # ADVERTISE SERVICES IN ADMIN PANEL
 #=================================================
 
-yunohost service add "$app.service" --log "/var/log/uwsgi/app/$app"
-yunohost service add "$app-celery.service" --log "/var/log/$app-celery"
+yunohost service add "$app" --log "/var/log/uwsgi/app/$app/weblate"
+yunohost service add "$app-celery" --log "/var/log/$app-celery"
 
 #=================================================
 # Start weblate
 #=================================================
 
-systemctl start "$app.service"
+systemctl start "$app"
 systemctl start "$app-celery"
 
 #=================================================

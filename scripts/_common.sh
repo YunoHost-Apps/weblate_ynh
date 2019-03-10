@@ -1,6 +1,6 @@
 #!/bin/bash
 
-current_version="3.4"
+current_version="3.5"
 
 
 weblate_fill_settings() {

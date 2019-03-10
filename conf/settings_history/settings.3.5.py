@@ -49,6 +49,9 @@ DATABASES = {
         'HOST': 'localhost',
         # Set to empty string for default
         'PORT': '5432',
+        'OPTIONS': {
+            'sslmode': 'disable'
+        }
     }
 }
 
@@ -647,6 +650,11 @@ ENABLE_HOOKS = True
 # Number of nearby messages to show in each direction
 NEARBY_MESSAGES = 5
 
+# By default the length of a given translation is limited to the length of
+# the source string * 10 characters. Set this option to False to allow longer
+# translations (up to 10.000 characters)
+LIMIT_TRANSLATION_LENGTH_BY_SOURCE_LENGTH = True
+
 # Use simple language codes for default language/country combinations
 SIMPLIFY_LANGUAGES = True
 
@@ -667,6 +675,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 #     'weblate.checks.chars.EndEllipsisCheck',
 #     'weblate.checks.chars.EndSemicolonCheck',
 #     'weblate.checks.chars.MaxLengthCheck',
+#     'weblate.checks.chars.KashidaCheck',
 #     'weblate.checks.format.PythonFormatCheck',
 #     'weblate.checks.format.PythonBraceFormatCheck',
 #     'weblate.checks.format.PHPFormatCheck',
@@ -686,6 +695,10 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 #     'weblate.checks.chars.ZeroWidthSpaceCheck',
 #     'weblate.checks.markup.XMLValidityCheck',
 #     'weblate.checks.markup.XMLTagsCheck',
+#     'weblate.checks.markup.MarkdownRefLinkCheck',
+#     'weblate.checks.markup.MarkdownLinkCheck',
+#     'weblate.checks.markup.MarkdownSyntaxCheck',
+#     'weblate.checks.markup.URLCheck',
 #     'weblate.checks.source.OptionalPluralCheck',
 #     'weblate.checks.source.EllipsisCheck',
 #     'weblate.checks.source.MultipleFailingCheck',
@@ -842,14 +855,13 @@ CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 # Celery settings, it is not recommended to change these
 CELERY_WORKER_PREFETCH_MULTIPLIER = 0
+CELERY_WORKER_MAX_MEMORY_PER_CHILD = 200000
 CELERY_BEAT_SCHEDULE_FILENAME = os.path.join(
     DATA_DIR, 'celery', 'beat-schedule'
 )
-
 CELERY_TASK_ROUTES = {
     'weblate.trans.search.*': {'queue': 'search'},
     'weblate.trans.tasks.optimize_fulltext': {'queue': 'search'},
     'weblate.trans.tasks.cleanup_fulltext': {'queue': 'search'},
     'weblate.memory.tasks.*': {'queue': 'memory'},
 }
-
