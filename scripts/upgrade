@@ -132,6 +132,8 @@ ynh_abort_if_errors
 if [ -e "/etc/systemd/system/uwsgi-app@.service" ]
 then
 	systemctl stop "uwsgi-app@$app"
+	# if somehow the service doesn't exist, add it
+	yunohost service add "uwsgi-app@$app.service" --log "/var/log/uwsgi/app/$app"
 	yunohost service remove "uwsgi-app@$app.service"
 	ynh_secure_remove "/etc/systemd/system/uwsgi-app@.socket"
 	ynh_secure_remove "/etc/systemd/system/uwsgi-app@.service"
