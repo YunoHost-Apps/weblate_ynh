@@ -1,6 +1,4 @@
 # https://docs.weblate.org/en/latest/admin/install.html#production-cron
-# Fulltext index updates
-*/5 * * * * __APP__ export DJANGO_SETTINGS_MODULE="weblate.settings" && cd __FINALPATH__ && venv/bin/weblate update_index
 
 # Cleanup stale objects
 @daily __APP__ export DJANGO_SETTINGS_MODULE="weblate.settings" && cd __FINALPATH__ && venv/bin/weblate cleanuptrans
