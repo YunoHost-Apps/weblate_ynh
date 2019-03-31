@@ -1,7 +1,2 @@
 # https://docs.weblate.org/en/latest/admin/install.html#production-cron
-
-# Cleanup stale objects
-@daily __APP__ export DJANGO_SETTINGS_MODULE="weblate.settings" && cd __FINALPATH__ && venv/bin/weblate cleanuptrans
-
-# Commit pending changes after 96 hours
-@hourly __APP__ export DJANGO_SETTINGS_MODULE="weblate.settings" && cd __FINALPATH__ && venv/bin/weblate commit_pending --all --age=96 --verbosity=0
+# now automatically done with celery
