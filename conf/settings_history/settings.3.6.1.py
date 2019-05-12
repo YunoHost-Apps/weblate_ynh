@@ -27,31 +27,38 @@ from logging.handlers import SysLogHandler
 # Django settings for Weblate project.
 #
 
-DEBUG = False
+DEBUG = True
 
 ADMINS = (
-    ('__ADMIN__', '__ADMINMAIL__'),
+    # ('Your Name', 'your_email@example.com'),
 )
 
 MANAGERS = ADMINS
 
 DATABASES = {
     'default': {
-        # Database engine
+        # Use 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        # Database name
+        # Database name or path to database file if using sqlite3.
         'NAME': '__NAME__',
-        # Database user
+        # Database user, not used with sqlite3.
         'USER': '__NAME__',
-        # Database password
+        # Database password, not used with sqlite3.
         'PASSWORD': '__DB_PWD__',
-        # Set to empty string for localhost
+        # Set to empty string for localhost. Not used with sqlite3.
         'HOST': 'localhost',
-        # Set to empty string for default
+        # Set to empty string for default. Not used with sqlite3.
         'PORT': '5432',
+        # Customizations for databases
         'OPTIONS': {
+            # In case of using an older MySQL server, which has MyISAM as a default storage
+            # 'init_command': 'SET storage_engine=INNODB',
+            # Uncomment for MySQL older than 5.7:
+            # 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            # Set emoji capable charset for MySQL:
+            # 'charset': 'utf8mb4',
             'sslmode': 'disable'
-        }
+        },
     }
 }
 
@@ -95,6 +102,7 @@ LANGUAGES = (
     ('id', 'Indonesia'),
     ('it', 'Italiano'),
     ('ja', '日本語'),
+    ('kk', 'Қазақ тілі'),
     ('ko', '한국어'),
     ('ksh', 'Kölsch'),
     ('nb', 'Norsk bokmål'),
@@ -284,7 +292,7 @@ SOCIAL_AUTH_LOGIN_ERROR_URL = \
 SOCIAL_AUTH_EMAIL_FORM_URL = \
     '{0}/accounts/email/'.format(URL_PREFIX)
 SOCIAL_AUTH_NEW_ASSOCIATION_REDIRECT_URL = \
-    '{0}/accounts/profile/#auth'.format(URL_PREFIX)
+    '{0}/accounts/profile/#account'.format(URL_PREFIX)
 SOCIAL_AUTH_PROTECTED_USER_FIELDS = ('email',)
 SOCIAL_AUTH_SLUGIFY_USERNAMES = True
 SOCIAL_AUTH_SLUGIFY_FUNCTION = 'weblate.accounts.pipeline.slugify_username'
@@ -681,7 +689,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 #     'weblate.checks.format.PHPFormatCheck',
 #     'weblate.checks.format.CFormatCheck',
 #     'weblate.checks.format.PerlFormatCheck',
-#     'weblate.checks.format.JavascriptFormatCheck',
+#     'weblate.checks.format.JavaScriptFormatCheck',
 #     'weblate.checks.format.CSharpFormatCheck',
 #     'weblate.checks.format.JavaFormatCheck',
 #     'weblate.checks.format.JavaMessageFormatCheck',
@@ -742,27 +750,26 @@ DEFAULT_FROM_EMAIL = '__ADMINMAIL__'
 ALLOWED_HOSTS = ['__DOMAIN__']
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/__REDIS_DB__',
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            'PARSER_CLASS': 'redis.connection.HiredisParser',
-        }
-    },
-    'avatar': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(BASE_DIR, 'avatar-cache'),
-        'TIMEOUT': 3600,
-        'OPTIONS': {
-            'MAX_ENTRIES': 1000,
-        },
-    }
-}
+	    'default': {
+	        'BACKEND': 'django_redis.cache.RedisCache',
+	        'LOCATION': 'redis://127.0.0.1:6379/__REDIS_DB__',
+	        'OPTIONS': {
+	            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+	            'PARSER_CLASS': 'redis.connection.HiredisParser',
+	        }
+	    },
+	    'avatar': {
+	        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+	        'LOCATION': os.path.join(BASE_DIR, 'avatar-cache'),
+	        'TIMEOUT': 3600,
+	        'OPTIONS': {
+	            'MAX_ENTRIES': 1000,
+	        },
+	    }
+	}
 
 # Example configuration for caching
 # CACHES = {
-# Recommended redis + hiredis:
 #     'default': {
 #         'BACKEND': 'django_redis.cache.RedisCache',
 #         'LOCATION': 'redis://127.0.0.1:6379/0',
@@ -773,11 +780,6 @@ CACHES = {
 #             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
 #             'PARSER_CLASS': 'redis.connection.HiredisParser',
 #         }
-#     },
-# Memcached alternative:
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-#         'LOCATION': '127.0.0.1:11211',
 #     },
 #     'avatar': {
 #         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
@@ -832,7 +834,7 @@ REST_FRAMEWORK = {
 #    r'/hooks/(.*)$',           # Allowing public access to notification hooks
 #    r'/healthz/$',             # Allowing public access to health check
 #    r'/api/(.*)$',             # Allowing access to API
-#    r'/js/i18n/$',             # Javascript localization
+#    r'/js/i18n/$',             # JavaScript localization
 #    r'/contact/$',             # Optional for contact form
 #    r'/legal/(.*)$',           # Optional for legal app
 # )
@@ -847,7 +849,7 @@ SILENCED_SYSTEM_CHECKS = [
 # Celery worker configuration for testing
 # CELERY_TASK_ALWAYS_EAGER = True
 # CELERY_BROKER_URL = 'memory://'
-# CELERY_EAGER_PROPAGATES_EXCEPTIONS = True
+# CELERY_TASK_EAGER_PROPAGATES = True
 # Celery worker configuration for production
 CELERY_TASK_ALWAYS_EAGER = False
 CELERY_BROKER_URL = 'redis://127.0.0.1:6379/__REDIS_DB__'
@@ -865,3 +867,4 @@ CELERY_TASK_ROUTES = {
     'weblate.trans.tasks.cleanup_fulltext': {'queue': 'search'},
     'weblate.memory.tasks.*': {'queue': 'memory'},
 }
+
