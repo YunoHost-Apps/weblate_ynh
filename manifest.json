@@ -3,7 +3,7 @@
 	"id": "weblate",
 	"packaging_format": 1,
 	"requirements": {
-		"yunohost": ">= 3.4.0"
+		"yunohost": ">= 3.5.0"
 	},
 	"description": {
 		"en": "A translation platform using Git and Python"
@@ -43,6 +43,9 @@
 				"type": "boolean",
 				"ask": {
 					"en": "Should Weblate be public accessible?"
+				},
+				"help": {
+					"en": "Any YunoHost user and anonymous people from the web will be able to access the application"
 				},
 				"default": "0"
 			},
