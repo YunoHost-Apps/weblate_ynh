@@ -19,8 +19,8 @@
 		setup_private=1
 		setup_public=1
 		upgrade=1
-		upgrade=1		from_commit=f14080cbe65c8b2a8e0cda1c34affe0123a6540d
 		upgrade=1		from_commit=565bfc66719f55b9c6a03cba8ac9991111992c9b
+		upgrade=1		from_commit=73a808f7a93e063e652533244fa1657fbc41c4f3
 		backup_restore=1
 		multi_instance=1
 		incorrect_path=1
@@ -43,9 +43,9 @@
 Email=jean-baptiste@holcroft.fr
 Notification=all
 ;;; Upgrade options
-	; commit=f14080cbe65c8b2a8e0cda1c34affe0123a6540d
-		name=Upgrade from 3.1.1
-manifest_arg=domain=DOMAIN&path=PATH&admin=USER&is_public=1&github_account=fake&github_token=fake
 	; commit=565bfc66719f55b9c6a03cba8ac9991111992c9b
 		name=Upgrade from 3.5.1
+manifest_arg=domain=DOMAIN&path=PATH&admin=USER&is_public=1&github_account=fake&github_token=fake
+	; commit=73a808f7a93e063e652533244fa1657fbc41c4f3
+		name=Upgrade from 3.6.1
 manifest_arg=domain=DOMAIN&path=PATH&admin=USER&is_public=1&github_account=fake&github_token=fake

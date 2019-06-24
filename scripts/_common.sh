@@ -8,10 +8,11 @@
 pkg_dependencies="libxml2-dev libxslt-dev libfreetype6-dev \
 	libjpeg-dev libz-dev libyaml-dev python3-dev python3-pip python3-virtualenv \
 	postgresql libpq-dev uwsgi uwsgi-plugin-python3 \
+	libpango1.0-dev libcairo2-dev libglib2.0-dev libgirepository1.0-dev \
 	mailutils python-celery-common virtualenv redis-server"
 
 # Weblate's version for PIP and settings file
-current_version="3.6.1"
+current_version="3.7"
 
 #=================================================
 # PERSONAL HELPERS
