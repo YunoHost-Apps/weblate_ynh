@@ -5,7 +5,7 @@
 #=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
-set -eu
+
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -20,18 +20,14 @@ new_domain=$YNH_APP_NEW_DOMAIN
 new_path=$YNH_APP_NEW_PATH
 
 app=$YNH_APP_INSTANCE_NAME
-final_path=/var/www/$app
 
+#=================================================
+# LOAD SETTINGS
+#=================================================
+ynh_script_progression --message="Loading installation settings..." --time --weight=1
+
+final_path=$(ynh_app_setting_get "$app" final_path)
 is_public=$(ynh_app_setting_get "$app" is_public)
-
-#=================================================
-# CHECK THE SYNTAX OF THE PATHS
-#=================================================
-
-test -n "$old_path" || old_path="/"
-test -n "$new_path" || new_path="/"
-new_path=$(ynh_normalize_url_path $new_path)
-old_path=$(ynh_normalize_url_path $old_path)
 
 #=================================================
 # CHECK WHICH PARTS SHOULD BE CHANGED
@@ -50,17 +46,15 @@ then
 fi
 
 #=================================================
-# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
+# STANDARD MODIFICATIONS
+#=================================================
+# STOP SYSTEMD SERVICE
 #=================================================
 
-# Backup the current version of the app
-# ynh_backup_before_upgrade
-# ynh_clean_setup () {
-# 	# restore it if the upgrade fails
-# 	ynh_restore_upgradebackup
-# }
-# # Exit if an error occurs during the execution of the script
-# ynh_abort_if_errors
+ynh_script_progression --message="Stopping systemd services..." --time --weight=1
+
+ynh_systemd_action --service_name="$app" --action="stop"
+ynh_systemd_action --service_name="$app-celery" --action="stop"
 
 #=================================================
 # STANDARD MODIFICATIONS
@@ -68,19 +62,22 @@ fi
 # MODIFY URL IN NGINX CONF
 #=================================================
 
+ynh_script_progression --message="Updating nginx web server configuration..." --time --weight=1
+
 nginx_conf_path="/etc/nginx/conf.d/$old_domain.d/$app.conf"
 finalnginxconf=$nginx_conf_path
 
 # Change the path in the nginx config file
 if [ $change_path -eq 1 ]
 then
-	ynh_replace_string "location $old_path" "location $new_path" "$nginx_conf_path"
+	ynh_replace_string "location $old_path"    "location $new_path"    "$nginx_conf_path"
 	ynh_replace_string "SCRIPT_NAME $old_path" "SCRIPT_NAME $new_path" "$nginx_conf_path"
 fi
 
 # Change the domain for nginx
 if [ $change_domain -eq 1 ]
 then
+
 	finalnginxconf="/etc/nginx/conf.d/${new_domain}.d/${app}.conf"
 	mv "$nginx_conf_path" "$finalnginxconf"
 fi
@@ -88,8 +85,7 @@ fi
 #=================================================
 # Edit specific content from nginx configuration
 #=================================================
-
-settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+settings="$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
 
 if [ "$old_path" == "/" ] && [ "$new_path" != "/" ]
 then
@@ -99,10 +95,6 @@ then
 		# ynh panel is useless for public websites
 		ynh_replace_string "	#include conf.d/"  "	include conf.d/"  "$finalnginxconf"
 	fi
-	# root install as an empty PATHURL to prevent '//static'
-	ynh_replace_string "URL_PREFIX = ''" "URL_PREFIX = '$new_path'" "$settings"
-
-	ynh_store_file_checksum "$finalnginxconf"
 fi
 
 if [ "$old_path" != "/" ] && [ "$new_path" == "/" ]
@@ -110,37 +102,47 @@ then
 
 	# ynh panel is only comptable with non-root installation
 	ynh_replace_string "	include conf.d/"  "	#include conf.d/"  "$finalnginxconf"
-
-	# root install as an empty PATHURL to prevent '//static'
-	ynh_replace_string "URL_PREFIX = '$old_path'" "URL_PREFIX = ''" "$settings"
-
-	ynh_store_file_checksum "$finalnginxconf"
 fi
+
+ynh_store_file_checksum "$finalnginxconf"
 
 #=================================================
 # MODIFY settings.py
 #=================================================
-
-settingspy_conf_path="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
+ynh_script_progression --message="Modify weblate's config file..." --time --weight=1
 
 # Change the path in the nginx config file
 if [ $change_path -eq 1 ]
 then
-	ynh_replace_string "URL_PREFIX = '$old_path" "URL_PREFIX = '$new_path" "$settingspy_conf_path"
+	ynh_replace_string "URL_PREFIX = '$old_path" "URL_PREFIX = '$new_path" "$settings"
 fi
 
 # Change the domain for nginx
 if [ $change_domain -eq 1 ]
 then
 	# replace SERVER_EMAIL
-	ynh_replace_string "noreply@$old_domain" "noreply@$new_domain" "$settingspy_conf_path"
+	ynh_replace_string "noreply@$old_domain"     "noreply@$new_domain"     "$settings"
 	# replace ALLOWED_HOSTS
-	ynh_replace_string "['$old_domain']" "['$new_domain']" "$settingspy_conf_path"
+	ynh_replace_string "['$old_domain']"         "['$new_domain']"         "$settings"
 fi
+
+if [ "$old_path" == "/" ] && [ "$new_path" != "/" ]
+then
+	ynh_replace_string "URL_PREFIX = ''" "URL_PREFIX = '$new_path'" "$settings"
+fi
+
+if [ "$old_path" != "/" ] && [ "$new_path" == "/" ]
+then
+	# root install as an empty PATHURL to prevent '//static'
+	ynh_replace_string "URL_PREFIX = '$old_path'" "URL_PREFIX = ''" "$settings"
+fi
+
+ynh_store_file_checksum "$settings"
 
 #=================================================
 # ChangeSite inside weblate
-#==========================================
+#=================================================
+ynh_script_progression --message="Run weblate's command changesite..." --time --weight=1
 (
 	set +eu
 	source "${final_path}/venv/bin/activate"
@@ -151,9 +153,22 @@ fi
 #=================================================
 # GENERIC FINALISATION
 #=================================================
-# RELOAD NGINX and Weblate
+# START SYSTEMD SERVICE
+#=================================================
+ynh_script_progression --message="Starting systemd services..." --time --weight=1
+
+ynh_systemd_action --service_name="$app" --action="start"
+ynh_systemd_action --service_name="$app-celery" --action="start"
+
+#=================================================
+# RELOAD NGINX
+#=================================================
+ynh_script_progression --message="Reloading nginx web server..." --time --weight=1
+
+ynh_systemd_action --service_name=nginx --action=reload
+
+#=================================================
+# END OF SCRIPT
 #=================================================
 
-
-
-systemctl reload nginx
+ynh_script_progression --message="Change of URL completed for $app" --time --last

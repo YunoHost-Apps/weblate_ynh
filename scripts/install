@@ -5,7 +5,7 @@
 #=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
-set -eu
+
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -42,12 +42,8 @@ app=$YNH_APP_INSTANCE_NAME
 #=================================================
 # CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
 #=================================================
+ynh_script_progression --message="Validating installation parameters..." --time --weight=1
 
-# Normalize the url path syntax
-path_url=$(ynh_normalize_url_path "$path_url")
-
-# Check web path availability
-ynh_webpath_available "$domain" "$path_url"
 # Register (book) web path
 ynh_webpath_register "$app" "$domain" "$path_url"
 
@@ -59,6 +55,8 @@ mkdir -p "$final_path"
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
+
+ynh_script_progression --message="Storing installation settings..." --time --weight=1
 
 ynh_app_setting_set "$app" domain "$domain"
 ynh_app_setting_set "$app" path "$path_url"
@@ -76,14 +74,14 @@ ynh_app_setting_set "$app" github_token "$github_token"
 # INSTALL DEPENDENCIES
 #=================================================
 
-ynh_install_app_dependencies libxml2-dev libxslt-dev libfreetype6-dev \
-	libjpeg-dev libz-dev libyaml-dev python3-dev python3-pip python3-virtualenv \
-	postgresql libpq-dev uwsgi uwsgi-plugin-python3 \
-	mailutils python-celery-common virtualenv redis-server
+ynh_script_progression --message="Installing dependencies..." --time --weight=1
+
+ynh_install_app_dependencies "$pkg_dependencies"
 
 #=================================================
 # CREATE A PostgreSQL DATABASE
 #=================================================
+ynh_script_progression --message="Creating a PostgreSQL database..." --time --weight=1
 
 db_name=$(ynh_sanitize_dbid "$app")
 ynh_app_setting_set "$app" db_name "$db_name"
@@ -93,11 +91,13 @@ ynh_psql_test_if_first_run
 # Initialize database and store postgres password for upgrade
 ynh_psql_setup_db "$db_name" "$app"
 
-systemctl reload postgresql
+ynh_systemd_action --service_name=postgresql --action=reload
 
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
+
+ynh_script_progression --message="Configuring nginx web server..." --time --weight=1
 
 # Create a dedicated nginx config
 ynh_add_nginx_config
@@ -117,6 +117,8 @@ fi
 # CREATE DEDICATED USER
 #=================================================
 
+ynh_script_progression --message="Configuring system user..." --time --weight=1
+
 # Hub needs a home directory with a config file
 ynh_system_user_create "$app" "$final_path"
 # Allow bash for our user, so he can use Hub
@@ -125,6 +127,8 @@ chsh --shell /bin/bash "$app"
 #=================================================
 # Download and install hub
 #=================================================
+
+ynh_script_progression --message="Download and install hub..." --time --weight=1
 
 arch=$(dpkg --print-architecture)
 # Rasberry Pi: Debian armhf (ARM hard float) refers to the ARMv7
@@ -172,6 +176,9 @@ EOF
 #=================================================
 # PIP INSTALLATION
 #=================================================
+
+ynh_script_progression --message="Install weblate using PIP..." --time --weight=10
+
 virtualenv --python=python3 "${final_path}/venv"
 #run source in a 'sub shell'
 (
@@ -192,6 +199,9 @@ virtualenv --python=python3 "${final_path}/venv"
 # https://docs.weblate.org/en/latest/admin/install.html#installation
 # TODO: use --extra-search-dir=/path/to/dists
 #=================================================
+
+ynh_script_progression --message="Create weblate configuration file..." --time --weight=1
+
 db_pwd=$(ynh_app_setting_get "$app" psqlpwd)
 admin_mail=$(ynh_user_get_info "$admin" mail)
 key=$(ynh_string_random 24)$(ynh_string_random 24)$(ynh_string_random 2)
@@ -207,6 +217,7 @@ ynh_app_setting_set "$app" redis_db "$redis_db"
 # SPECIFIC SETUP Filling up the database
 # https://docs.weblate.org/en/latest/admin/install.html#filling-up-the-database
 #==========================================
+ynh_script_progression --message="Filling up the database..." --time --weight=1
 (
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
@@ -226,6 +237,9 @@ ynh_app_setting_set "$app" redis_db "$redis_db"
 #=================================================
 # SETUP CRON
 #=================================================
+
+ynh_script_progression --message="Configure cron file..." --time --weight=1
+
 cp ../conf/cron "/etc/cron.d/$app"
 ynh_replace_string "__APP__"       "$app"         "/etc/cron.d/$app"
 ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
@@ -235,11 +249,12 @@ ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
 #=================================================
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum "$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
+ynh_store_file_checksum "$settings"
 
 #=================================================
 # SPECIFIC SETUP uwsgi
 #=================================================
+ynh_script_progression --message="Configure uwsgi..." --time --weight=1
 
 finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
 cp ../conf/uwsgi.ini "$finaluwsgiini"
@@ -262,6 +277,8 @@ ynh_store_file_checksum "$finaluwsgiini"
 #=================================================
 # ACTIVATE CELERY
 #=================================================
+
+ynh_script_progression --message="Configure celery..." --time --weight=1
 
 celeryconf="$final_path/celery-weblate"
 cp ../conf/celery-weblate "$celeryconf"
@@ -286,6 +303,8 @@ chown -R "$app": "$final_path/avatar-cache"
 #=================================================
 # SETUP SSOWAT
 #=================================================
+
+ynh_script_progression --message="Configuring SSOwat..." --time --weight=1
 
 if [ "$is_public" -eq 0 ]
 then	# Remove the public access
@@ -313,15 +332,18 @@ yunohost service add "$app-celery" --log "/var/log/$app-celery"
 #=================================================
 # Start weblate
 #=================================================
+ynh_script_progression --message="Starting weblate's services..." --time --weight=1
 
-systemctl start "$app"
-systemctl start "$app-celery"
+ynh_systemd_action --service_name="$app" --action="start"
+ynh_systemd_action --service_name="$app-celery" --action="start"
 
 #=================================================
 # RELOAD NGINX
 #=================================================
 
-systemctl reload nginx
+ynh_script_progression --message="Reloading nginx web server..." --time --weight=1
+
+ynh_systemd_action --service_name="nginx" --action="reload"
 
 #=================================================
 # SEND A README FOR THE ADMIN
@@ -333,3 +355,5 @@ If you facing an issue or want to improve this app, please open a new issue in t
 "
 
 ynh_send_readme_to_admin "$message" "$admin"
+
+ynh_script_progression --message="Installation of $app completed" --time --last
