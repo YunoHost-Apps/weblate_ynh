@@ -12,7 +12,7 @@ pkg_dependencies="libxml2-dev libxslt-dev libfreetype6-dev \
 	mailutils python-celery-common virtualenv redis-server"
 
 # Weblate's version for PIP and settings file
-current_version="3.7"
+current_version="3.8"
 
 #=================================================
 # PERSONAL HELPERS
