@@ -31,7 +31,7 @@ from logging.handlers import SysLogHandler
 DEBUG = False
 
 ADMINS = (
-    # ('Your Name', 'your_email@example.com'),
+    ('__ADMIN__', '__ADMINMAIL__'),
 )
 
 MANAGERS = ADMINS
