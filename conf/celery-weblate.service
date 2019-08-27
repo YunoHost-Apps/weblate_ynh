@@ -10,10 +10,9 @@ PermissionsStartOnly=true
 EnvironmentFile=__FINALPATH__/celery-weblate
 WorkingDirectory=__FINALPATH__/
 # https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
-RuntimeDirectory=__APP__-celery
+RuntimeDirectory=__APP__
 
-ExecStartPre=/bin/mkdir -p /var/log/__APP__-celery
-ExecStartPre=/bin/chown -R __APP__ /var/log/__APP__-celery
+ExecStartPre=/bin/chown -R __APP__ /var/log/__APP__
 
 ExecStart=__FINALPATH__/venv/bin/celery multi start ${CELERYD_NODES} \
   -A ${CELERY_APP} --pidfile=${CELERYD_PID_FILE} \

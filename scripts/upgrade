@@ -165,6 +165,15 @@ then
 	systemctl stop "$app-celery"
 fi
 
+# (<3.8) log cleanups
+if [[ -e "/var/log/uwsgi/app/$app" ]]
+then
+    ynh_systemd_action --service_name="$app" --action="stop"
+    ynh_systemd_action --service_name="$app-celery" --action="stop"
+	ynh_secure_remove "/var/log/uwsgi/app/$app"
+	ynh_secure_remove "/var/log/$app-celery"
+fi
+
 #=================================================
 # CHECK THE PATH
 #=================================================
@@ -403,7 +412,7 @@ ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
 ynh_script_progression --message="Upgrading logrotate configuration..." --time --weight=1
 
 # Use logrotate to manage app-specific logfile(s)
-ynh_use_logrotate  --logfile "/var/log/$app-celery" --non-append
+ynh_use_logrotate
 
 #=================================================
 # GENERIC FINALIZATION

@@ -306,7 +306,7 @@ chown -R "$app": "$final_path/avatar-cache"
 ynh_script_progression --message="Configuring log rotation..." --time --weight=1
 
 # Use logrotate to manage application logfile(s)
-ynh_use_logrotate --logfile "/var/log/$app-celery"
+ynh_use_logrotate
 
 #=================================================
 # SETUP SSOWAT
@@ -334,8 +334,8 @@ fi
 # ADVERTISE SERVICES IN ADMIN PANEL
 #=================================================
 
-yunohost service add "$app" --log "/var/log/uwsgi/app/$app/weblate"
-yunohost service add "$app-celery" --log "/var/log/$app-celery"
+yunohost service add "$app" --log "/var/log/$app/weblate.log"
+yunohost service add "$app-celery" --log "/var/log/$app/weblate-celery-w1.log"
 
 #=================================================
 # Start weblate
