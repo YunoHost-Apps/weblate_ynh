@@ -189,7 +189,7 @@ virtualenv --python=python3 "${final_path}/venv"
 	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
 	pip install --upgrade setuptools
 	pip install Weblate=="$current_version"
-	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon
+	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
 )
