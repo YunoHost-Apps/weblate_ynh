@@ -631,8 +631,8 @@ X_FRAME_OPTIONS = 'DENY'
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # Optionally enable HSTS
-SECURE_HSTS_SECONDS = 0
-SECURE_HSTS_PRELOAD = False
+SECURE_HSTS_SECONDS = 63072000 # as in Strict-Transport-Security : max-age=yunohost/data/templates/nginx/yunohost_admin.conf
+SECURE_HSTS_PRELOAD = False    # already done by YunoHost
 SECURE_HSTS_INCLUDE_SUBDOMAINS = False
 
 # URL of login
