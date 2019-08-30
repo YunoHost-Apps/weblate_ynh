@@ -75,94 +75,18 @@ elif [ "$is_public" = "No" ]; then
 	is_public=0
 fi
 
-# (<2.17)
-if [ -z "$db_name" ]; then	# If db_name doesn't exist, create it
-	db_name=$(ynh_sanitize_dbid "$app")
-	ynh_app_setting_set "$app" db_name "$db_name"
-fi
-
-# (<3.2)
-migrate_to_python3=0
-if [ -e "$final_path/venv/lib/python2.7/site-packages/weblate/settings.py" ]; then
-	settings="$final_path/venv/lib/python2.7/site-packages/weblate/settings.py"
-	migrate_to_python3=1
-	cp "$settings" "$final_path/settings.py"
-else
-	settings="$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
-fi
-
-# (<2.17) save memc_port if it doesn't exist
-if [[ -z "$memc_port" ]]
-then
-	memc_port=$(cat "$settings" \
-		| grep "'LOCATION': '127.0.0.1:" \
-		| sed "s|.*:\\(.*\\)'.*|\\1|")
-	ynh_app_setting_set "$app" memc_port "$memc_port"
-fi
-
-# Weblate requires an update to 3.0 before 3.1
-# the upgrade hook will launch this script again to make sure it works
-if [[ -z "$migration311" && $previous_version = "2.20" ]]
-then
-	# $migration311 is not set, version is <3.0
-	migration311="two_steps_upgrade_3.0to3.1-needed"
-
-	mig_type=$(cat "/etc/yunohost/apps/$YNH_APP_ID/status.json" | sed -e 's/.*"type":.*"\(.\+\)".*/\1/gi')
-
-	if [ "$mig_type" = "file" ]
-	then
-		mig_parm=$(cat "/etc/yunohost/apps/$YNH_APP_ID/status.json" | sed -e 's/.*"path": "\(.\+\)",.*/\1/gi')
-	else
-		mig_parm=$(cat "/etc/yunohost/apps/$YNH_APP_ID/status.json" | sed -e 's/.*"url": "\(.\+\)", "type".*/\1/gi')
-	fi
-
-	ynh_app_setting_set "$app" migration311 "$migration311"
-	ynh_app_setting_set "$app" migration311_type "$mig_type"
-	ynh_app_setting_set "$app" migration311_parm "$mig_parm"
-	current_version="3.0.1"
-fi
-
-# (<3.2)
-if [ -z "$redis_db" ]; then
-	redis_db=$(ynh_redis_get_free_db)
-	ynh_app_setting_set "$app" redis_db "$redis_db"
-fi
-
-# (<2.20) remove complex uwsgi systemd template
-if [ -e "/etc/systemd/system/uwsgi-app@.service" ]
-then
-	systemctl stop "uwsgi-app@$app"
-	# if somehow the service doesn't exist, add it
-	yunohost service add "uwsgi-app@$app.service" --log "/var/log/uwsgi/app/$app"
-	yunohost service remove "uwsgi-app@$app.service"
-	ynh_secure_remove "/etc/systemd/system/uwsgi-app@.socket"
-	ynh_secure_remove "/etc/systemd/system/uwsgi-app@.service"
-	# remove old log file (used by the new service file)
-	ynh_secure_remove "/var/log/uwsgi/app/weblate"
-	systemctl daemon-reload
-fi
-
-# (<2.18) move hub to the correct folder
-if [ -e "$final_path/bin/hub" ]
-then
-	mv "$final_path/bin/hub" /usr/bin/
-	chown root:root /usr/bin/hub
-fi
-
 if [[ -d "$final_path/bin/" ]]
 then
 	ynh_secure_remove "$final_path/bin/"
 fi
 
-# Make sure the uwsgi service is stoped
-if [[ -e "/var/run/$app/socket" ]]
+# (<3.8) log cleanups
+if [[ -e "/var/log/uwsgi/app/$app" ]]
 then
-	systemctl stop "$app"
-fi
-
-if [[ -e "/var/run/$app-celery/$app-w1.pid" ]]
-then
-	systemctl stop "$app-celery"
+    ynh_systemd_action --service_name="$app" --action="stop"
+    ynh_systemd_action --service_name="$app-celery" --action="stop"
+	ynh_secure_remove "/var/log/uwsgi/app/$app"
+	ynh_secure_remove "/var/log/$app-celery"
 fi
 
 #=================================================
@@ -246,15 +170,9 @@ ynh_store_file_checksum "$finaluwsgiini"
 # PIP INSTALLATION
 #=================================================
 
-if [ "$migrate_to_python3" -eq 1 ]
-then
-    ynh_script_progression --message="Rebuild the virtualenv with Python3..." --time --weight=1
-	ynh_secure_remove "${final_path}/venv"
-	virtualenv --python=python3 "${final_path}/venv"
-fi
+ynh_script_progression --message="Install weblate using PIP..." --time --weight=10
 
 (
-    ynh_script_progression --message="Install weblate using PIP..." --time --weight=10
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
 	set -o nounset
@@ -262,22 +180,17 @@ fi
 	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
 	pip install --upgrade setuptools
 	pip install Weblate=="$current_version"
-	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis
+	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
 )
-
-if [ "$migrate_to_python3" -eq 1 ]
-then
-	mv "$final_path/settings.py" "$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
-	settings="$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
-fi
 
 #=================================================
 # CONFIG FILE UPGRADE
 #=================================================
 ynh_script_progression --message="Create weblate configuration file..." --time --weight=1
 # save old settings file
+settings="$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
 
 old_settings="$final_path/settings.$previous_version.old.py"
 
@@ -352,37 +265,10 @@ ynh_script_progression --message="Run migration scripts..." --time --weight=1
 	export DJANGO_SETTINGS_MODULE="weblate.settings"
 	cd "${final_path}"
 
-	# https://docs.weblate.org/en/latest/admin/upgrade.html#upgrade-3
-	# https://github.com/WeblateOrg/docker/blob/386aa8d98bb57dfec3707680827d4e4f4d79e3fd/start#L81-L88
-	if [[ $current_version = "3.0.1" ]]
-	then
-		weblate showmigrations --plan > /tmp/migrations.txt
-		if  grep -Fq '[X]  auth.0001_initial' /tmp/migrations.txt && grep -Fq '[ ]  weblate_auth.0001_initial' /tmp/migrations.txt ; then
-			ynh_replace_string "AUTH_USER_MODEL" "#AUTH_USER_MODEL" "$settings"
-			weblate migrate weblate_auth 0001
-			ynh_replace_string "#AUTH_USER_MODEL" "AUTH_USER_MODEL" "$settings"
-		fi
-
-		ynh_secure_remove /tmp/migrations.txt
-	fi
-
-
 	weblate migrate --noinput
 	weblate collectstatic --noinput
 	weblate setuplang
 	weblate setupgroups
-
-	if [[ $previous_version = "2.16" ]] || \
-		[[ $previous_version = "2.17.1" ]] || \
-		[[ $previous_version = "2.18"   ]]
-	then
-		weblate loadpo --all --lang dsb
-		weblate loadpo --all --lang he
-		weblate loadpo --all --lang hsb
-		weblate loadpo --all --lang kw
-		weblate loadpo --all --lang lt
-		weblate loadpo --all --lang lv
-	fi
 )
 
 # Recalculate and store the config file checksum into the app settings
@@ -396,6 +282,14 @@ ynh_script_progression --message="Configure cron file..." --time --weight=1
 cp ../conf/cron "/etc/cron.d/$app"
 ynh_replace_string "__APP__"       "$app"         "/etc/cron.d/$app"
 ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
+
+#=================================================
+# SETUP LOGROTATE
+#=================================================
+ynh_script_progression --message="Upgrading logrotate configuration..." --time --weight=1
+
+# Use logrotate to manage app-specific logfile(s)
+ynh_use_logrotate
 
 #=================================================
 # GENERIC FINALIZATION

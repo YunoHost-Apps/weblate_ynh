@@ -62,6 +62,13 @@ ynh_backup "db.sql"
 #=================================================
 # SPECIFIC BACKUP
 #=================================================
+# BACKUP LOGROTATE
+#=================================================
+ynh_script_progression --message="Backing up logrotate configuration..." --time --weight=1
+
+ynh_backup --src_path="/etc/logrotate.d/$app"
+
+#=================================================
 # BACKUP THE CRON FILE
 #=================================================
 

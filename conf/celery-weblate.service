@@ -10,19 +10,18 @@ PermissionsStartOnly=true
 EnvironmentFile=__FINALPATH__/celery-weblate
 WorkingDirectory=__FINALPATH__/
 # https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
-RuntimeDirectory=__APP__-celery
+RuntimeDirectory=__APP__
 
-ExecStartPre=/bin/mkdir -p /var/log/__APP__-celery
-ExecStartPre=/bin/chown -R __APP__ /var/log/__APP__-celery
+ExecStartPre=/bin/chown -R __APP__ /var/log/__APP__
 
-ExecStart=__FINALPATH__/venv/bin/celery multi start ${CELERYD_NODES} \
+ExecStart=/bin/sh -c '${CELERY_BIN} multi start ${CELERYD_NODES} \
   -A ${CELERY_APP} --pidfile=${CELERYD_PID_FILE} \
-  --logfile=${CELERYD_LOG_FILE} --loglevel=${CELERYD_LOG_LEVEL} ${CELERYD_OPTS}
-ExecStop=__FINALPATH__/venv/bin/celery multi stopwait ${CELERYD_NODES} \
-  --pidfile=${CELERYD_PID_FILE}
-ExecReload=__FINALPATH__/venv/bin/celery multi restart ${CELERYD_NODES} \
+  --logfile=${CELERYD_LOG_FILE} --loglevel=${CELERYD_LOG_LEVEL} ${CELERYD_OPTS}'
+ExecStop=/bin/sh -c '${CELERY_BIN} multi stopwait ${CELERYD_NODES} \
+  --pidfile=${CELERYD_PID_FILE}'
+ExecReload=/bin/sh -c '${CELERY_BIN} multi restart ${CELERYD_NODES} \
   -A ${CELERY_APP} --pidfile=${CELERYD_PID_FILE} \
-  --logfile=${CELERYD_LOG_FILE} --loglevel=${CELERYD_LOG_LEVEL} ${CELERYD_OPTS}
+  --logfile=${CELERYD_LOG_FILE} --loglevel=${CELERYD_LOG_LEVEL} ${CELERYD_OPTS}'
 
 [Install]
 WantedBy=multi-user.target
