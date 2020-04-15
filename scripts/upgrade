@@ -140,7 +140,7 @@ ynh_install_app_dependencies "$pkg_dependencies"
 ynh_script_progression --message="Making sure dedicated system user exists..." --time --weight=1
 
 # Create a system user
-ynh_system_user_create "$app" "/home/$app"
+ynh_system_user_create "$app" "$final_path"
 chsh --shell /bin/bash "$app"
 
 #=================================================
