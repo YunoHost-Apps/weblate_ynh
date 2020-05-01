@@ -190,7 +190,8 @@ ynh_script_progression --message="Install weblate using PIP..." --time --weight=
 #=================================================
 ynh_script_progression --message="Create weblate configuration file..." --time --weight=1
 # save old settings file
-settings="$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
+python_version=$(ls -1 $final_path/venv/lib | grep python)
+settings="$final_path/venv/lib/$python_version/site-packages/weblate/settings.py"
 
 old_settings="$final_path/settings.$previous_version.old.py"
 

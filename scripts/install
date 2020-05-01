@@ -207,7 +207,8 @@ admin_mail=$(ynh_user_get_info "$admin" mail)
 key=$(ynh_string_random 24)$(ynh_string_random 24)$(ynh_string_random 2)
 redis_db=$(ynh_redis_get_free_db)
 
-settings="$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
+python_version=$(ls -1 $final_path/venv/lib | grep python)
+settings="$final_path/venv/lib/$python_version/site-packages/weblate/settings.py"
 cp "../conf/settings_history/settings.$current_version.py" "$settings"
 
 weblate_fill_settings "$settings"
