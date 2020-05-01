@@ -59,7 +59,7 @@ ynh_restore_file "$final_path"
 ynh_script_progression --message="Recreating the dedicated system user..." --time --weight=1
 
 # Create the dedicated user (if not existing)
-ynh_system_user_create "$app" "/home/$app"
+ynh_system_user_create "$app" "$final_path"
 # Allow bash for our user, so he can use hub
 chsh --shell /bin/bash "$app"
 

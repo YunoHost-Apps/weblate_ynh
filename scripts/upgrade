@@ -140,7 +140,7 @@ ynh_install_app_dependencies "$pkg_dependencies"
 ynh_script_progression --message="Making sure dedicated system user exists..." --time --weight=1
 
 # Create a system user
-ynh_system_user_create "$app" "/home/$app"
+ynh_system_user_create "$app" "$final_path"
 chsh --shell /bin/bash "$app"
 
 #=================================================
@@ -151,9 +151,11 @@ ynh_script_progression --message="Configure uwsgi..." --time --weight=1
 finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
 cp ../conf/uwsgi.ini "$finaluwsgiini"
 
-ynh_replace_string "__FINALPATH__" "$final_path" "$finaluwsgiini"
-ynh_replace_string "__PATH__"      "$path_url"   "$finaluwsgiini"
-ynh_replace_string "__APP__"       "$app"        "$finaluwsgiini"
+ynh_replace_string "__FINALPATH__"  "$final_path"     "$finaluwsgiini"
+ynh_replace_string "__PATH__"       "$path_url"       "$finaluwsgiini"
+ynh_replace_string "__APP__"        "$app"            "$finaluwsgiini"
+ynh_replace_string "__PYTHONPATH__" "$weblate_pypath" "$finaluwsgiini"
+
 
 
 # root install doesn't require uwsgi to handle script names
@@ -190,7 +192,7 @@ ynh_script_progression --message="Install weblate using PIP..." --time --weight=
 #=================================================
 ynh_script_progression --message="Create weblate configuration file..." --time --weight=1
 # save old settings file
-settings="$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
+settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 
 old_settings="$final_path/settings.$previous_version.old.py"
 
@@ -272,7 +274,7 @@ ynh_script_progression --message="Run migration scripts..." --time --weight=1
 )
 
 # Recalculate and store the config file checksum into the app settings
-ynh_store_file_checksum "$final_path/venv/lib/python3.5/site-packages/weblate/settings.py"
+ynh_store_file_checksum "$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 
 #=================================================
 # SETUP CRON

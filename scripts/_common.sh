@@ -15,6 +15,15 @@ pkg_dependencies="libxml2-dev libxslt-dev libfreetype6-dev \
 # Weblate's version for PIP and settings file
 current_version="3.8"
 
+
+debian_maj_version=$(sed 's/\..*//' /etc/debian_version)
+
+if [ "$debian_maj_version" -eq 9 ] ; then
+    weblate_pypath="python3.5"
+elif [ "$debian_maj_version" -eq 10 ] ; then
+    weblate_pypath="python3.7"
+fi
+
 #=================================================
 # PERSONAL HELPERS
 #=================================================
@@ -31,6 +40,7 @@ weblate_fill_settings() {
 	ynh_replace_string "__FINALPATH__"  "$final_path"     "$settings"
 	ynh_replace_string "__GITHUBUSER__" "$github_account" "$settings"
 	ynh_replace_string "__REDIS_DB__"   "$redis_db"       "$settings"
+	ynh_replace_string "__PYTHONPATH__" "$weblate_pypath" "$settings"
 
 	# root install as an empty PATHURL to prevent '//static'
 	if [ "$path_url" == "/" ]
