@@ -11,7 +11,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..." --time --weight=1
+ynh_script_progression --message="Loading installation settings..."
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -32,7 +32,7 @@ redis_db=$(ynh_app_setting_get "$app" redis_db)
 #=================================================
 # Get previous version number
 #=================================================
-ynh_script_progression --message="Get previous version number..." --time --weight=1
+ynh_script_progression --message="Get previous version number..."
 
 (
 	set +o nounset
@@ -51,7 +51,7 @@ test -e "$previous_version_template" || ynh_die "Previous version unknown: $prev
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --time --weight=1
+ynh_script_progression --message="Backing up the app before upgrading (may take a while)..."
 
 # Backup the current version of the app
 ynh_backup_before_upgrade
@@ -65,7 +65,7 @@ ynh_abort_if_errors
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..." --time --weight=1
+ynh_script_progression --message="Ensuring downward compatibility..."
 
 if [ "$is_public" = "Yes" ]; then
 	ynh_app_setting_set "$app" is_public 1	# Fix is_public as a boolean value
@@ -102,7 +102,7 @@ path_url=$(ynh_normalize_url_path "$path_url")
 # STOP SYSTEMD SERVICE
 #=================================================
 
-ynh_script_progression --message="Stopping systemd services..." --time --weight=1
+ynh_script_progression --message="Stopping systemd services..."
 
 ynh_systemd_action --service_name="$app" --action="stop"
 ynh_systemd_action --service_name="$app-celery" --action="stop"
@@ -110,7 +110,7 @@ ynh_systemd_action --service_name="$app-celery" --action="stop"
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Upgrading nginx web server configuration..." --time --weight=1
+ynh_script_progression --message="Upgrading nginx web server configuration..."
 
 # Create a dedicated nginx config
 ynh_add_nginx_config
@@ -137,7 +137,7 @@ ynh_install_app_dependencies "$pkg_dependencies"
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Making sure dedicated system user exists..." --time --weight=1
+ynh_script_progression --message="Making sure dedicated system user exists..."
 
 # Create a system user
 ynh_system_user_create "$app" "$final_path"
@@ -146,7 +146,7 @@ chsh --shell /bin/bash "$app"
 #=================================================
 # SPECIFIC SETUP uwsgi
 #=================================================
-ynh_script_progression --message="Configure uwsgi..." --time --weight=1
+ynh_script_progression --message="Configure uwsgi..."
 
 finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
 cp ../conf/uwsgi.ini "$finaluwsgiini"
@@ -172,7 +172,7 @@ ynh_store_file_checksum "$finaluwsgiini"
 # PIP INSTALLATION
 #=================================================
 
-ynh_script_progression --message="Install weblate using PIP..." --time --weight=10
+ynh_script_progression --message="Install weblate using PIP..." --weight=10
 
 (
 	set +o nounset
@@ -190,7 +190,7 @@ ynh_script_progression --message="Install weblate using PIP..." --time --weight=
 #=================================================
 # CONFIG FILE UPGRADE
 #=================================================
-ynh_script_progression --message="Create weblate configuration file..." --time --weight=1
+ynh_script_progression --message="Create weblate configuration file..."
 # save old settings file
 settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 
@@ -246,7 +246,7 @@ ynh_secure_remove "$old_settings"
 #=================================================
 # ACTIVATE CELERY
 #=================================================
-ynh_script_progression --message="Configure celery..." --time --weight=1
+ynh_script_progression --message="Configure celery..."
 
 celeryconf="$final_path/celery-weblate"
 cp ../conf/celery-weblate "$celeryconf"
@@ -259,7 +259,7 @@ ynh_add_systemd_config "$app-celery" "celery-weblate.service"
 #=================================================
 # Run migration scripts
 #=================================================
-ynh_script_progression --message="Run migration scripts..." --time --weight=1
+ynh_script_progression --message="Run migration scripts..."
 (
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
@@ -279,7 +279,7 @@ ynh_store_file_checksum "$final_path/venv/lib/$weblate_pypath/site-packages/webl
 #=================================================
 # SETUP CRON
 #=================================================
-ynh_script_progression --message="Configure cron file..." --time --weight=1
+ynh_script_progression --message="Configure cron file..."
 
 cp ../conf/cron "/etc/cron.d/$app"
 ynh_replace_string "__APP__"       "$app"         "/etc/cron.d/$app"
@@ -288,7 +288,7 @@ ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
 #=================================================
 # SETUP LOGROTATE
 #=================================================
-ynh_script_progression --message="Upgrading logrotate configuration..." --time --weight=1
+ynh_script_progression --message="Upgrading logrotate configuration..."
 
 # Use logrotate to manage app-specific logfile(s)
 ynh_use_logrotate
@@ -309,7 +309,7 @@ chown -R "$app": "$final_path/avatar-cache"
 #=================================================
 # SETUP SSOWAT
 #=================================================
-ynh_script_progression --message="Configuring SSOwat..." --time --weight=1
+ynh_script_progression --message="Configuring SSOwat..."
 
 if [ $is_public -eq 0 ]
 then	# Remove the public access
@@ -330,7 +330,7 @@ fi
 #=================================================
 # Restart weblate
 #=================================================
-ynh_script_progression --message="Starting weblate's services..." --time --weight=1
+ynh_script_progression --message="Starting weblate's services..."
 
 ynh_systemd_action --service_name="$app" --action="start"
 ynh_systemd_action --service_name="$app-celery" --action="start"
@@ -339,7 +339,7 @@ ynh_systemd_action --service_name="$app-celery" --action="start"
 # RELOAD NGINX
 #=================================================
 
-ynh_script_progression --message="Reloading nginx web server..." --time --weight=1
+ynh_script_progression --message="Reloading nginx web server..."
 
 ynh_systemd_action --service_name="nginx" --action="reload"
 
@@ -347,4 +347,4 @@ ynh_systemd_action --service_name="nginx" --action="reload"
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade of $app completed" --time --last
+ynh_script_progression --message="Upgrade of $app completed" --last
