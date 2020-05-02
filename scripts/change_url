@@ -24,7 +24,7 @@ app=$YNH_APP_INSTANCE_NAME
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..." --time --weight=1
+ynh_script_progression --message="Loading installation settings..."
 
 final_path=$(ynh_app_setting_get "$app" final_path)
 is_public=$(ynh_app_setting_get "$app" is_public)
@@ -51,7 +51,7 @@ fi
 # STOP SYSTEMD SERVICE
 #=================================================
 
-ynh_script_progression --message="Stopping systemd services..." --time --weight=1
+ynh_script_progression --message="Stopping systemd services..."
 
 ynh_systemd_action --service_name="$app" --action="stop"
 ynh_systemd_action --service_name="$app-celery" --action="stop"
@@ -62,7 +62,7 @@ ynh_systemd_action --service_name="$app-celery" --action="stop"
 # MODIFY URL IN NGINX CONF
 #=================================================
 
-ynh_script_progression --message="Updating nginx web server configuration..." --time --weight=1
+ynh_script_progression --message="Updating nginx web server configuration..."
 
 nginx_conf_path="/etc/nginx/conf.d/$old_domain.d/$app.conf"
 finalnginxconf=$nginx_conf_path
@@ -85,8 +85,7 @@ fi
 #=================================================
 # Edit specific content from nginx configuration
 #=================================================
-python_version=$(ls -1 $final_path/venv/lib | grep python)
-settings="$final_path/venv/lib/$python_version/site-packages/weblate/settings.py"
+settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 
 if [ "$old_path" == "/" ] && [ "$new_path" != "/" ]
 then
@@ -110,7 +109,7 @@ ynh_store_file_checksum "$finalnginxconf"
 #=================================================
 # MODIFY settings.py
 #=================================================
-ynh_script_progression --message="Modify weblate's config file..." --time --weight=1
+ynh_script_progression --message="Modify weblate's config file..."
 
 # Change the path in the nginx config file
 if [ $change_path -eq 1 ]
@@ -143,7 +142,7 @@ ynh_store_file_checksum "$settings"
 #=================================================
 # ChangeSite inside weblate
 #=================================================
-ynh_script_progression --message="Run weblate's command changesite..." --time --weight=1
+ynh_script_progression --message="Run weblate's command changesite..."
 (
 	set +eu
 	source "${final_path}/venv/bin/activate"
@@ -156,7 +155,7 @@ ynh_script_progression --message="Run weblate's command changesite..." --time --
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Starting systemd services..." --time --weight=1
+ynh_script_progression --message="Starting systemd services..."
 
 ynh_systemd_action --service_name="$app" --action="start"
 ynh_systemd_action --service_name="$app-celery" --action="start"
@@ -164,7 +163,7 @@ ynh_systemd_action --service_name="$app-celery" --action="start"
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server..." --time --weight=1
+ynh_script_progression --message="Reloading nginx web server..."
 
 ynh_systemd_action --service_name=nginx --action=reload
 
@@ -172,4 +171,4 @@ ynh_systemd_action --service_name=nginx --action=reload
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Change of URL completed for $app" --time --last
+ynh_script_progression --message="Change of URL completed for $app" --last

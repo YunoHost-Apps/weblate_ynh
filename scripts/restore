@@ -18,7 +18,7 @@ ynh_abort_if_errors
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading settings..." --time --weight=1
+ynh_script_progression --message="Loading settings..."
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -31,7 +31,7 @@ db_pwd=$(ynh_app_setting_get "$app" psqlpwd)
 #=================================================
 # CHECK IF THE APP CAN BE RESTORED
 #=================================================
-ynh_script_progression --message="Validating restoration parameters..." --time --weight=1
+ynh_script_progression --message="Validating restoration parameters..."
 
 # Check web path availability
 ynh_webpath_available "$domain" "$path_url" || ynh_die "Path not available: ${domain}${path_url}"
@@ -49,17 +49,17 @@ ynh_restore_file "/etc/nginx/conf.d/$domain.d/$app.conf"
 #=================================================
 # RESTORE THE APP MAIN DIR
 #=================================================
-ynh_script_progression --message="Restoring the app main directory..." --time --weight=1
+ynh_script_progression --message="Restoring the app main directory..."
 
 ynh_restore_file "$final_path"
 
 #=================================================
 # RECREATE THE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Recreating the dedicated system user..." --time --weight=1
+ynh_script_progression --message="Recreating the dedicated system user..."
 
 # Create the dedicated user (if not existing)
-ynh_system_user_create "$app" "/home/$app"
+ynh_system_user_create "$app" "$final_path"
 # Allow bash for our user, so he can use hub
 chsh --shell /bin/bash "$app"
 
@@ -75,14 +75,14 @@ chown -R "$app": "$final_path"
 #=================================================
 # REINSTALL DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Reinstalling dependencies..." --time --weight=1
+ynh_script_progression --message="Reinstalling dependencies..."
 
 ynh_install_app_dependencies "$pkg_dependencies"
 
 #=================================================
 # RESTORE THE PostgreSQL DATABASE
 #=================================================
-ynh_script_progression --message="Restoring the PostgreSQL database..." --time --weight=1
+ynh_script_progression --message="Restoring the PostgreSQL database..."
 
 ynh_psql_test_if_first_run
 ynh_psql_setup_db "$db_name" "$db_name" "$db_pwd"
@@ -91,7 +91,7 @@ ynh_psql_execute_file_as_root ./db.sql "$db_name"
 #=================================================
 # RESTORE Weblate service
 #=================================================
-ynh_script_progression --message="Restoring systemd configurations..." --time --weight=1
+ynh_script_progression --message="Restoring systemd configurations..."
 
 usermod --append --groups www-data "$app"
 
@@ -120,7 +120,7 @@ ynh_restore_file "/etc/cron.d/$app"
 #=================================================
 # RESTORE THE HUB BINARY FILE
 #=================================================
-ynh_script_progression --message="Restore hub's binary file..." --time --weight=1
+ynh_script_progression --message="Restore hub's binary file..."
 ynh_restore_file "/usr/bin/hub"
 
 #=================================================
@@ -135,7 +135,7 @@ mkdir -p "/var/log/$app"
 #=================================================
 # Start weblate
 #=================================================
-ynh_script_progression --message="Starting a systemd service..." --time --weight=1
+ynh_script_progression --message="Starting a systemd service..."
 
 ynh_systemd_action --service_name="$app" --action="start"
 ynh_systemd_action --service_name="$app-celery" --action="start"
@@ -143,11 +143,11 @@ ynh_systemd_action --service_name="$app-celery" --action="start"
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server and php-fpm..." --time --weight=1
+ynh_script_progression --message="Reloading nginx web server and php-fpm..."
 
 ynh_systemd_action --service_name="nginx" --action="reload"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
-ynh_script_progression --message="Restoration completed for $app" --time --last
+ynh_script_progression --message="Restoration completed for $app" --last
