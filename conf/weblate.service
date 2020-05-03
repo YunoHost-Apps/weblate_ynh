@@ -20,6 +20,8 @@ ExecStart=/usr/bin/uwsgi \
         --chmod-socket=775 \
         --logto /var/log/__APP__/weblate.log \
         --processes 4
+        --uid=__APP__
+        --gid=www-data
 
 
 Restart=on-failure
