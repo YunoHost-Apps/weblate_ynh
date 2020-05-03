@@ -19,8 +19,8 @@ ExecStart=/usr/bin/uwsgi \
         --socket /var/run/__APP__/socket \
         --chmod-socket=775 \
         --logto /var/log/__APP__/weblate.log \
-        --processes 4
-        --uid=__APP__
+        --processes 4 \
+        --uid=__APP__ \
         --gid=www-data
 
 
