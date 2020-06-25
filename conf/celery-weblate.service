@@ -5,7 +5,7 @@ After=network.target
 [Service]
 Type=forking
 User=__APP__
-Group=__APP__
+Group=www-data
 PermissionsStartOnly=true
 EnvironmentFile=__FINALPATH__/celery-weblate
 WorkingDirectory=__FINALPATH__/
