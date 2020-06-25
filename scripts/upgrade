@@ -181,6 +181,7 @@ ynh_script_progression --message="Install weblate using PIP..." --weight=10
 	pip install --upgrade pip
 	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
 	pip install --upgrade setuptools
+	pip install Django==2.2.*
 	pip install Weblate=="$current_version"
 	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
 	# specific to YunoHost package:
