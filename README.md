@@ -24,14 +24,14 @@ Weblate is a libre web-based translation tool with tight version control integra
 
 An admin user is created at installation, the login is what you provided at installation, the password is **weblate**.
 
-## Github
+## GitHub
 
-You'll need to give Weblate a Github user and a token. Please read [Github's documentation about token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/).
+You'll need to give Weblate a GitHub user and a token. Please read [GitHub's documentation about token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/).
 This user will only be used to open the pull-request, each translation keep his author.
 
-**Careful**, You will have to **manually** move your hub binary file from `/var/www/$app/bin/` to `/usr/bin` to enable pull request on Github.
+**Careful**, You will have to **manually** move your hub binary file from `/var/www/$app/bin/` to `/usr/bin` to enable pull request on GitHub.
 
-**SSH keys**, you will have to go in administration, and generate a public key for weblate and add github.com so Weblate knows the fingerprint. Please note if your account already have a public key (ssh-rsa), you will have to manually add the Weblate's one to your Github account.
+**SSH keys**, you will have to go in administration, and generate a public key for Weblate and add github.com so Weblate knows the fingerprint. Please note if your account already have a public key (ssh-rsa), you will have to manually add the Weblate's one to your GitHub account.
 
 ## Settings and upgrades
 
@@ -40,7 +40,7 @@ You will probably edit it to enable or disable diverse features, it is stored in
 
 Unfortunatly, this settings file also gets upgrades for each release.
 
-This package will :
+This package will:
 
 * generate a default settings file for your current installation,
 * send you a diff with your actual settings (the content will be sent to *root*, and only basic information for weblate's admin),
