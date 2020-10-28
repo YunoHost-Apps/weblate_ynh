@@ -115,6 +115,8 @@ EOF
 #=================================================
 ynh_script_progression --message="Install weblate using PIP..." --time --weight=1
 
+ynh_psql_execute_as_root --sql="CREATE EXTENSION IF NOT EXISTS pg_trgm;" --database=$db_name
+
 virtualenv --python=python3 "${final_path}/venv"
 chown -R "$app": "$final_path"
 

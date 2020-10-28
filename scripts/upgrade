@@ -240,9 +240,10 @@ else
 	current_version=3
 fi
 
+ynh_psql_execute_as_root --sql="CREATE EXTENSION IF NOT EXISTS pg_trgm;" --database=$db_name
+
 if [ "$current_version" -lt "4" ];
 then
-	ynh_psql_execute_as_root --sql="CREATE EXTENSION IF NOT EXISTS pg_trgm;" --database=$db_name
 	upgrade "4.1.1" "../conf/settings.4.1.1.py"
 fi
 
