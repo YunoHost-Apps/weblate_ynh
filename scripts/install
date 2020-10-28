@@ -27,148 +27,85 @@ is_public=$YNH_APP_ARG_IS_PUBLIC
 github_account=$YNH_APP_ARG_GITHUB_ACCOUNT
 github_token=$YNH_APP_ARG_GITHUB_TOKEN
 
-# This is a multi-instance app, meaning it can be installed several times independently
-# The id of the app as stated in the manifest is available as $YNH_APP_ID
-# The instance number is available as $YNH_APP_INSTANCE_NUMBER (equals "1", "2", ...)
-# The app instance name is available as $YNH_APP_INSTANCE_NAME
-#    - the first time the app is installed, YNH_APP_INSTANCE_NAME = ynhexample
-#    - the second time the app is installed, YNH_APP_INSTANCE_NAME = ynhexample__2
-#    - ynhexample__{N} for the subsequent installations, with N=3,4, ...
-# The app instance name is probably what you are interested the most, since this is
-# guaranteed to be unique. This is a good unique identifier to define installation path,
-# db names, ...
 app=$YNH_APP_INSTANCE_NAME
 
 #=================================================
 # CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
 #=================================================
-ynh_script_progression --message="Validating installation parameters..."
-
-# Register (book) web path
-ynh_webpath_register "$app" "$domain" "$path_url"
+ynh_script_progression --message="Validating installation parameters..." --time --weight=1
 
 final_path=/var/www/$app
-test ! -e "$final_path" || ynh_die "This path already contains a folder"
+test ! -e "$final_path" || ynh_die --message="This path already contains a folder"
+
+# Register (book) web path
+ynh_webpath_register --app=$app --domain=$domain --path_url=$path_url
 
 mkdir -p "$final_path"
 
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
+ynh_script_progression --message="Storing installation settings..." --time --weight=1
 
-ynh_script_progression --message="Storing installation settings..."
-
-ynh_app_setting_set "$app" domain "$domain"
-ynh_app_setting_set "$app" path "$path_url"
-ynh_app_setting_set "$app" admin "$admin"
-ynh_app_setting_set "$app" is_public "$is_public"
-ynh_app_setting_set "$app" final_path "$final_path"
-ynh_app_setting_set "$app" github_account "$github_account"
-ynh_app_setting_set "$app" github_token "$github_token"
+ynh_app_setting_set --app="$app" --key=domain --value="$domain"
+ynh_app_setting_set --app="$app" --key=path --value="$path_url"
+ynh_app_setting_set --app="$app" --key=admin --value="$admin"
+ynh_app_setting_set --app="$app" --key=is_public --value="$is_public"
+ynh_app_setting_set --app="$app" --key=final_path --value="$final_path"
+ynh_app_setting_set --app="$app" --key=github_account --value="$github_account"
+ynh_app_setting_set --app="$app" --key=github_token --value="$github_token"
 
 #=================================================
 # STANDARD MODIFICATIONS
 #=================================================
-
-#=================================================
 # INSTALL DEPENDENCIES
 #=================================================
-
-ynh_script_progression --message="Installing dependencies..."
+ynh_script_progression --message="Installing dependencies..." --time --weight=1
 
 ynh_install_app_dependencies "$pkg_dependencies"
 
 #=================================================
 # CREATE A PostgreSQL DATABASE
 #=================================================
-ynh_script_progression --message="Creating a PostgreSQL database..."
+ynh_script_progression --message="Creating a PostgreSQL database..." --time --weight=1
 
-db_name=$(ynh_sanitize_dbid "$app")
-ynh_app_setting_set "$app" db_name "$db_name"
+db_name=$(ynh_sanitize_dbid --db_name="$app")
+db_user=$db_name
+ynh_app_setting_set --app="$app" --key=db_name --value="$db_name"
 
 ynh_psql_test_if_first_run
 
 # Initialize database and store postgres password for upgrade
-ynh_psql_setup_db "$db_name" "$app"
-
-ynh_systemd_action --service_name=postgresql --action=reload
+ynh_psql_setup_db --db_user="$db_user" --db_name="$db_name"
 
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-
-ynh_script_progression --message="Configuring nginx web server..."
+ynh_script_progression --message="Configuring nginx web server..." --time --weight=1
 
 # Create a dedicated nginx config
 ynh_add_nginx_config
 
-if [ "$path_url" == "/" ]
-then
-	# $finalnginxconf comes from ynh_add_nginx_config
-	ynh_replace_string "location //"      "location /"        "$finalnginxconf"
-
-	# ynh panel is only comptable with non-root installation
-	ynh_replace_string "	include conf.d/"  "	#include conf.d/"  "$finalnginxconf"
-
-	ynh_store_file_checksum "$finalnginxconf"
-fi
-
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
-
-ynh_script_progression --message="Configuring system user..."
+ynh_script_progression --message="Configuring system user..." --time --weight=1
 
 # Hub needs a home directory with a config file
-ynh_system_user_create "$app" "$final_path"
-# Allow bash for our user, so he can use Hub
-chsh --shell /bin/bash "$app"
+ynh_system_user_create --username="$app" --home_dir="$final_path" --use_shell
 
 #=================================================
-# Download and install hub
+# CONFIGURE HUB
 #=================================================
-
-ynh_script_progression --message="Download and install hub..."
-
-arch=$(dpkg --print-architecture)
-# Rasberry Pi: Debian armhf (ARM hard float) refers to the ARMv7
-[[ $arch = "armhf" ]] && arch="arm"
-[[ $arch = "i386" ]] && arch="386"
-
-version="hub-linux-${arch}-2.3.0-pre10"
-file_bin="hub-linux-${arch}-2.3.0-pre10.tgz"
-wget --quiet "https://github.com/github/hub/releases/download/v2.3.0-pre10/${file_bin}"
-
-case "$arch" in
-"386")
-	sha256sum="08e29a118577b57f962c7c6e4c2e4bfc72b23df1469f2339631c55454893e24f"
-	;;
-"amd64")
-	sha256sum="015297eb81e8fe11f3989d8f65c213111e508cecf0e9de8af1b7741de2077320"
-	;;
-"arm")
-	sha256sum="a05cd6a42c973177c2a0b457451e9eef0035be67c666e4beebe3b9ed6d526f3d"
-	;;
-"arm64")
-	sha256sum="6d845601196ef26342b8bafa9ab6e98c88270fb6dad60e0915396ba5486d0c76"
-	;;
-*)
-	sha256sum="-1"
-	;;
-esac
-
-[[ $(sha256sum "$file_bin" | cut -d' ' -f1) = "$sha256sum" ]] || ynh_die "Hub's sha256sum failed (arch: ${arch})"
-
-tar --extract --file "$file_bin" "$version/bin/hub"
-mv "$version/bin/hub" /usr/bin/
+ynh_script_progression --message="Configure hub..." --time --weight=1
 
 mkdir "$final_path/.config/"
 cp ../conf/hub_config "$final_path/.config/hub"
-ynh_replace_string "__GITHUBUSER__"  "$github_account" "$final_path/.config/hub"
-ynh_replace_string "__GITHUBTOKEN__" "$github_token"   "$final_path/.config/hub"
+ynh_replace_string --match_string="__GITHUBUSER__" --replace_string="$github_account" --target_file="$final_path/.config/hub"
+ynh_replace_string --match_string="__GITHUBTOKEN__" --replace_string="$github_token" --target_file="$final_path/.config/hub"
 
 cat <<EOF > "$final_path/.bashrc"
-alias git=hub
+eval "$(hub alias -s /bin/bash)"
 EOF
 
 #=================================================
@@ -176,8 +113,7 @@ EOF
 #=================================================
 # PIP INSTALLATION
 #=================================================
-
-ynh_script_progression --message="Install weblate using PIP..." --weight=10
+ynh_script_progression --message="Install weblate using PIP..." --time --weight=1
 
 virtualenv --python=python3 "${final_path}/venv"
 #run source in a 'sub shell'
@@ -185,12 +121,12 @@ virtualenv --python=python3 "${final_path}/venv"
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
 	set -o nounset
-	pip install --upgrade pip
-	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
-	pip install --upgrade setuptools
-	pip install Django==2.2.*
+	pip install --upgrade pip setuptools wheel
+	# Still needed with latest version of weblate?
+	pip install Django==2.* celery==4.*
 	pip install Weblate=="$current_version"
-	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
+	pip install psycopg2-binary ruamel.yaml aeidon phply
+	#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
 )
@@ -200,25 +136,38 @@ virtualenv --python=python3 "${final_path}/venv"
 # https://docs.weblate.org/en/latest/admin/install.html#installation
 # TODO: use --extra-search-dir=/path/to/dists
 #=================================================
+ynh_script_progression --message="Create weblate configuration file..." --time --weight=1
 
-ynh_script_progression --message="Create weblate configuration file..."
-
-db_pwd=$(ynh_app_setting_get "$app" psqlpwd)
-admin_mail=$(ynh_user_get_info "$admin" mail)
-key=$(ynh_string_random 24)$(ynh_string_random 24)$(ynh_string_random 2)
+db_pwd=$(ynh_app_setting_get --app="$app" --key=psqlpwd)
+admin_mail=$(ynh_user_get_info --username="$admin" --key=mail)
+key=$(ynh_string_random --length=50)
 redis_db=$(ynh_redis_get_free_db)
 
 settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
-cp "../conf/settings_history/settings.$current_version.py" "$settings"
+cp "../conf/settings.py" "$settings"
 
-weblate_fill_settings "$settings"
-ynh_app_setting_set "$app" redis_db "$redis_db"
+ynh_replace_string --match_string="__NAME__" --replace_string="$app" --target_file="$settings"
+ynh_replace_string --match_string="__DB_PWD__" --replace_string="$db_pwd" --target_file="$settings"
+ynh_replace_string --match_string="__ADMIN__" --replace_string="$admin" --target_file="$settings"
+ynh_replace_string --match_string="__ADMINMAIL__" --replace_string="$admin_mail" --target_file="$settings"
+ynh_replace_string --match_string="__DOMAIN__" --replace_string="$domain" --target_file="$settings"
+ynh_replace_string --match_string="__KEY__" --replace_string="$key" --target_file="$settings"
+ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$settings"
+ynh_replace_string --match_string="__GITHUBUSER__" --replace_string="$github_account" --target_file="$settings"
+ynh_replace_string --match_string="__REDIS_DB__" --replace_string="$redis_db" --target_file="$settings"
+ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$settings"
+
+# remove last "/" of $path_url
+ynh_replace_string --match_string="__PATHURL__" --replace_string="${path_url%/}" --target_file="$settings"
+
+ynh_app_setting_set --app="$app" --key=redis_db --value="$redis_db"
 
 #=================================================
 # SPECIFIC SETUP Filling up the database
 # https://docs.weblate.org/en/latest/admin/install.html#filling-up-the-database
 #==========================================
-ynh_script_progression --message="Filling up the database..."
+ynh_script_progression --message="Filling up the database..." --time --weight=1
+
 (
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
@@ -236,60 +185,47 @@ ynh_script_progression --message="Filling up the database..."
 )
 
 #=================================================
-# SETUP CRON
-#=================================================
-
-ynh_script_progression --message="Configure cron file..."
-
-cp ../conf/cron "/etc/cron.d/$app"
-ynh_replace_string "__APP__"       "$app"         "/etc/cron.d/$app"
-ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
-
-#=================================================
 # STORE THE CHECKSUM OF THE CONFIG FILE
 #=================================================
 
 # Calculate and store the config file checksum into the app settings
-ynh_store_file_checksum "$settings"
+ynh_store_file_checksum --file="$settings"
 
 #=================================================
-# SPECIFIC SETUP uwsgi
+# SPECIFIC SETUP UWSGI
 #=================================================
-ynh_script_progression --message="Configure uwsgi..."
+ynh_script_progression --message="Configure uwsgi..." --time --weight=1
+
 
 finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
 cp ../conf/uwsgi.ini "$finaluwsgiini"
 
-ynh_replace_string "__FINALPATH__"  "$final_path"     "$finaluwsgiini"
-ynh_replace_string "__PATH__"       "$path_url"       "$finaluwsgiini"
-ynh_replace_string "__APP__"        "$app"            "$finaluwsgiini"
-ynh_replace_string "__PYTHONPATH__" "$weblate_pypath" "$finaluwsgiini"
+ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$finaluwsgiini"
+ynh_replace_string --match_string="__PATH__" --replace_string="$path_url" --target_file="$finaluwsgiini"
+ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$finaluwsgiini"
+ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$finaluwsgiini"
 
+ynh_store_file_checksum --file="$finaluwsgiini"
 
+#=================================================
+# SETUP SYSTEMD
+#=================================================
+ynh_script_progression --message="Configuring a systemd service..." --time --weight=1
 
-# root install doesn't require uwsgi to handle script names
-if [ "$path_url" == "/" ]
-then
-	ynh_replace_string "manage-script-name = true" "manage-script-name = false" "$finaluwsgiini"
-fi
-
-ynh_add_systemd_config "$app" "weblate.service"
-
-ynh_store_file_checksum "$finaluwsgiini"
+ynh_add_systemd_config --service="$app" --template="weblate.service"
 
 #=================================================
 # ACTIVATE CELERY
 #=================================================
-
-ynh_script_progression --message="Configure celery..."
+ynh_script_progression --message="Configure celery..." --time --weight=1
 
 celeryconf="$final_path/celery-weblate"
 cp ../conf/celery-weblate "$celeryconf"
 
-ynh_replace_string "__APP__"        "$app"         "$celeryconf"
-ynh_replace_string "__FINALPATH__"  "$final_path"  "$celeryconf"
+ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$celeryconf"
+ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$celeryconf"
 
-ynh_add_systemd_config "$app-celery" "celery-weblate.service"
+ynh_add_systemd_config --service="$app-celery" --template="celery-weblate.service"
 
 #=================================================
 # GENERIC FINALIZATION
@@ -298,52 +234,47 @@ ynh_add_systemd_config "$app-celery" "celery-weblate.service"
 #=================================================
 
 # Set permissions to app files
+chown -R root:root "$final_path"
 chown -R "$app": "$final_path/data"
 
 mkdir -p "$final_path/avatar-cache"
 chown -R "$app": "$final_path/avatar-cache"
 
+mkdir -p "/var/run/$app"
+chown -R "$app": "/var/run/$app"
+
 #=================================================
 # SETUP LOGROTATE
 #=================================================
-ynh_script_progression --message="Configuring log rotation..."
+ynh_script_progression --message="Configuring log rotation..." --time --weight=1
 
 # Use logrotate to manage application logfile(s)
-ynh_use_logrotate
+ynh_use_logrotate --non-append
 
 #=================================================
-# SETUP SSOWAT
+# INTEGRATE SERVICE IN YUNOHOST
 #=================================================
-
-ynh_script_progression --message="Configuring SSOwat..."
-
-if [ "$is_public" -eq 0 ]
-then	# Remove the public access
-	ynh_app_setting_delete "$app" skipped_uris
-fi
-# Make app public if necessary
-if [ "$is_public" -eq 1 ]
-then
-	# unprotected_uris allows SSO credentials to be passed anyway.
-	ynh_app_setting_set "$app" unprotected_uris "/"
-
-	# ynh panel is not needed
-	ynh_replace_string "	include conf.d/"  "	#include conf.d/"  "$finalnginxconf"
-
-	ynh_store_file_checksum "$finalnginxconf"
-fi
-
-#=================================================
-# ADVERTISE SERVICES IN ADMIN PANEL
-#=================================================
+ynh_script_progression --message="Integrating service in YunoHost..." --time --weight=1
 
 yunohost service add "$app" --log "/var/log/$app/weblate.log"
 yunohost service add "$app-celery" --log "/var/log/$app/weblate-celery-w1.log"
 
 #=================================================
+# SETUP SSOWAT
+#=================================================
+ynh_script_progression --message="Configuring SSOwat..." --time --weight=1
+
+# Make app public if necessary
+if [ "$is_public" -eq 1 ]
+then
+	# unprotected_uris allows SSO credentials to be passed anyway.
+	ynh_app_setting_set --app="$app" --key=unprotected_uris --value="/"
+fi
+
+#=================================================
 # Start weblate
 #=================================================
-ynh_script_progression --message="Starting weblate's services..."
+ynh_script_progression --message="Starting weblate's services..." --time --weight=1
 
 ynh_systemd_action --service_name="$app" --action="start"
 ynh_systemd_action --service_name="$app-celery" --action="start"
@@ -351,8 +282,7 @@ ynh_systemd_action --service_name="$app-celery" --action="start"
 #=================================================
 # RELOAD NGINX
 #=================================================
-
-ynh_script_progression --message="Reloading nginx web server..."
+ynh_script_progression --message="Reloading nginx web server..." --time --weight=1
 
 ynh_systemd_action --service_name="nginx" --action="reload"
 
@@ -367,4 +297,4 @@ If you facing an issue or want to improve this app, please open a new issue in t
 
 ynh_send_readme_to_admin "$message" "$admin"
 
-ynh_script_progression --message="Installation of $app completed" --last
+ynh_script_progression --message="Installation of $app completed" --time --last

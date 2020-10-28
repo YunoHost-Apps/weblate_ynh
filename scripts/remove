@@ -12,12 +12,13 @@ source /usr/share/yunohost/helpers
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..."
+ynh_script_progression --message="Loading installation settings..." --time --weight=1
 
 app=$YNH_APP_INSTANCE_NAME
-domain=$(ynh_app_setting_get "$app" domain)
-db_name=$(ynh_app_setting_get "$app" db_name)
-final_path=$(ynh_app_setting_get "$app" final_path)
+domain=$(ynh_app_setting_get --app="$app" --key=domain)
+db_name=$(ynh_app_setting_get --app="$app" --key=db_name)
+db_user=$db_name
+final_path=$(ynh_app_setting_get --app="$app" --key=final_path)
 
 #=================================================
 # STANDARD REMOVE
@@ -28,53 +29,61 @@ final_path=$(ynh_app_setting_get "$app" final_path)
 # Remove a service from the admin panel, added by `yunohost service add`
 if yunohost service status "$app" >/dev/null 2>&1
 then
-	ynh_script_progression --message="Removing $app service..."
+	ynh_script_progression --message="Removing $app service integration..." --time --weight=1
 	yunohost service remove "$app"
 fi
 
 # Remove a service from the admin panel, added by `yunohost service add`
 if yunohost service status "$app-celery" >/dev/null 2>&1
 then
-	ynh_script_progression --message="Removing $app-celery service..."
+	ynh_script_progression --message="Removing $app-celery service integration..." --time --weight=1
 	yunohost service remove "$app-celery"
 fi
 
 #=================================================
 # STOP WEBLATE'S SERVICES
 #=================================================
-ynh_script_progression --message="Stopping and removing systemd services..."
+ynh_script_progression --message="Stopping and removing systemd services..." --time --weight=1
 
-ynh_remove_systemd_config "$app"
-ynh_remove_systemd_config "$app-celery"
+ynh_remove_systemd_config --service="$app"
+ynh_remove_systemd_config --service="$app-celery"
 
 #=================================================
 # REMOVE THE PostgreSQL DATABASE
 #=================================================
-ynh_script_progression --message="Removing the PostgreSQL database..."
+ynh_script_progression --message="Removing the PostgreSQL database..." --time --weight=1
 
 # Remove a database if it exists, along with the associated user
-ynh_psql_remove_db "$db_name" "$app"
+ynh_psql_remove_db --db_user=$db_user --db_name=$db_name
+
+#=================================================
+# REMOVE REDIS DB
+#=================================================
+
+ynh_redis_remove_db
 
 #=================================================
 # REMOVE DEPENDENCIES
 #=================================================
-ynh_script_progression --message="Removing dependencies..."
+ynh_script_progression --message="Removing dependencies..." --time --weight=1
 
 # Remove metapackage and its dependencies
+finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
+ynh_secure_remove --file="$finaluwsgiini"
 ynh_remove_app_dependencies
 
 #=================================================
 # REMOVE APP MAIN DIR
 #=================================================
-ynh_script_progression --message="Removing app main directory..."
+ynh_script_progression --message="Removing app main directory..." --time --weight=1
 
 # Remove the app directory securely
-ynh_secure_remove "$final_path"
+ynh_secure_remove --file="$final_path"
 
 #=================================================
 # REMOVE NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Removing nginx web server configuration..."
+ynh_script_progression --message="Removing nginx web server configuration..." --time --weight=1
 
 # Remove the dedicated nginx config
 ynh_remove_nginx_config
@@ -82,7 +91,7 @@ ynh_remove_nginx_config
 #=================================================
 # REMOVE LOGROTATE CONFIGURATION
 #=================================================
-ynh_script_progression --message="Removing logrotate configuration..."
+ynh_script_progression --message="Removing logrotate configuration..." --time --weight=1
 
 # Remove the app-specific logrotate config
 ynh_remove_logrotate
@@ -90,29 +99,22 @@ ynh_remove_logrotate
 #=================================================
 # SPECIFIC REMOVE
 #=================================================
-# REMOVE CRON FILE
-#=================================================
-
-# Remove a cron file
-ynh_secure_remove "/etc/cron.d/$app"
-
-#=================================================
 # REMOVE CELERY FILES
 #=================================================
 
-ynh_secure_remove "/var/run/$app-celery"
+ynh_secure_remove --file="/var/run/$app-celery"
 
 #=================================================
 # GENERIC FINALIZATION
 #=================================================
 # REMOVE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Removing the dedicated system user..."
+ynh_script_progression --message="Removing the dedicated system user..." --time --weight=1
 
 # Delete a system user
-ynh_system_user_delete "$app"
+ynh_system_user_delete --username="$app"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
-ynh_script_progression --message="Removal of $app completed" --last
+ynh_script_progression --message="Removal of $app completed" --time --last

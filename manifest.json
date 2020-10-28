@@ -6,7 +6,7 @@
 		"en": "A translation platform using Git and Python",
 		"fr": "Une plateforme de traduction utilisant Git et Python"
 	},
-	"version": "3.8.0~ynh3",
+	"version": "3.11.3~ynh1",
 	"url": "https://weblate.org",
 	"license": "AGPL-3.0",
 	"maintainer": {
@@ -14,7 +14,7 @@
 		"email": "jean-baptiste@holcroft.fr"
 	},
 		"requirements": {
-		"yunohost": ">= 3.5.0"
+		"yunohost": ">= 4.0.0"
 	},
 	"multi_instance": true,
 	"services": [
@@ -52,7 +52,7 @@
 					"en": "Any YunoHost user and anonymous people from the web will be able to access the application",
 					"fr": "Tout utilisateur YunoHost et les personnes anonymes pourront accéder à l'application"
 				},
-				"default": "0"
+				"default": false
 			},
 			{
 				"name": "admin",
@@ -61,7 +61,7 @@
 				    "en": "Choose an admin user for Weblate",
 				    "fr": "Choisissez l'administrateur pour Weblate"
 				},
-				"example": "simon"
+				"example": "johndoe"
 			},
 			{
 				"name": "github_account",
@@ -70,7 +70,7 @@
 				    "en": "GitHub's username",
 				    "fr": "Nom d'utilisateur de GitHub"
 				},
-				"example": "simon"
+				"example": "Github account"
 			},
 			{
 				"name": "github_token",
@@ -79,7 +79,7 @@
 				    "en": "GitHub's token (OAuth)",
 				    "fr": "Jeton GitHub (OAuth)"
 				},
-				"example": "simon"
+				"example": "A secret token"
 			}
 		]
 	}

@@ -14,97 +14,69 @@ ynh_abort_if_errors
 #=================================================
 # LOAD SETTINGS
 #=================================================
-
-ynh_script_progression --message="Loading installation settings..."
+ynh_print_info --message="Loading installation settings..."
 
 app=$YNH_APP_INSTANCE_NAME
 
-final_path=$(ynh_app_setting_get "$app" final_path)
-domain=$(ynh_app_setting_get "$app" domain)
-db_name=$(ynh_app_setting_get "$app" db_name)
+final_path=$(ynh_app_setting_get --app="$app" --key=final_path)
+domain=$(ynh_app_setting_get --app="$app" --key=domain)
+db_name=$(ynh_app_setting_get --app="$app" --key=db_name)
 
-#=================================================
-# STANDARD BACKUP STEPS
 #=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
-
-ynh_script_progression --message="Stopping systemd services..."
+ynh_print_info --message="Stopping systemd services..."
 
 ynh_systemd_action --service_name="$app" --action="stop"
 ynh_systemd_action --service_name="$app-celery" --action="stop"
 
 #=================================================
+# DECLARE DATA AND CONF FILES TO BACKUP
+#=================================================
+ynh_print_info --message="Declaring files to be backed up..."
+
+#=================================================
 # BACKUP THE APP MAIN DIR
 #=================================================
 
-ynh_script_progression --message="Backing up the main app directory..."
-
-ynh_backup "$final_path"
+ynh_backup --src_path="$final_path"
 
 #=================================================
 # BACKUP THE NGINX CONFIGURATION
 #=================================================
 
-ynh_script_progression --message="Backing up nginx web server configuration..."
-
-ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
+ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
 # BACKUP THE PostgreSQL DATABASE
 #=================================================
 
-ynh_script_progression --message="Backing up the PostgreSQL database..."
-
-ynh_psql_dump_db "$db_name" > db.sql
-ynh_backup "db.sql"
+ynh_psql_dump_db --database="$db_name" > db.sql
 
 #=================================================
 # SPECIFIC BACKUP
 #=================================================
 # BACKUP LOGROTATE
 #=================================================
-ynh_script_progression --message="Backing up logrotate configuration..."
 
 ynh_backup --src_path="/etc/logrotate.d/$app"
 
 #=================================================
-# BACKUP THE CRON FILE
+# BACKUP THE UWSGI files
 #=================================================
 
-ynh_script_progression --message="Backing up systemd configuration..."
-
-ynh_backup "/etc/cron.d/$app"
+ynh_backup --src_path="/etc/uwsgi/apps-available/$app.ini"
 
 #=================================================
-# BACKUP THE uwsgi files
+# BACKUP SYSTEMD
 #=================================================
 
-ynh_script_progression --message="Backing up uwsgi configuration..."
-
-ynh_backup "/etc/uwsgi/apps-available/$app.ini"
-ynh_backup "/etc/systemd/system/$app.service"
-ynh_backup "/etc/systemd/system/$app-celery.service"
-
-#=================================================
-# BACKUP THE celery files
-#=================================================
-
-# nothing to do because it is inside $finalpath
-
-#=================================================
-# BACKUP THE hub binary file
-#=================================================
-
-ynh_script_progression --message="Backing up uwsgi configuration..."
-
-ynh_backup /usr/bin/hub
+ynh_backup --src_path="/etc/systemd/system/$app.service"
+ynh_backup --src_path="/etc/systemd/system/$app-celery.service"
 
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-
-ynh_script_progression --message="Starting systemd services..."
 
 ynh_systemd_action --service_name="$app" --action="start"
 ynh_systemd_action --service_name="$app-celery" --action="start"
@@ -113,4 +85,4 @@ ynh_systemd_action --service_name="$app-celery" --action="start"
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Backup script completed for $app. (YunoHost will then actually copy those files to the archive)." --last
+ynh_print_info --message="Backup script completed for $app. (YunoHost will then actually copy those files to the archive)."

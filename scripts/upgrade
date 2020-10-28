@@ -11,47 +11,27 @@ source /usr/share/yunohost/helpers
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..."
+ynh_script_progression --message="Loading installation settings..." --time --weight=1
 
 app=$YNH_APP_INSTANCE_NAME
 
-path_url=$(ynh_app_setting_get "$app" path)
-is_public=$(ynh_app_setting_get "$app" is_public)
-final_path=$(ynh_app_setting_get "$app" final_path)
-db_name=$(ynh_app_setting_get "$app" db_name)
-domain=$(ynh_app_setting_get "$app" domain)
-db_pwd=$(ynh_app_setting_get "$app" psqlpwd)
-admin=$(ynh_app_setting_get "$app" admin)
+path_url=$(ynh_app_setting_get --app="$app" --key=path)
+is_public=$(ynh_app_setting_get --app="$app" --key=is_public)
+final_path=$(ynh_app_setting_get --app="$app" --key=final_path)
+db_name=$(ynh_app_setting_get --app="$app" --key=db_name)
+db_user=$db_name
+domain=$(ynh_app_setting_get --app="$app" --key=domain)
+db_pwd=$(ynh_app_setting_get --app="$app" --key=psqlpwd)
+admin=$(ynh_app_setting_get --app="$app" --key=admin)
 admin_mail=$(ynh_user_get_info "$admin" mail)
-memc_port=$(ynh_app_setting_get "$app" memc_port)
-github_account=$(ynh_app_setting_get "$app" github_account)
-migration311=$(ynh_app_setting_get "$app" migration311)
-key=$(ynh_string_random 24)$(ynh_string_random 24)$(ynh_string_random 2)
-redis_db=$(ynh_app_setting_get "$app" redis_db)
-
-#=================================================
-# Get previous version number
-#=================================================
-ynh_script_progression --message="Get previous version number..."
-
-(
-	set +o nounset
-	source "${final_path}/venv/bin/activate"
-	set -o nounset
-	pip install --upgrade pip
-	pip freeze --local > freeze.pip
-)
-previous_version=$(cat freeze.pip | grep "Weblate==" | sed "s|Weblate==||")
-
-ynh_secure_remove freeze.pip
-
-previous_version_template="../conf/settings_history/settings.$previous_version.py"
-test -e "$previous_version_template" || ynh_die "Previous version unknown: $previous_version"
+github_account=$(ynh_app_setting_get --app="$app" --key=github_account)
+key=$(ynh_string_random 50)
+redis_db=$(ynh_app_setting_get --app="$app" --key=redis_db)
 
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..."
+ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --time --weight=1
 
 # Backup the current version of the app
 ynh_backup_before_upgrade
@@ -65,19 +45,20 @@ ynh_abort_if_errors
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..."
+ynh_script_progression --message="Ensuring downward compatibility..." --time --weight=1
 
+# Fix is_public as a boolean value
 if [ "$is_public" = "Yes" ]; then
-	ynh_app_setting_set "$app" is_public 1	# Fix is_public as a boolean value
+	ynh_app_setting_set --app=$app --key=is_public --value=1
 	is_public=1
 elif [ "$is_public" = "No" ]; then
-	ynh_app_setting_set "$app" is_public 0
+	ynh_app_setting_set --app=$app --key=is_public --value=0
 	is_public=0
 fi
 
 if [[ -d "$final_path/bin/" ]]
 then
-	ynh_secure_remove "$final_path/bin/"
+	ynh_secure_remove --file="$final_path/bin/"
 fi
 
 # (<3.8) log cleanups
@@ -85,8 +66,8 @@ if [[ -e "/var/log/uwsgi/app/$app" ]]
 then
     ynh_systemd_action --service_name="$app" --action="stop"
     ynh_systemd_action --service_name="$app-celery" --action="stop"
-	ynh_secure_remove "/var/log/uwsgi/app/$app"
-	ynh_secure_remove "/var/log/$app-celery"
+	ynh_secure_remove --file="/var/log/uwsgi/app/$app"
+	ynh_secure_remove --file="/var/log/$app-celery"
 fi
 
 #=================================================
@@ -94,15 +75,14 @@ fi
 #=================================================
 
 # Normalize the URL path syntax
-path_url=$(ynh_normalize_url_path "$path_url")
+path_url=$(ynh_normalize_url_path --path_url=$path_url)
 
 #=================================================
 # STANDARD UPGRADE STEPS
 #=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
-
-ynh_script_progression --message="Stopping systemd services..."
+ynh_script_progression --message="Stopping systemd services..." --time --weight=1
 
 ynh_systemd_action --service_name="$app" --action="stop"
 ynh_systemd_action --service_name="$app-celery" --action="stop"
@@ -110,27 +90,17 @@ ynh_systemd_action --service_name="$app-celery" --action="stop"
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Upgrading nginx web server configuration..."
+ynh_script_progression --message="Upgrading nginx web server configuration..." --time --weight=1
 
 # Create a dedicated nginx config
 ynh_add_nginx_config
-
-if [ "$path_url" == "/" ]
-then
-	# $finalnginxconf comes from ynh_add_nginx_config
-	ynh_replace_string "location //"      "location /"        "$finalnginxconf"
-
-	# ynh panel is only comptable with non-root installation
-	ynh_replace_string "	include conf.d/"  "	#include conf.d/"  "$finalnginxconf"
-
-	ynh_store_file_checksum "$finalnginxconf"
-fi
 
 #=================================================
 # SPECIFIC UPGRADE
 #=================================================
 # Update dependencies
 #=================================================
+ynh_script_progression --message="Upgrading dependencies..." --time --weight=1
 
 ynh_install_app_dependencies "$pkg_dependencies"
 
@@ -140,127 +110,101 @@ ynh_install_app_dependencies "$pkg_dependencies"
 ynh_script_progression --message="Making sure dedicated system user exists..."
 
 # Create a system user
-ynh_system_user_create "$app" "$final_path"
-chsh --shell /bin/bash "$app"
+ynh_system_user_create --username="$app" --home_dir="$final_path" --use_shell
 
 #=================================================
-# SPECIFIC SETUP uwsgi
+# SPECIFIC SETUP UWSGI
 #=================================================
-ynh_script_progression --message="Configure uwsgi..."
+ynh_script_progression --message="Configure uwsgi..." --time --weight=1
 
 finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
+ynh_backup_if_checksum_is_different --file="$finaluwsgiini"
 cp ../conf/uwsgi.ini "$finaluwsgiini"
 
-ynh_replace_string "__FINALPATH__"  "$final_path"     "$finaluwsgiini"
-ynh_replace_string "__PATH__"       "$path_url"       "$finaluwsgiini"
-ynh_replace_string "__APP__"        "$app"            "$finaluwsgiini"
-ynh_replace_string "__PYTHONPATH__" "$weblate_pypath" "$finaluwsgiini"
+ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$finaluwsgiini"
+ynh_replace_string --match_string="__PATH__" --replace_string="$path_url" --target_file="$finaluwsgiini"
+ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$finaluwsgiini"
+ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$finaluwsgiini"
 
+ynh_store_file_checksum --file="$finaluwsgiini"
 
+#=================================================
+# SETUP SYSTEMD
+#=================================================
+ynh_script_progression --message="Configuring a systemd service..." --time --weight=1
 
-# root install doesn't require uwsgi to handle script names
-if [ "$path_url" == "/" ]
-then
-	ynh_replace_string "manage-script-name = true" "manage-script-name = false" "$finaluwsgiini"
-fi
+ynh_add_systemd_config --service="$app" --template="weblate.service"
 
-ynh_add_systemd_config "$app" "weblate.service"
+#=================================================
+# ACTIVATE CELERY
+#=================================================
+ynh_script_progression --message="Configure celery..." --time --weight=1
 
-ynh_store_file_checksum "$finaluwsgiini"
+celeryconf="$final_path/celery-weblate"
+cp ../conf/celery-weblate "$celeryconf"
+
+ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$celeryconf"
+ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$celeryconf"
+
+ynh_add_systemd_config --service="$app-celery" --template="celery-weblate.service"
 
 #=================================================
 # PIP INSTALLATION
 #=================================================
+ynh_script_progression --message="Install weblate using PIP..." --time --weight=1
 
-ynh_script_progression --message="Install weblate using PIP..." --weight=10
-
+virtualenv --python=python3 "${final_path}/venv"
+#run source in a 'sub shell'
 (
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
 	set -o nounset
-	pip install --upgrade pip
-	# prevent error: "command: 'install_requires' must be a string or list of strings containing valid project/version requirement specifiers"
-	pip install --upgrade setuptools
-	pip install Django==2.2.*
+	pip install --upgrade pip setuptools wheel
+	# Still needed with latest version of weblate?
+	pip install Django==2.* celery==4.*
 	pip install Weblate=="$current_version"
-	pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
+	pip install psycopg2-binary ruamel.yaml aeidon phply
+	#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
 	# specific to YunoHost package:
 	pip install django_sendmail_backend
 )
 
 #=================================================
-# CONFIG FILE UPGRADE
+# MODIFY A CONFIG FILE
 #=================================================
 ynh_script_progression --message="Create weblate configuration file..."
 # save old settings file
 settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 
-old_settings="$final_path/settings.$previous_version.old.py"
+ynh_backup_if_checksum_is_different --file="$settings"
+cp "../conf/settings.py" "$settings"
 
-cp "$settings" "$old_settings"
+ynh_replace_string --match_string="__NAME__" --replace_string="$app" --target_file="$settings"
+ynh_replace_string --match_string="__DB_PWD__" --replace_string="$db_pwd" --target_file="$settings"
+ynh_replace_string --match_string="__ADMIN__" --replace_string="$admin" --target_file="$settings"
+ynh_replace_string --match_string="__ADMINMAIL__" --replace_string="$admin_mail" --target_file="$settings"
+ynh_replace_string --match_string="__DOMAIN__" --replace_string="$domain" --target_file="$settings"
+ynh_replace_string --match_string="__KEY__" --replace_string="$key" --target_file="$settings"
+ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$settings"
+ynh_replace_string --match_string="__GITHUBUSER__" --replace_string="$github_account" --target_file="$settings"
+ynh_replace_string --match_string="__REDIS_DB__" --replace_string="$redis_db" --target_file="$settings"
+ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$settings"
 
-check=$(ynh_check_if_checksum_is_different "$settings")
+# remove last "/" of $path_url
+ynh_replace_string --match_string="__PATHURL__" --replace_string="${path_url%/}" --target_file="$settings"
 
-if [[ "$check" -eq 1 ]]
-then
-	echo "Settings.py was modified localy, running diff before using the new default file for $current_version."
-	# generate previous defaults settings
-	cp "$previous_version_template" "$old_settings"
-	weblate_fill_settings "$old_settings"
+ynh_app_setting_set --app="$app" --key=redis_db --value="$redis_db"
 
-	# store diff between defaults and local settings
-	set +eu
-	diff --unified "$old_settings" "$settings" > "$final_path/settings.${previous_version}_${current_version}.diff"
-	set -eu
-
-	# send diff to the server administrator
-	mail_message="
-	Weblate was updated from version $previous_version to $current_version
-	Please read:
-	https://docs.weblate.org/en/latest/admin/upgrade.html
-
-	A new settings.py has been created:
-	$settings
-
-	You may have changed your defaults settings.
-	To help you, here is a diff file with every changes you did.
-
-	Diff has been created in:
-	$final_path/settings.${previous_version}_${current_version}.diff
-
-	Please note secret key is updated, this is normal.
-
-	For any issue, please file a bug in: https://github.com/YunoHost-Apps/weblate_ynh
-	"
-
-	ynh_send_readme_to_admin "$mail_message" root "$admin_mail"
-else
-	echo "Settings.py was not modified, using the new default file for $current_version."
-fi
-
-# generate new defaults settings
-cp "../conf/settings_history/settings.$current_version.py" "$settings"
-weblate_fill_settings "$settings"
-
-ynh_secure_remove "$old_settings"
+# Recalculate and store the config file checksum into the app settings
+ynh_store_file_checksum --file="$settings"
 
 #=================================================
-# ACTIVATE CELERY
+# MIGRATE WEBLATE
 #=================================================
-ynh_script_progression --message="Configure celery..."
+ynh_script_progression --message="Run migration scripts..." --time --weight=1
 
-celeryconf="$final_path/celery-weblate"
-cp ../conf/celery-weblate "$celeryconf"
+ynh_systemd_action --service_name="$app-celery" --action="start"
 
-ynh_replace_string "__APP__"        "$app"         "$celeryconf"
-ynh_replace_string "__FINALPATH__"  "$final_path"  "$celeryconf"
-
-ynh_add_systemd_config "$app-celery" "celery-weblate.service"
-
-#=================================================
-# Run migration scripts
-#=================================================
-ynh_script_progression --message="Run migration scripts..."
 (
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
@@ -272,27 +216,25 @@ ynh_script_progression --message="Run migration scripts..."
 	weblate collectstatic --noinput
 	weblate setuplang
 	weblate setupgroups
+	weblate compilemessages
+	sudo -u $app $final_path/venv/bin/weblate check --deploy
 )
-
-# Recalculate and store the config file checksum into the app settings
-ynh_store_file_checksum "$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
-
-#=================================================
-# SETUP CRON
-#=================================================
-ynh_script_progression --message="Configure cron file..."
-
-cp ../conf/cron "/etc/cron.d/$app"
-ynh_replace_string "__APP__"       "$app"         "/etc/cron.d/$app"
-ynh_replace_string "__FINALPATH__" "$final_path/" "/etc/cron.d/$app"
 
 #=================================================
 # SETUP LOGROTATE
 #=================================================
-ynh_script_progression --message="Upgrading logrotate configuration..."
+ynh_script_progression --message="Upgrading logrotate configuration..." --time --weight=1
 
 # Use logrotate to manage app-specific logfile(s)
-ynh_use_logrotate
+ynh_use_logrotate --non-append
+
+#=================================================
+# INTEGRATE SERVICE IN YUNOHOST
+#=================================================
+ynh_script_progression --message="Integrating service in YunoHost..." --time --weight=1
+
+yunohost service add "$app" --log "/var/log/$app/weblate.log"
+yunohost service add "$app-celery" --log "/var/log/$app/weblate-celery-w1.log"
 
 #=================================================
 # GENERIC FINALIZATION
@@ -307,45 +249,38 @@ chown -R "$app": "$final_path/data"
 mkdir -p "$final_path/avatar-cache"
 chown -R "$app": "$final_path/avatar-cache"
 
-#=================================================
-# SETUP SSOWAT
-#=================================================
-ynh_script_progression --message="Configuring SSOwat..."
-
-if [ $is_public -eq 0 ]
-then	# Remove the public access
-	ynh_app_setting_delete "$app" skipped_uris
-fi
-# Make app public if necessary
-if [ $is_public -eq 1 ]
-then
-	# unprotected_uris allows SSO credentials to be passed anyway
-	ynh_app_setting_set "$app" unprotected_uris "/"
-
-	# ynh panel is not needed
-	ynh_replace_string "	include conf.d/"  "	#include conf.d/"  "$finalnginxconf"
-
-	ynh_store_file_checksum "$finalnginxconf"
-fi
+mkdir -p "/var/run/$app"
+chown -R "$app": "/var/run/$app"
 
 #=================================================
-# Restart weblate
+# START SYSTEMD SERVICES
 #=================================================
-ynh_script_progression --message="Starting weblate's services..."
+ynh_script_progression --message="Starting systemd services..." --time --weight=1
 
 ynh_systemd_action --service_name="$app" --action="start"
 ynh_systemd_action --service_name="$app-celery" --action="start"
 
 #=================================================
+# SETUP SSOWAT
+#=================================================
+ynh_script_progression --message="Upgrading SSOwat configuration..." --time --weight=1
+
+# Make app public if necessary
+if [ "$is_public" -eq 1 ]
+then
+	# unprotected_uris allows SSO credentials to be passed anyway.
+	ynh_app_setting_set --app="$app" --key=unprotected_uris --value="/"
+fi
+
+#=================================================
 # RELOAD NGINX
 #=================================================
+ynh_script_progression --message="Reloading nginx web server..." --time --weight=1
 
-ynh_script_progression --message="Reloading nginx web server..."
-
-ynh_systemd_action --service_name="nginx" --action="reload"
+ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade of $app completed" --last
+ynh_script_progression --message="Upgrade of $app completed" --time --last

@@ -5,7 +5,7 @@ After=syslog.target
 [Service]
 Type=forking
 User=__APP__
-Group=www-data
+Group=__APP__
 PermissionsStartOnly=true
 
 
@@ -16,10 +16,7 @@ ExecStartPre=/bin/chown -R __APP__ /var/log/__APP__
 
 ExecStart=/usr/bin/uwsgi \
         --ini /etc/uwsgi/apps-available/__APP__.ini \
-        --socket /var/run/__APP__/socket \
-        --chmod-socket=775 \
-        --logto /var/log/__APP__/weblate.log \
-        --processes 4
+        --logto /var/log/__APP__/weblate.log
 
 
 Restart=on-failure
