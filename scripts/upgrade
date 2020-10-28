@@ -198,6 +198,9 @@ ynh_app_setting_set --app="$app" --key=redis_db --value="$redis_db"
 # Recalculate and store the config file checksum into the app settings
 ynh_store_file_checksum --file="$settings"
 
+touch "$final_path/local_settings.py"
+ln -sf "$final_path/local_settings.py" "$final_path/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
+
 #=================================================
 # MIGRATE WEBLATE
 #=================================================

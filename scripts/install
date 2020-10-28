@@ -116,6 +116,8 @@ EOF
 ynh_script_progression --message="Install weblate using PIP..." --time --weight=1
 
 virtualenv --python=python3 "${final_path}/venv"
+chown -R "$app": "$final_path"
+
 #run source in a 'sub shell'
 (
 	set +o nounset
@@ -161,6 +163,9 @@ ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_py
 ynh_replace_string --match_string="__PATHURL__" --replace_string="${path_url%/}" --target_file="$settings"
 
 ynh_app_setting_set --app="$app" --key=redis_db --value="$redis_db"
+
+touch "$final_path/local_settings.py"
+ln -sf "$final_path/local_settings.py" "$final_path/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
 
 #=================================================
 # SPECIFIC SETUP Filling up the database

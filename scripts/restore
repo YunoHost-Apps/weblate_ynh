@@ -54,6 +54,9 @@ ynh_script_progression --message="Restoring the app main directory..." --time --
 
 ynh_restore_file --origin_path="$final_path"
 
+touch "$final_path/local_settings.py"
+ln -sf "$final_path/local_settings.py" "$final_path/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
+
 #=================================================
 # RECREATE THE DEDICATED USER
 #=================================================
