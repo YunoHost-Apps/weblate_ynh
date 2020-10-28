@@ -149,79 +149,104 @@ ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path"
 ynh_add_systemd_config --service="$app-celery" --template="celery-weblate.service"
 
 #=================================================
-# PIP INSTALLATION
+# UPGRADE WEBLATE
 #=================================================
-ynh_script_progression --message="Install weblate using PIP..." --time --weight=1
 
-virtualenv --python=python3 "${final_path}/venv"
-#run source in a 'sub shell'
-(
-	set +o nounset
-	source "${final_path}/venv/bin/activate"
-	set -o nounset
-	sudo -u $app $final_path/venv/bin/pip install --upgrade pip setuptools wheel
-	# Still needed with latest version of weblate?
-	sudo -u $app $final_path/venv/bin/pip install celery==4.*
-	sudo -u $app $final_path/venv/bin/pip install --upgrade Weblate=="$current_version"
-	sudo -u $app $final_path/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply
-	#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
-	# specific to YunoHost package:
-	sudo -u $app $final_path/venv/bin/pip install django_sendmail_backend
-)
+upgrade() {
+	new_version=$1
+	settings_template=$2
+	#=================================================
+	# PIP INSTALLATION
+	#=================================================
+	ynh_script_progression --message="Install weblate using PIP..." --time --weight=1
 
-#=================================================
-# MODIFY A CONFIG FILE
-#=================================================
-ynh_script_progression --message="Create weblate configuration file..."
-# save old settings file
-settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
+	ynh_systemd_action --service_name="$app-celery" --action="stop"
 
-ynh_backup_if_checksum_is_different --file="$settings"
-cp "../conf/settings.py" "$settings"
+	virtualenv --python=python3 "${final_path}/venv"
+	#run source in a 'sub shell'
+	(
+		set +o nounset
+		source "${final_path}/venv/bin/activate"
+		set -o nounset
+		sudo -u $app $final_path/venv/bin/pip install --upgrade pip setuptools wheel
+		# Still needed with latest version of weblate?
+		sudo -u $app $final_path/venv/bin/pip install --upgrade Weblate=="$new_version"
+		sudo -u $app $final_path/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply
+		#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
+		# specific to YunoHost package:
+		sudo -u $app $final_path/venv/bin/pip install django_sendmail_backend
+	)
 
-ynh_replace_string --match_string="__NAME__" --replace_string="$app" --target_file="$settings"
-ynh_replace_string --match_string="__DB_PWD__" --replace_string="$db_pwd" --target_file="$settings"
-ynh_replace_string --match_string="__ADMIN__" --replace_string="$admin" --target_file="$settings"
-ynh_replace_string --match_string="__ADMINMAIL__" --replace_string="$admin_mail" --target_file="$settings"
-ynh_replace_string --match_string="__DOMAIN__" --replace_string="$domain" --target_file="$settings"
-ynh_replace_string --match_string="__KEY__" --replace_string="$key" --target_file="$settings"
-ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$settings"
-ynh_replace_string --match_string="__GITHUBUSER__" --replace_string="$github_account" --target_file="$settings"
-ynh_replace_string --match_string="__REDIS_DB__" --replace_string="$redis_db" --target_file="$settings"
-ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$settings"
+	#=================================================
+	# MODIFY A CONFIG FILE
+	#=================================================
+	ynh_script_progression --message="Create weblate configuration file..."
+	# save old settings file
+	settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 
-# remove last "/" of $path_url
-ynh_replace_string --match_string="__PATHURL__" --replace_string="${path_url%/}" --target_file="$settings"
+	ynh_backup_if_checksum_is_different --file="$settings"
+	cp "$settings_template" "$settings"
 
-ynh_app_setting_set --app="$app" --key=redis_db --value="$redis_db"
+	ynh_replace_string --match_string="__NAME__" --replace_string="$app" --target_file="$settings"
+	ynh_replace_string --match_string="__DB_PWD__" --replace_string="$db_pwd" --target_file="$settings"
+	ynh_replace_string --match_string="__ADMIN__" --replace_string="$admin" --target_file="$settings"
+	ynh_replace_string --match_string="__ADMINMAIL__" --replace_string="$admin_mail" --target_file="$settings"
+	ynh_replace_string --match_string="__DOMAIN__" --replace_string="$domain" --target_file="$settings"
+	ynh_replace_string --match_string="__KEY__" --replace_string="$key" --target_file="$settings"
+	ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$settings"
+	ynh_replace_string --match_string="__GITHUBUSER__" --replace_string="$github_account" --target_file="$settings"
+	ynh_replace_string --match_string="__REDIS_DB__" --replace_string="$redis_db" --target_file="$settings"
+	ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$settings"
 
-# Recalculate and store the config file checksum into the app settings
-ynh_store_file_checksum --file="$settings"
+	# remove last "/" of $path_url
+	ynh_replace_string --match_string="__PATHURL__" --replace_string="${path_url%/}" --target_file="$settings"
 
-touch "$final_path/local_settings.py"
-ln -sf "$final_path/local_settings.py" "$final_path/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
+	ynh_app_setting_set --app="$app" --key=redis_db --value="$redis_db"
 
-#=================================================
-# MIGRATE WEBLATE
-#=================================================
-ynh_script_progression --message="Run migration scripts..." --time --weight=1
+	# Recalculate and store the config file checksum into the app settings
+	ynh_store_file_checksum --file="$settings"
 
-ynh_systemd_action --service_name="$app-celery" --action="start"
+	touch "$final_path/local_settings.py"
+	ln -sf "$final_path/local_settings.py" "$final_path/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
 
-(
-	set +o nounset
-	source "${final_path}/venv/bin/activate"
-	set -o nounset
-	export DJANGO_SETTINGS_MODULE="weblate.settings"
-	cd "${final_path}"
+	#=================================================
+	# MIGRATE WEBLATE
+	#=================================================
+	ynh_script_progression --message="Run migration scripts..." --time --weight=1
 
-	sudo -u $app $final_path/venv/bin/weblate migrate --noinput
-	sudo -u $app $final_path/venv/bin/weblate collectstatic --noinput
-	sudo -u $app $final_path/venv/bin/weblate setuplang
-	sudo -u $app $final_path/venv/bin/weblate setupgroups
-	sudo -u $app $final_path/venv/bin/weblate compilemessages
-	sudo -u $app $final_path/venv/bin/weblate check --deploy
-)
+	ynh_systemd_action --service_name="$app-celery" --action="start"
+
+	(
+		set +o nounset
+		source "${final_path}/venv/bin/activate"
+		set -o nounset
+		export DJANGO_SETTINGS_MODULE="weblate.settings"
+		cd "${final_path}"
+
+		sudo -u $app $final_path/venv/bin/weblate migrate --noinput
+		sudo -u $app $final_path/venv/bin/weblate collectstatic --noinput
+		sudo -u $app $final_path/venv/bin/weblate setuplang
+		sudo -u $app $final_path/venv/bin/weblate setupgroups
+		sudo -u $app $final_path/venv/bin/weblate compilemessages
+		sudo -u $app $final_path/venv/bin/weblate check --deploy
+	)
+}
+
+file_version="${final_path}/venv/lib/$weblate_pypath/site-packages/weblate/__init__.py"
+if [ -e $file_version ];
+then
+	current_version=$(cat $file_version | grep "^VERSION = " | grep -o "[0-9].[0-9]" | head -n1 | cut -d"." -f1)
+else
+	current_version=3
+fi
+
+if [ "$current_version" -lt "4" ];
+then
+	ynh_psql_execute_as_root --sql="CREATE EXTENSION IF NOT EXISTS pg_trgm;" --database=$db_name
+	upgrade "4.1.1" "../conf/settings.4.1.1.py"
+fi
+
+upgrade $weblate_version "../conf/settings.py"
 
 #=================================================
 # SETUP LOGROTATE
