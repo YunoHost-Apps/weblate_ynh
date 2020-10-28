@@ -124,6 +124,8 @@ if [ $change_domain -eq 1 ]
 then
 	# replace SERVER_EMAIL
 	ynh_replace_string --match_string="noreply@$old_domain" --replace_string="noreply@$new_domain" --target_file="$settings"
+	# replace SITE_DOMAIN
+	ynh_replace_string --match_string="SITE_DOMAIN = \"$old_domain\"" --replace_string="SITE_DOMAIN = \"$new_domain\"" --target_file="$settings"
 	# replace ALLOWED_HOSTS
 	ynh_replace_string --match_string="ALLOWED_HOSTS = \[\"$old_domain\"\]" --replace_string="ALLOWED_HOSTS = \[\"$new_domain\"\]" --target_file="$settings"
 fi
@@ -144,17 +146,6 @@ then
 fi
 
 ynh_store_file_checksum --file="$finaluwsgiini"
-
-#=================================================
-# ChangeSite inside weblate
-#=================================================
-ynh_script_progression --message="Run weblate's command changesite..." --time --weight=1
-(
-	set +eu
-	source "${final_path}/venv/bin/activate"
-	export DJANGO_SETTINGS_MODULE="weblate.settings"
-	sudo -u $app $final_path/venv/bin/weblate changesite --set-name "$new_domain"
-)
 
 #=================================================
 # GENERIC FINALISATION

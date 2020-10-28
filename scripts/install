@@ -183,7 +183,6 @@ ynh_script_progression --message="Filling up the database..." --time --weight=1
 	sudo -u $app $final_path/venv/bin/weblate migrate --noinput
 	# generate static files
 	sudo -u $app $final_path/venv/bin/weblate collectstatic --noinput
-	sudo -u $app $final_path/venv/bin/weblate changesite --set-name "$domain"
 	sudo -u $app $final_path/venv/bin/weblate createadmin --no-color \
 		--password "weblate" \
 		--username "$admin" \
