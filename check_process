@@ -28,7 +28,7 @@
 	# If the level 5 (Package linter) is forced to 1. Please add justifications here.
 	Level 5=auto
 ;;; Options
-Email=jean-baptiste@holcroft.fr
+Email=
 Notification=all
 ;;; Upgrade options
 	; commit=cef22ac5634565cecd2d8545229efe3fe79d85bc
