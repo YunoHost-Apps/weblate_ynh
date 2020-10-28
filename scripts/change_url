@@ -106,16 +106,17 @@ fi
 #=================================================
 # SPECIFIC MODIFICATIONS
 #=================================================
-# MODIFY settings.py
+# MODIFY SETTINGS
 #=================================================
 ynh_script_progression --message="Modify weblate's config file..." --time --weight=1
 
 settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
+ynh_backup_if_checksum_is_different --file="$settings"
 
 # Change the path in the nginx config file
 if [ $change_path -eq 1 ]
 then
-	ynh_replace_string --match_string="URL_PREFIX = '${old_path%/}'" --replace_string="URL_PREFIX = '${new_path%/}'" --target_file="$settings"
+	ynh_replace_string --match_string="URL_PREFIX = \"${old_path%/}\"" --replace_string="URL_PREFIX = \"${new_path%/}\"" --target_file="$settings"
 fi
 
 # Change the domain for nginx
@@ -124,10 +125,25 @@ then
 	# replace SERVER_EMAIL
 	ynh_replace_string --match_string="noreply@$old_domain" --replace_string="noreply@$new_domain" --target_file="$settings"
 	# replace ALLOWED_HOSTS
-	ynh_replace_string --match_string="['$old_domain']" --replace_string="['$new_domain']" --target_file="$settings"
+	ynh_replace_string --match_string="ALLOWED_HOSTS = \[\"$old_domain\"\]" --replace_string="ALLOWED_HOSTS = \[\"$new_domain\"\]" --target_file="$settings"
 fi
 
 ynh_store_file_checksum --file="$settings"
+
+#=================================================
+# MODIFY UWSGI
+#=================================================
+
+finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
+ynh_backup_if_checksum_is_different --file="$finaluwsgiini"
+
+# Change the path in the nginx config file
+if [ $change_path -eq 1 ]
+then
+	ynh_replace_string --match_string="mount = $old_path=" --replace_string="mount = $new_path=" --target_file="$finaluwsgiini"
+fi
+
+ynh_store_file_checksum --file="$finaluwsgiini"
 
 #=================================================
 # ChangeSite inside weblate
@@ -137,7 +153,7 @@ ynh_script_progression --message="Run weblate's command changesite..." --time --
 	set +eu
 	source "${final_path}/venv/bin/activate"
 	export DJANGO_SETTINGS_MODULE="weblate.settings"
-	weblate changesite --set-name "$new_domain"
+	sudo -u $app $final_path/venv/bin/weblate changesite --set-name "$new_domain"
 )
 
 #=================================================

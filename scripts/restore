@@ -67,14 +67,10 @@ ynh_system_user_create --username=$app --home_dir="$final_path" --use_shell
 #=================================================
 
 # Restore permissions on app files
-chown -R root:root "$final_path"
-chown -R "$app": "$final_path/data"
+chown -R "$app": "$final_path"
 
 mkdir -p "$final_path/avatar-cache"
 chown -R "$app": "$final_path/avatar-cache"
-
-mkdir -p "/var/run/$app"
-chown -R "$app": "/var/run/$app"
 
 #=================================================
 # SPECIFIC RESTORATION

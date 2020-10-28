@@ -159,14 +159,14 @@ virtualenv --python=python3 "${final_path}/venv"
 	set +o nounset
 	source "${final_path}/venv/bin/activate"
 	set -o nounset
-	pip install --upgrade pip setuptools wheel
+	sudo -u $app $final_path/venv/bin/pip install --upgrade pip setuptools wheel
 	# Still needed with latest version of weblate?
-	pip install celery==4.*
-	pip install --upgrade Weblate=="$current_version"
-	pip install psycopg2-binary ruamel.yaml aeidon phply
+	sudo -u $app $final_path/venv/bin/pip install celery==4.*
+	sudo -u $app $final_path/venv/bin/pip install --upgrade Weblate=="$current_version"
+	sudo -u $app $final_path/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply
 	#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
 	# specific to YunoHost package:
-	pip install django_sendmail_backend
+	sudo -u $app $final_path/venv/bin/pip install django_sendmail_backend
 )
 
 #=================================================
@@ -212,11 +212,11 @@ ynh_systemd_action --service_name="$app-celery" --action="start"
 	export DJANGO_SETTINGS_MODULE="weblate.settings"
 	cd "${final_path}"
 
-	weblate migrate --noinput
-	weblate collectstatic --noinput
-	weblate setuplang
-	weblate setupgroups
-	weblate compilemessages
+	sudo -u $app $final_path/venv/bin/weblate migrate --noinput
+	sudo -u $app $final_path/venv/bin/weblate collectstatic --noinput
+	sudo -u $app $final_path/venv/bin/weblate setuplang
+	sudo -u $app $final_path/venv/bin/weblate setupgroups
+	sudo -u $app $final_path/venv/bin/weblate compilemessages
 	sudo -u $app $final_path/venv/bin/weblate check --deploy
 )
 
@@ -243,14 +243,10 @@ yunohost service add "$app-celery" --log "/var/log/$app/weblate-celery-w1.log"
 #=================================================
 
 # Set right permissions for curl installation
-chown -R root:root "$final_path"
-chown -R "$app": "$final_path/data"
+chown -R "$app": "$final_path"
 
 mkdir -p "$final_path/avatar-cache"
 chown -R "$app": "$final_path/avatar-cache"
-
-mkdir -p "/var/run/$app"
-chown -R "$app": "/var/run/$app"
 
 #=================================================
 # START SYSTEMD SERVICES
