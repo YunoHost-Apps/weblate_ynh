@@ -10,10 +10,14 @@
 	"url": "https://weblate.org",
 	"license": "AGPL-3.0",
 	"maintainer": {
+		"name": "",
+		"email": ""
+	},
+	"previous_maintainers": [{
 		"name": "Jean-Baptiste Holcroft",
 		"email": "jean-baptiste@holcroft.fr"
-	},
-		"requirements": {
+	}],
+	"requirements": {
 		"yunohost": ">= 4.0.0"
 	},
 	"multi_instance": true,
