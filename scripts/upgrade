@@ -11,7 +11,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..." --time --weight=1
+ynh_script_progression --message="Loading installation settings..."
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -32,7 +32,7 @@ redis_db=$(ynh_app_setting_get --app="$app" --key=redis_db)
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --time --weight=1
+ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=40
 
 # Backup the current version of the app
 ynh_backup_before_upgrade
@@ -46,7 +46,7 @@ ynh_abort_if_errors
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..." --time --weight=1
+ynh_script_progression --message="Ensuring downward compatibility..."
 
 # Fix is_public as a boolean value
 if [ "$is_public" = "Yes" ]; then
@@ -83,7 +83,7 @@ path_url=$(ynh_normalize_url_path --path_url=$path_url)
 #=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Stopping systemd services..." --time --weight=1
+ynh_script_progression --message="Stopping systemd services..." --weight=5
 
 ynh_systemd_action --service_name="$app" --action="stop"
 ynh_systemd_action --service_name="$app-celery" --action="stop"
@@ -91,7 +91,7 @@ ynh_systemd_action --service_name="$app-celery" --action="stop"
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Upgrading nginx web server configuration..." --time --weight=1
+ynh_script_progression --message="Upgrading nginx web server configuration..."
 
 # Create a dedicated nginx config
 ynh_add_nginx_config
@@ -101,7 +101,7 @@ ynh_add_nginx_config
 #=================================================
 # Update dependencies
 #=================================================
-ynh_script_progression --message="Upgrading dependencies..." --time --weight=1
+ynh_script_progression --message="Upgrading dependencies..."
 
 ynh_exec_warn_less ynh_install_app_dependencies "$pkg_dependencies"
 
@@ -116,7 +116,7 @@ ynh_system_user_create --username="$app" --home_dir="$final_path" --use_shell
 #=================================================
 # CONFIGURE HUB
 #=================================================
-ynh_script_progression --message="Configure hub..." --time --weight=1
+ynh_script_progression --message="Configure hub..."
 
 mkdir -p "$final_path/.config/"
 cp ../conf/hub_config "$final_path/.config/hub"
@@ -130,7 +130,7 @@ EOF
 #=================================================
 # SPECIFIC SETUP UWSGI
 #=================================================
-ynh_script_progression --message="Configure uwsgi..." --time --weight=1
+ynh_script_progression --message="Configure uwsgi..."
 
 finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
 ynh_backup_if_checksum_is_different --file="$finaluwsgiini"
@@ -146,14 +146,14 @@ ynh_store_file_checksum --file="$finaluwsgiini"
 #=================================================
 # SETUP SYSTEMD
 #=================================================
-ynh_script_progression --message="Configuring a systemd service..." --time --weight=1
+ynh_script_progression --message="Configuring a systemd service..."
 
 ynh_add_systemd_config --service="$app" --template="weblate.service"
 
 #=================================================
 # ACTIVATE CELERY
 #=================================================
-ynh_script_progression --message="Configure celery..." --time --weight=1
+ynh_script_progression --message="Configure celery..."
 
 celeryconf="$final_path/celery-weblate"
 cp ../conf/celery-weblate "$celeryconf"
@@ -173,7 +173,7 @@ upgrade() {
 	#=================================================
 	# PIP INSTALLATION
 	#=================================================
-	ynh_script_progression --message="Install weblate using PIP..." --time --weight=1
+	ynh_script_progression --message="Install weblate using PIP..." --weight=15
 
 	ynh_systemd_action --service_name="$app-celery" --action="stop"
 
@@ -230,7 +230,7 @@ upgrade() {
 	#=================================================
 	# MIGRATE WEBLATE
 	#=================================================
-	ynh_script_progression --message="Run migration scripts..." --time --weight=1
+	ynh_script_progression --message="Run migration scripts..." --weight=10
 
 	ynh_systemd_action --service_name="$app-celery" --action="start"
 
@@ -275,7 +275,7 @@ upgrade $weblate_version "../conf/settings.py"
 #=================================================
 # SETUP LOGROTATE
 #=================================================
-ynh_script_progression --message="Upgrading logrotate configuration..." --time --weight=1
+ynh_script_progression --message="Upgrading logrotate configuration..."
 
 # Use logrotate to manage app-specific logfile(s)
 ynh_use_logrotate --non-append
@@ -283,7 +283,7 @@ ynh_use_logrotate --non-append
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
-ynh_script_progression --message="Integrating service in YunoHost..." --time --weight=1
+ynh_script_progression --message="Integrating service in YunoHost..."
 
 yunohost service add "$app" --log "/var/log/$app/weblate.log"
 yunohost service add "$app-celery" --log "/var/log/$app/weblate-celery-w1.log"
@@ -303,7 +303,7 @@ chown -R "$app": "$final_path/avatar-cache"
 #=================================================
 # START SYSTEMD SERVICES
 #=================================================
-ynh_script_progression --message="Starting systemd services..." --time --weight=1
+ynh_script_progression --message="Starting systemd services..." --weight=5
 
 ynh_systemd_action --service_name="$app" --action="start"
 ynh_systemd_action --service_name="$app-celery" --action="start"
@@ -311,7 +311,7 @@ ynh_systemd_action --service_name="$app-celery" --action="start"
 #=================================================
 # SETUP SSOWAT
 #=================================================
-ynh_script_progression --message="Upgrading SSOwat configuration..." --time --weight=1
+ynh_script_progression --message="Upgrading SSOwat configuration..."
 
 # Make app public if necessary
 if [ "$is_public" -eq 1 ]
@@ -323,7 +323,7 @@ fi
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server..." --time --weight=1
+ynh_script_progression --message="Reloading nginx web server..."
 
 ynh_systemd_action --service_name=nginx --action=reload
 
@@ -331,4 +331,4 @@ ynh_systemd_action --service_name=nginx --action=reload
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade of $app completed" --time --last
+ynh_script_progression --message="Upgrade of $app completed" --last

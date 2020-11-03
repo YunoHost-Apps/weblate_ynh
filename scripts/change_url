@@ -24,7 +24,7 @@ app=$YNH_APP_INSTANCE_NAME
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..." --time --weight=1
+ynh_script_progression --message="Loading installation settings..."
 
 final_path=$(ynh_app_setting_get --app="$app" --key=final_path)
 is_public=$(ynh_app_setting_get --app="$app" --key=is_public)
@@ -32,7 +32,7 @@ is_public=$(ynh_app_setting_get --app="$app" --key=is_public)
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
 #=================================================
-ynh_script_progression --message="Backing up the app before changing its url (may take a while)..." --time --weight=1
+ynh_script_progression --message="Backing up the app before changing its url (may take a while)..." --weight=40
 
 # Backup the current version of the app
 ynh_backup_before_upgrade
@@ -67,7 +67,7 @@ fi
 #=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Stopping systemd services..." --time --weight=1
+ynh_script_progression --message="Stopping systemd services..."
 
 ynh_systemd_action --service_name="$app" --action="stop"
 ynh_systemd_action --service_name="$app-celery" --action="stop"
@@ -77,7 +77,7 @@ ynh_systemd_action --service_name="$app-celery" --action="stop"
 #=================================================
 # MODIFY URL IN NGINX CONF
 #=================================================
-ynh_script_progression --message="Updating nginx web server configuration..." --time --weight=1
+ynh_script_progression --message="Updating nginx web server configuration..."
 
 nginx_conf_path=/etc/nginx/conf.d/$old_domain.d/$app.conf
 
@@ -108,7 +108,7 @@ fi
 #=================================================
 # MODIFY SETTINGS
 #=================================================
-ynh_script_progression --message="Modify weblate's config file..." --time --weight=1
+ynh_script_progression --message="Modify weblate's config file..."
 
 settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 ynh_backup_if_checksum_is_different --file="$settings"
@@ -152,7 +152,7 @@ ynh_store_file_checksum --file="$finaluwsgiini"
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Starting systemd services..." --time --weight=1
+ynh_script_progression --message="Starting systemd services..." --weight=5
 
 ynh_systemd_action --service_name="$app" --action="start"
 ynh_systemd_action --service_name="$app-celery" --action="start"
@@ -160,7 +160,7 @@ ynh_systemd_action --service_name="$app-celery" --action="start"
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server..." --time --weight=1
+ynh_script_progression --message="Reloading nginx web server..."
 
 ynh_systemd_action --service_name=nginx --action=reload
 
@@ -168,4 +168,4 @@ ynh_systemd_action --service_name=nginx --action=reload
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Change of URL completed for $app" --time --last
+ynh_script_progression --message="Change of URL completed for $app" --last

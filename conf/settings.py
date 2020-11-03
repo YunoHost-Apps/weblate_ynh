@@ -5,7 +5,7 @@
 ################################################################################
 
 # Please do not modify this file, it will be reset at the next update.
-# You can edit the file /var/www/weblate/local_settings.py and add/modify the settings you need.
+# You can edit the file __FINALPATH__/local_settings.py and add/modify the settings you need.
 # The parameters you add in local_settings.py will overwrite these,
 # but you can use the options and documentation in this file to find out what can be done.
 
