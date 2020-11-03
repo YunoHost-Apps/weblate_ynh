@@ -249,7 +249,7 @@ upgrade() {
 		
 		# Check the configuration
 		# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
-		if [ "$new_version" -eq "$weblate_version" ]; then
+		if [ "$new_version" == "$weblate_version" ]; then
 			sudo -u $app $final_path/venv/bin/weblate check --deploy || true
 		fi
 	)
