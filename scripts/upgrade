@@ -25,6 +25,7 @@ db_pwd=$(ynh_app_setting_get --app="$app" --key=psqlpwd)
 admin=$(ynh_app_setting_get --app="$app" --key=admin)
 admin_mail=$(ynh_user_get_info "$admin" mail)
 github_account=$(ynh_app_setting_get --app="$app" --key=github_account)
+github_token=$(ynh_app_setting_get --app="$app" --key=github_token)
 key=$(ynh_string_random 50)
 redis_db=$(ynh_app_setting_get --app="$app" --key=redis_db)
 
@@ -113,6 +114,20 @@ ynh_script_progression --message="Making sure dedicated system user exists..."
 ynh_system_user_create --username="$app" --home_dir="$final_path" --use_shell
 
 #=================================================
+# CONFIGURE HUB
+#=================================================
+ynh_script_progression --message="Configure hub..." --time --weight=1
+
+mkdir -p "$final_path/.config/"
+cp ../conf/hub_config "$final_path/.config/hub"
+ynh_replace_string --match_string="__GITHUBUSER__" --replace_string="$github_account" --target_file="$final_path/.config/hub"
+ynh_replace_string --match_string="__GITHUBTOKEN__" --replace_string="$github_token" --target_file="$final_path/.config/hub"
+
+cat <<EOF > "$final_path/.bashrc"
+eval "$(hub alias -s /bin/bash)"
+EOF
+
+#=================================================
 # SPECIFIC SETUP UWSGI
 #=================================================
 ynh_script_progression --message="Configure uwsgi..." --time --weight=1
@@ -163,6 +178,8 @@ upgrade() {
 	ynh_systemd_action --service_name="$app-celery" --action="stop"
 
 	virtualenv --python=python3 "${final_path}/venv"
+	chown -R "$app": "$final_path/venv"
+
 	#run source in a 'sub shell'
 	(
 		set +o nounset
@@ -195,6 +212,7 @@ upgrade() {
 	ynh_replace_string --match_string="__KEY__" --replace_string="$key" --target_file="$settings"
 	ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$settings"
 	ynh_replace_string --match_string="__GITHUBUSER__" --replace_string="$github_account" --target_file="$settings"
+	ynh_replace_string --match_string="__GITHUBTOKEN__" --replace_string="$github_token" --target_file="$settings"
 	ynh_replace_string --match_string="__REDIS_DB__" --replace_string="$redis_db" --target_file="$settings"
 	ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$settings"
 
@@ -228,12 +246,14 @@ upgrade() {
 		sudo -u $app $final_path/venv/bin/weblate setuplang
 		sudo -u $app $final_path/venv/bin/weblate setupgroups
 		sudo -u $app $final_path/venv/bin/weblate compilemessages
-		sudo -u $app $final_path/venv/bin/weblate check --deploy
+		if [ "$new_version" -eq "$weblate_version" ]; then
+			sudo -u $app $final_path/venv/bin/weblate check --deploy || true
+		fi
 	)
 }
 
 file_version="${final_path}/venv/lib/$weblate_pypath/site-packages/weblate/__init__.py"
-if [ -e $file_version ];
+if [ -e $file_version ]
 then
 	current_version=$(cat $file_version | grep "^VERSION = " | grep -o "[0-9].[0-9]" | head -n1 | cut -d"." -f1)
 else
@@ -242,7 +262,7 @@ fi
 
 ynh_psql_execute_as_root --sql="CREATE EXTENSION IF NOT EXISTS pg_trgm;" --database=$db_name
 
-if [ "$current_version" -lt "4" ];
+if [ "$current_version" -lt "4" ]
 then
 	upgrade "4.1.1" "../conf/settings.4.1.1.py"
 fi

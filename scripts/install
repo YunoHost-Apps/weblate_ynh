@@ -157,6 +157,7 @@ ynh_replace_string --match_string="__DOMAIN__" --replace_string="$domain" --targ
 ynh_replace_string --match_string="__KEY__" --replace_string="$key" --target_file="$settings"
 ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$settings"
 ynh_replace_string --match_string="__GITHUBUSER__" --replace_string="$github_account" --target_file="$settings"
+ynh_replace_string --match_string="__GITHUBTOKEN__" --replace_string="$github_token" --target_file="$settings"
 ynh_replace_string --match_string="__REDIS_DB__" --replace_string="$redis_db" --target_file="$settings"
 ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$settings"
 
