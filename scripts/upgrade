@@ -103,7 +103,7 @@ ynh_add_nginx_config
 #=================================================
 ynh_script_progression --message="Upgrading dependencies..." --time --weight=1
 
-ynh_install_app_dependencies "$pkg_dependencies"
+ynh_exec_warn_less ynh_install_app_dependencies "$pkg_dependencies"
 
 #=================================================
 # CREATE DEDICATED USER
@@ -246,6 +246,9 @@ upgrade() {
 		sudo -u $app $final_path/venv/bin/weblate setuplang
 		sudo -u $app $final_path/venv/bin/weblate setupgroups
 		sudo -u $app $final_path/venv/bin/weblate compilemessages
+		
+		# Check the configuration
+		# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
 		if [ "$new_version" -eq "$weblate_version" ]; then
 			sudo -u $app $final_path/venv/bin/weblate check --deploy || true
 		fi

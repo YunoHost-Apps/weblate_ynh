@@ -62,7 +62,7 @@ ynh_app_setting_set --app="$app" --key=github_token --value="$github_token"
 #=================================================
 ynh_script_progression --message="Installing dependencies..." --time --weight=1
 
-ynh_install_app_dependencies "$pkg_dependencies"
+ynh_exec_warn_less ynh_install_app_dependencies "$pkg_dependencies"
 
 #=================================================
 # CREATE A PostgreSQL DATABASE
@@ -188,6 +188,10 @@ ynh_script_progression --message="Filling up the database..." --time --weight=1
 		--password "weblate" \
 		--username "$admin" \
 		--email "$admin_mail"
+
+	# Check the configuration
+	# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
+	sudo -u $app $final_path/venv/bin/weblate check --deploy || true
 )
 
 #=================================================

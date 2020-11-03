@@ -82,7 +82,7 @@ chown -R "$app": "$final_path/avatar-cache"
 #=================================================
 ynh_script_progression --message="Reinstalling dependencies..." --time --weight=1
 
-ynh_install_app_dependencies "$pkg_dependencies"
+ynh_exec_warn_less ynh_install_app_dependencies "$pkg_dependencies"
 
 #=================================================
 # RESTORE THE PostgreSQL DATABASE
@@ -91,6 +91,7 @@ ynh_script_progression --message="Restoring the PostgreSQL database..." --time -
 
 ynh_psql_test_if_first_run
 ynh_psql_setup_db --db_user="$db_user" --db_name="$db_name" --db_pwd="$db_pwd"
+ynh_psql_execute_as_root --sql="CREATE EXTENSION IF NOT EXISTS pg_trgm;" --database=$db_name
 ynh_psql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ./db.sql
 
 #=================================================
