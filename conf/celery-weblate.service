@@ -1,19 +1,16 @@
 [Unit]
-Description=Celery Service for Weblate (__APP__)
+Description=Celery Service (__APP__)
 After=network.target
 
 [Service]
 Type=forking
 User=__APP__
-Group=www-data
-PermissionsStartOnly=true
+Group=__APP__
 EnvironmentFile=__FINALPATH__/celery-weblate
 WorkingDirectory=__FINALPATH__/
-# https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
 RuntimeDirectory=__APP__
-
-ExecStartPre=/bin/chown -R __APP__ /var/log/__APP__
-
+RuntimeDirectoryPreserve=restart
+LogsDirectory=celery
 ExecStart=/bin/sh -c '${CELERY_BIN} multi start ${CELERYD_NODES} \
   -A ${CELERY_APP} --pidfile=${CELERYD_PID_FILE} \
   --logfile=${CELERYD_LOG_FILE} --loglevel=${CELERYD_LOG_LEVEL} ${CELERYD_OPTS}'

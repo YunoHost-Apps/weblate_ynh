@@ -5,15 +5,14 @@
 #=================================================
 
 # dependencies used by the app
-pkg_dependencies="libxml2-dev libxslt-dev libfreetype6-dev \
-	libjpeg-dev libz-dev libyaml-dev python3-dev python3-pip python3-virtualenv \
-	python3-enchant \
-	postgresql libpq-dev uwsgi uwsgi-plugin-python3 \
-	libpango1.0-dev libcairo2-dev libglib2.0-dev libgirepository1.0-dev \
-	mailutils python-celery-common virtualenv redis-server"
+pkg_dependencies="libxml2-dev libxslt-dev libfreetype6-dev libjpeg-dev libz-dev libyaml-dev \
+	libcairo-dev gir1.2-pango-1.0 libgirepository1.0-dev libacl1-dev libssl-dev \
+	build-essential python3-gdbm python3-enchant python3-dev python3-pip python3-virtualenv virtualenv git \
+	uwsgi uwsgi-plugin-python3 redis-server postgresql postgresql-contrib \
+	libpq-dev libglib2.0-dev mailutils python-celery-common hub"
 
 # Weblate's version for PIP and settings file
-current_version="3.8"
+weblate_version="4.3.1"
 
 
 debian_maj_version=$(sed 's/\..*//' /etc/debian_version)
@@ -25,45 +24,8 @@ elif [ "$debian_maj_version" -eq 10 ] ; then
 fi
 
 #=================================================
-# PERSONAL HELPERS
+# EXPERIMENTAL HELPERS
 #=================================================
-
-weblate_fill_settings() {
-	local settings="$1"
-
-	ynh_replace_string "__NAME__"       "$app"            "$settings"
-	ynh_replace_string "__DB_PWD__"     "$db_pwd"         "$settings"
-	ynh_replace_string "__ADMIN__"      "$admin"          "$settings"
-	ynh_replace_string "__ADMINMAIL__"  "$admin_mail"     "$settings"
-	ynh_replace_string "__DOMAIN__"     "$domain"         "$settings"
-	ynh_replace_string "__KEY__"        "$key"            "$settings"
-	ynh_replace_string "__FINALPATH__"  "$final_path"     "$settings"
-	ynh_replace_string "__GITHUBUSER__" "$github_account" "$settings"
-	ynh_replace_string "__REDIS_DB__"   "$redis_db"       "$settings"
-	ynh_replace_string "__PYTHONPATH__" "$weblate_pypath" "$settings"
-
-	# root install as an empty PATHURL to prevent '//static'
-	if [ "$path_url" == "/" ]
-	then
-		ynh_replace_string "__PATHURL__" "" "$settings"
-	else
-		ynh_replace_string "__PATHURL__" "$path_url" "$settings"
-	fi
-}
-
-ynh_check_if_checksum_is_different() {
-	local file=$1
-	local checksum_setting_name=checksum_${file//[\/ ]/_}	# Replace all '/' and ' ' by '_'
-	local checksum_value=$(ynh_app_setting_get $app $checksum_setting_name)
-	local check=0
-
-	if ! echo "$checksum_value $file" | md5sum -c --status
-	then	# If the checksum is now different
-		check=1
-	fi
-
-	echo "$check"
-}
 
 # Send an email to inform the administrator
 #

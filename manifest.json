@@ -2,18 +2,23 @@
 	"name": "Weblate",
 	"id": "weblate",
 	"packaging_format": 1,
-	"requirements": {
-		"yunohost": ">= 3.5.0"
-	},
 	"description": {
-		"en": "A translation platform using Git and Python"
+		"en": "A translation platform using Git and Python",
+		"fr": "Une plateforme de traduction utilisant Git et Python"
 	},
-	"version": "3.8.0~ynh3",
+	"version": "4.3.1~ynh1",
 	"url": "https://weblate.org",
 	"license": "AGPL-3.0",
 	"maintainer": {
+		"name": "",
+		"email": ""
+	},
+	"previous_maintainers": [{
 		"name": "Jean-Baptiste Holcroft",
 		"email": "jean-baptiste@holcroft.fr"
+	}],
+	"requirements": {
+		"yunohost": ">= 4.0.0"
 	},
 	"multi_instance": true,
 	"services": [
@@ -25,7 +30,8 @@
 				"name": "domain",
 				"type": "domain",
 				"ask": {
-					"en": "Choose a domain for Weblate:"
+					"en": "Choose a domain for Weblate",
+					"fr": "Choisissez un domaine pour Weblate"
 				},
 				"example": "domain.org"
 			},
@@ -33,7 +39,8 @@
 				"name": "path",
 				"type": "path",
 				"ask": {
-				    "en": "Choose a path for Weblate:"
+				    "en": "Choose a path for Weblate",
+				    "fr": "Choisissez un chemin pour Weblate"
 				},
 				"example": "/weblate",
 				"default": "/weblate"
@@ -42,36 +49,41 @@
 				"name": "is_public",
 				"type": "boolean",
 				"ask": {
-					"en": "Should Weblate be public accessible?"
+					"en": "Should Weblate be public accessible?",
+					"fr": "Weblate doit-il être accessible au public ?"
 				},
 				"help": {
-					"en": "Any YunoHost user and anonymous people from the web will be able to access the application"
+					"en": "Any YunoHost user and anonymous people from the web will be able to access the application",
+					"fr": "Tout utilisateur YunoHost et les personnes anonymes pourront accéder à l'application"
 				},
-				"default": "0"
+				"default": false
 			},
 			{
 				"name": "admin",
 				"type": "user",
 				"ask": {
-				    "en": "Choose an admin user for Weblate"
+				    "en": "Choose an admin user for Weblate",
+				    "fr": "Choisissez l'administrateur pour Weblate"
 				},
-				"example": "simon"
+				"example": "johndoe"
 			},
 			{
 				"name": "github_account",
 				"type": "string",
 				"ask": {
-				    "en": "Github's username"
+				    "en": "GitHub's username",
+				    "fr": "Nom d'utilisateur de GitHub"
 				},
-				"example": "simon"
+				"example": "Github account"
 			},
 			{
 				"name": "github_token",
 				"type": "string",
 				"ask": {
-				    "en": "Github's token (oauth)"
+				    "en": "GitHub's token (OAuth)",
+				    "fr": "Jeton GitHub (OAuth)"
 				},
-				"example": "simon"
+				"example": "A secret token"
 			}
 		]
 	}
