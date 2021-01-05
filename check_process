@@ -8,6 +8,7 @@
 		domain="domain.tld"	(DOMAIN)
 		path="/path"	(PATH)
 		admin="john"	(USER)
+		password="randompass"
 		is_public=1	(PUBLIC|public=1|private=0)
 		github_account="myaccount"
 		github_token="myoauthtoken"
@@ -30,4 +31,4 @@ Notification=all
 ;;; Upgrade options
 	; commit=cef22ac5634565cecd2d8545229efe3fe79d85bc
 		name=Upgrade from 3.11.3
-manifest_arg=domain=DOMAIN&path=PATH&admin=USER&is_public=1&github_account=fake&github_token=fake
+		manifest_arg=domain=DOMAIN&path=PATH&admin=USER&is_public=1&github_account=fake&github_token=fake

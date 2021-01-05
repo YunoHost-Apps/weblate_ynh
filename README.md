@@ -20,10 +20,6 @@ Weblate is a libre web-based translation tool with tight version control integra
 
 * [YunoHost project uses Weblate for translations](https://translate.yunohost.org)
 
-## Admin account
-
-An admin user is created at installation, the login is what you provided at installation, the password is **weblate**.
-
 ## GitHub
 
 You'll need to give Weblate a GitHub user and a token. Please read [GitHub's documentation about token](https://help.github.com/articles/creating-a-personal-access-token-for-the-command-line/).
