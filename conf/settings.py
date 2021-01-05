@@ -301,12 +301,10 @@ SOCIAL_AUTH_STRATEGY = "weblate.accounts.strategy.WeblateStrategy"
 SOCIAL_AUTH_RAISE_EXCEPTIONS = True
 
 SOCIAL_AUTH_EMAIL_VALIDATION_FUNCTION = "weblate.accounts.pipeline.send_validation"
-SOCIAL_AUTH_EMAIL_VALIDATION_URL = "{0}/accounts/email-sent/".format(URL_PREFIX)
-SOCIAL_AUTH_LOGIN_ERROR_URL = "{0}/accounts/login/".format(URL_PREFIX)
-SOCIAL_AUTH_EMAIL_FORM_URL = "{0}/accounts/email/".format(URL_PREFIX)
-SOCIAL_AUTH_NEW_ASSOCIATION_REDIRECT_URL = "{0}/accounts/profile/#account".format(
-    URL_PREFIX
-)
+SOCIAL_AUTH_EMAIL_VALIDATION_URL = f"{URL_PREFIX}/accounts/email-sent/"
+SOCIAL_AUTH_LOGIN_ERROR_URL = f"{URL_PREFIX}/accounts/login/"
+SOCIAL_AUTH_EMAIL_FORM_URL = f"{URL_PREFIX}/accounts/email/"
+SOCIAL_AUTH_NEW_ASSOCIATION_REDIRECT_URL = f"{URL_PREFIX}/accounts/profile/#account"
 SOCIAL_AUTH_PROTECTED_USER_FIELDS = ("email",)
 SOCIAL_AUTH_SLUGIFY_USERNAMES = True
 SOCIAL_AUTH_SLUGIFY_FUNCTION = "weblate.accounts.pipeline.slugify_username"
@@ -346,7 +344,6 @@ MIDDLEWARE = [
     "weblate.middleware.ProxyMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "weblate.accounts.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -375,6 +372,7 @@ INSTALLED_APPS = [
     "weblate.screenshots",
     "weblate.fonts",
     "weblate.accounts",
+    "weblate.configuration",
     "weblate.utils",
     "weblate.vcs",
     "weblate.wladmin",
@@ -416,7 +414,7 @@ if platform.system() != "Windows":
         handler = SysLogHandler(address="/dev/log", facility=SysLogHandler.LOG_LOCAL2)
         handler.close()
         HAVE_SYSLOG = True
-    except IOError:
+    except OSError:
         HAVE_SYSLOG = False
 
 if DEBUG or not HAVE_SYSLOG:
@@ -436,7 +434,7 @@ LOGGING = {
     "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
     "formatters": {
         "syslog": {"format": "weblate[%(process)d]: %(levelname)s %(message)s"},
-        "simple": {"format": "%(levelname)s %(message)s"},
+        "simple": {"format": "[%(asctime)s: %(levelname)s/%(process)s] %(message)s"},
         "logfile": {"format": "%(asctime)s %(levelname)s %(message)s"},
         "django.server": {
             "()": "django.utils.log.ServerFormatter",
@@ -500,6 +498,8 @@ LOGGING = {
         "social": {"handlers": [DEFAULT_LOG], "level": DEFAULT_LOGLEVEL},
         # Django Authentication Using LDAP
         "django_auth_ldap": {"handlers": [DEFAULT_LOG], "level": DEFAULT_LOGLEVEL},
+        # SAML IdP
+        "djangosaml2idp": {"handlers": [DEFAULT_LOG], "level": DEFAULT_LOGLEVEL},
     },
 }
 
@@ -640,13 +640,13 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = ENABLE_HTTPS
 SECURE_PROXY_SSL_HEADER = None
 
 # URL of login
-LOGIN_URL = "{0}/accounts/login/".format(URL_PREFIX)
+LOGIN_URL = f"{URL_PREFIX}/accounts/login/"
 
 # URL of logout
-LOGOUT_URL = "{0}/accounts/logout/".format(URL_PREFIX)
+LOGOUT_URL = f"{URL_PREFIX}/accounts/logout/"
 
 # Default location for login
-LOGIN_REDIRECT_URL = "{0}/".format(URL_PREFIX)
+LOGIN_REDIRECT_URL = f"{URL_PREFIX}/"
 
 # Anonymous user name
 ANONYMOUS_USER_NAME = "anonymous"
@@ -660,7 +660,7 @@ IP_PROXY_OFFSET = 0
 EMAIL_SEND_HTML = True
 
 # Subject of emails includes site title
-EMAIL_SUBJECT_PREFIX = "[{0}] ".format(SITE_TITLE)
+EMAIL_SUBJECT_PREFIX = f"[{SITE_TITLE}] "
 
 # Enable remote hooks
 ENABLE_HOOKS = True
@@ -776,7 +776,7 @@ SERVER_EMAIL = "noreply@__DOMAIN__"
 
 # Default email address to use for various automated correspondence from
 # the site managers. Used for registration emails.
-DEFAULT_FROM_EMAIL = "__ADMINMAIL__"
+DEFAULT_FROM_EMAIL = "__APP__@__DOMAIN__"
 
 # List of URLs your site is supposed to serve
 ALLOWED_HOSTS = ["__DOMAIN__"]

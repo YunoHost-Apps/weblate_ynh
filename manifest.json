@@ -6,7 +6,7 @@
 		"en": "A translation platform using Git and Python",
 		"fr": "Une plateforme de traduction utilisant Git et Python"
 	},
-	"version": "4.3.1~ynh1",
+	"version": "4.4~ynh1",
 	"url": "https://weblate.org",
 	"license": "AGPL-3.0",
 	"maintainer": {
@@ -66,6 +66,15 @@
 				    "fr": "Choisissez l'administrateur pour Weblate"
 				},
 				"example": "johndoe"
+			},
+			{
+				"name": "password",
+				"type": "password",
+				"ask": {
+					"en": "Set the administrator password",
+					"fr": "Définissez le mot de passe administrateur"
+				},
+				"example": "Choose a password"
 			},
 			{
 				"name": "github_account",

@@ -72,13 +72,6 @@ then
 fi
 
 #=================================================
-# CHECK THE PATH
-#=================================================
-
-# Normalize the URL path syntax
-path_url=$(ynh_normalize_url_path --path_url=$path_url)
-
-#=================================================
 # STANDARD UPGRADE STEPS
 #=================================================
 # STOP SYSTEMD SERVICE
@@ -215,6 +208,7 @@ upgrade() {
 	ynh_replace_string --match_string="__GITHUBTOKEN__" --replace_string="$github_token" --target_file="$settings"
 	ynh_replace_string --match_string="__REDIS_DB__" --replace_string="$redis_db" --target_file="$settings"
 	ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$settings"
+	ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$settings"
 
 	# remove last "/" of $path_url
 	ynh_replace_string --match_string="__PATHURL__" --replace_string="${path_url%/}" --target_file="$settings"

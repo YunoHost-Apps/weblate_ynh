@@ -23,6 +23,7 @@ ynh_abort_if_errors
 domain=$YNH_APP_ARG_DOMAIN
 path_url=$YNH_APP_ARG_PATH
 admin=$YNH_APP_ARG_ADMIN
+password=$YNH_APP_ARG_PASSWORD
 is_public=$YNH_APP_ARG_IS_PUBLIC
 github_account=$YNH_APP_ARG_GITHUB_ACCOUNT
 github_token=$YNH_APP_ARG_GITHUB_TOKEN
@@ -160,6 +161,7 @@ ynh_replace_string --match_string="__GITHUBUSER__" --replace_string="$github_acc
 ynh_replace_string --match_string="__GITHUBTOKEN__" --replace_string="$github_token" --target_file="$settings"
 ynh_replace_string --match_string="__REDIS_DB__" --replace_string="$redis_db" --target_file="$settings"
 ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$settings"
+ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$settings"
 
 # remove last "/" of $path_url
 ynh_replace_string --match_string="__PATHURL__" --replace_string="${path_url%/}" --target_file="$settings"
@@ -185,7 +187,7 @@ ynh_script_progression --message="Filling up the database..." --weight=10
 	# generate static files
 	sudo -u $app $final_path/venv/bin/weblate collectstatic --noinput
 	sudo -u $app $final_path/venv/bin/weblate createadmin --no-color \
-		--password "weblate" \
+		--password "$password" \
 		--username "$admin" \
 		--email "$admin_mail"
 
