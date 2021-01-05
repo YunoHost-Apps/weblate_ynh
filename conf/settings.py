@@ -776,7 +776,7 @@ SERVER_EMAIL = "noreply@__DOMAIN__"
 
 # Default email address to use for various automated correspondence from
 # the site managers. Used for registration emails.
-DEFAULT_FROM_EMAIL = "__ADMINMAIL__"
+DEFAULT_FROM_EMAIL = "__APP__@__DOMAIN__"
 
 # List of URLs your site is supposed to serve
 ALLOWED_HOSTS = ["__DOMAIN__"]
