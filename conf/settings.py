@@ -12,7 +12,7 @@
 ################################################################################
 ################################################################################
 #
-# Copyright © 2012 - 2020 Michal Čihař <michal@cihar.com>
+# Copyright © 2012 - 2021 Michal Čihař <michal@cihar.com>
 #
 # This file is part of Weblate <https://weblate.org/>
 #
@@ -132,6 +132,7 @@ LANGUAGES = (
     ("sl", "Slovenščina"),
     ("sq", "Shqip"),
     ("sr", "Српски"),
+    ("sr-latn", "Srpski"),
     ("sv", "Svenska"),
     ("tr", "Türkçe"),
     ("uk", "Українська"),
@@ -151,6 +152,9 @@ USE_L10N = True
 
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
+
+# Type of automatic primary key, introduced in Django 3.2
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # URL prefix to use, please see documentation for more details
 URL_PREFIX = "__PATHURL__"
@@ -376,6 +380,7 @@ INSTALLED_APPS = [
     "weblate.utils",
     "weblate.vcs",
     "weblate.wladmin",
+    "weblate.metrics",
     "weblate",
     # Optional: Git exporter
     "weblate.gitexport",
@@ -699,6 +704,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.checks.format.CFormatCheck",
 #     "weblate.checks.format.PerlFormatCheck",
 #     "weblate.checks.format.JavaScriptFormatCheck",
+#     "weblate.checks.format.LuaFormatCheck",
 #     "weblate.checks.format.CSharpFormatCheck",
 #     "weblate.checks.format.JavaFormatCheck",
 #     "weblate.checks.format.JavaMessageFormatCheck",
@@ -734,6 +740,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.checks.source.MultipleFailingCheck",
 #     "weblate.checks.source.LongUntranslatedCheck",
 #     "weblate.checks.format.MultipleUnnamedFormatsCheck",
+#     "weblate.checks.glossary.GlossaryCheck",
 # )
 
 # List of automatic fixups
@@ -746,6 +753,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 
 # List of enabled addons
 # WEBLATE_ADDONS = (
+#     "weblate.addons.autotranslate.AutoTranslateAddon",
 #     "weblate.addons.gettext.GenerateMoAddon",
 #     "weblate.addons.gettext.UpdateLinguasAddon",
 #     "weblate.addons.gettext.UpdateConfigureAddon",
@@ -753,13 +761,16 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.addons.gettext.GettextCustomizeAddon",
 #     "weblate.addons.gettext.GettextAuthorComments",
 #     "weblate.addons.cleanup.CleanupAddon",
+#     "weblate.addons.cleanup.RemoveBlankAddon",
 #     "weblate.addons.consistency.LangaugeConsistencyAddon",
 #     "weblate.addons.discovery.DiscoveryAddon",
+#     "weblate.addons.autotranslate.AutoTranslateAddon",
 #     "weblate.addons.flags.SourceEditAddon",
 #     "weblate.addons.flags.TargetEditAddon",
 #     "weblate.addons.flags.SameEditAddon",
 #     "weblate.addons.flags.BulkEditAddon",
 #     "weblate.addons.generate.GenerateFileAddon",
+#     "weblate.addons.generate.PseudolocaleAddon",
 #     "weblate.addons.json.JSONCustomizeAddon",
 #     "weblate.addons.properties.PropertiesSortAddon",
 #     "weblate.addons.git.GitSquashAddon",
@@ -768,7 +779,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.addons.resx.ResxUpdateAddon",
 #     "weblate.addons.yaml.YAMLCustomizeAddon",
 #     "weblate.addons.cdn.CDNJSAddon",
-#     "weblate.addons.autotranslate.AutoTranslateAddon",
 # )
 
 # E-mail address that error messages come from.
@@ -792,6 +802,7 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "PARSER_CLASS": "redis.connection.HiredisParser",
+            # If you set password here, adjust CELERY_BROKER_URL as well
             "PASSWORD": None,
             "CONNECTION_POOL_KWARGS": {},
         },
