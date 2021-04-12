@@ -253,6 +253,11 @@ file_version="${final_path}/venv/lib/$weblate_pypath/site-packages/weblate/__ini
 if [ -e $file_version ]
 then
 	current_version=$(cat $file_version | grep "^VERSION = " | grep -o "[0-9].[0-9]" | head -n1 | cut -d"." -f1)
+	if [ -z "$current_version" ]
+	then
+		file_version="${final_path}/venv/lib/$weblate_pypath/site-packages/weblate/utils/version.py"
+		current_version=$(cat $file_version | grep "^VERSION = " | grep -o "[0-9].[0-9]" | head -n1 | cut -d"." -f1)
+	fi
 else
 	current_version=3
 fi
