@@ -705,6 +705,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.checks.format.PerlFormatCheck",
 #     "weblate.checks.format.JavaScriptFormatCheck",
 #     "weblate.checks.format.LuaFormatCheck",
+#     "weblate.checks.format.SchemeFormatCheck",
 #     "weblate.checks.format.CSharpFormatCheck",
 #     "weblate.checks.format.JavaFormatCheck",
 #     "weblate.checks.format.JavaMessageFormatCheck",
@@ -753,7 +754,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 
 # List of enabled addons
 # WEBLATE_ADDONS = (
-#     "weblate.addons.autotranslate.AutoTranslateAddon",
 #     "weblate.addons.gettext.GenerateMoAddon",
 #     "weblate.addons.gettext.UpdateLinguasAddon",
 #     "weblate.addons.gettext.UpdateConfigureAddon",
