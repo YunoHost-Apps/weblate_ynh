@@ -289,10 +289,10 @@ yunohost service add "$app-celery" --log "/var/log/$app/weblate-celery-w1.log"
 #=================================================
 
 # Set right permissions for curl installation
-chown -R "$app": "$final_path"
-
 mkdir -p "$final_path/avatar-cache"
-chown -R "$app": "$final_path/avatar-cache"
+chown -R "$app": "$final_path"
+chmod 750 "$final_path"
+chmod -R o-rwx "$final_path"
 
 #=================================================
 # START SYSTEMD SERVICES
