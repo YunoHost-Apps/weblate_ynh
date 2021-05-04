@@ -252,6 +252,9 @@ ynh_add_systemd_config --service="$app-celery" --template="celery-weblate.servic
 # Set permissions to app files
 mkdir -p "$final_path/avatar-cache"
 chown -R "$app": "$final_path"
+chown "$app:www-data" "$final_path"
+chown -R "$app:www-data" "$final_path/data"
+
 chmod 750 "$final_path"
 chmod -R o-rwx "$final_path"
 
