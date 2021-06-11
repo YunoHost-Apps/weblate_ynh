@@ -21,6 +21,8 @@ if [ "$debian_maj_version" -eq 9 ] ; then
     weblate_pypath="python3.5"
 elif [ "$debian_maj_version" -eq 10 ] ; then
     weblate_pypath="python3.7"
+elif [ "$debian_maj_version" -eq 11 ] ; then
+    weblate_pypath="python3.9"
 fi
 
 #=================================================
