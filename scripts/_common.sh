@@ -12,7 +12,7 @@ pkg_dependencies="libxml2-dev libxslt-dev libfreetype6-dev libjpeg-dev libz-dev 
 	libpq-dev libglib2.0-dev mailutils python-celery-common hub"
 
 # Weblate's version for PIP and settings file
-weblate_version="4.6.1"
+weblate_version="4.7"
 
 
 debian_maj_version=$(sed 's/\..*//' /etc/debian_version)
@@ -21,6 +21,8 @@ if [ "$debian_maj_version" -eq 9 ] ; then
     weblate_pypath="python3.5"
 elif [ "$debian_maj_version" -eq 10 ] ; then
     weblate_pypath="python3.7"
+elif [ "$debian_maj_version" -eq 11 ] ; then
+    weblate_pypath="python3.9"
 fi
 
 #=================================================
