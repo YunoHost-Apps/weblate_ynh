@@ -3,11 +3,19 @@
 	"id": "weblate",
 	"packaging_format": 1,
 	"description": {
-		"en": "A translation platform using Git and Python",
-		"fr": "Une plateforme de traduction utilisant Git et Python"
+		"en": "Translation platform using Git and Python",
+		"fr": "Plateforme de traduction utilisant Git et Python" 
 	},
 	"version": "4.7~ynh1",
 	"url": "https://weblate.org",
+	"upstream": {
+        "license": "AGPL-3.0",
+        "website": "https://weblate.org",
+        "demo": "https://translate.yunohost.org",
+        "admindoc": "https://docs.weblate.org/",
+        "userdoc": "https://yunohost.org/apps",
+        "code": "https://github.com/WeblateOrg/weblate"
+    },
 	"license": "AGPL-3.0",
 	"maintainer": {
 		"name": "",
@@ -18,7 +26,7 @@
 		"email": "jean-baptiste@holcroft.fr"
 	}],
 	"requirements": {
-		"yunohost": ">= 4.1.0"
+		"yunohost": ">= 4.2.0"
 	},
 	"multi_instance": true,
 	"services": [

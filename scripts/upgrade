@@ -11,7 +11,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..."
+ynh_script_progression --message="Loading installation settings..." --weight=1
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -55,7 +55,7 @@ fi
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..."
+ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
 
 if [[ -d "$final_path/bin/" ]]
 then
@@ -84,7 +84,7 @@ ynh_systemd_action --service_name="$app-celery" --action="stop"
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Upgrading nginx web server configuration..."
+ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=3
 
 # Create a dedicated nginx config
 ynh_add_nginx_config
@@ -94,14 +94,14 @@ ynh_add_nginx_config
 #=================================================
 # Update dependencies
 #=================================================
-ynh_script_progression --message="Upgrading dependencies..."
+ynh_script_progression --message="Upgrading dependencies..." --weight=5
 
 ynh_exec_warn_less ynh_install_app_dependencies "$pkg_dependencies"
 
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Making sure dedicated system user exists..."
+ynh_script_progression --message="Making sure dedicated system user exists..." --weight=1
 
 # Create a system user
 ynh_system_user_create --username="$app" --home_dir="$final_path" --use_shell
@@ -109,7 +109,7 @@ ynh_system_user_create --username="$app" --home_dir="$final_path" --use_shell
 #=================================================
 # CONFIGURE HUB
 #=================================================
-ynh_script_progression --message="Configure hub..."
+ynh_script_progression --message="Configure hub..." --weight=2
 
 mkdir -p "$final_path/.config/"
 ynh_add_config --template="../conf/hub_config" --destination="$final_path/.config/hub"
@@ -121,7 +121,7 @@ EOF
 #=================================================
 # SPECIFIC SETUP UWSGI
 #=================================================
-ynh_script_progression --message="Configure uwsgi..."
+ynh_script_progression --message="Configure uwsgi..." --weight=2
 
 finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
 
@@ -130,14 +130,14 @@ ynh_add_config --template="../conf/uwsgi.ini" --destination="$finaluwsgiini"
 #=================================================
 # SETUP SYSTEMD
 #=================================================
-ynh_script_progression --message="Configuring a systemd service..."
+ynh_script_progression --message="Configuring a systemd service..." --weight=3
 
 ynh_add_systemd_config --service="$app" --template="weblate.service"
 
 #=================================================
 # ACTIVATE CELERY
 #=================================================
-ynh_script_progression --message="Configure celery..."
+ynh_script_progression --message="Configure celery..." --weight=2
 
 celeryconf="$final_path/celery-weblate"
 
@@ -181,7 +181,7 @@ upgrade() {
 	#=================================================
 	# MODIFY A CONFIG FILE
 	#=================================================
-	ynh_script_progression --message="Create weblate configuration file..."
+	ynh_script_progression --message="Create weblate configuration file..." --weight=2
 	# save old settings file
 	settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 	path_url="${path_url%/}"
@@ -249,7 +249,7 @@ upgrade $weblate_version "../conf/settings.py"
 #=================================================
 # SETUP LOGROTATE
 #=================================================
-ynh_script_progression --message="Upgrading logrotate configuration..."
+ynh_script_progression --message="Upgrading logrotate configuration..." --weight=1
 
 # Use logrotate to manage app-specific logfile(s)
 ynh_use_logrotate --non-append
@@ -257,7 +257,7 @@ ynh_use_logrotate --non-append
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
-ynh_script_progression --message="Integrating service in YunoHost..."
+ynh_script_progression --message="Integrating service in YunoHost..." --weight=2
 
 yunohost service add "$app" --log "/var/log/$app/weblate.log"
 yunohost service add "$app-celery" --log "/var/log/$app/weblate-celery-w1.log"
@@ -288,7 +288,7 @@ ynh_systemd_action --service_name="$app-celery" --action="start"
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server..."
+ynh_script_progression --message="Reloading NGINX web server..." --weight=1
 
 ynh_systemd_action --service_name=nginx --action=reload
 
