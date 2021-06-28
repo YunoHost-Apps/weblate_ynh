@@ -100,9 +100,7 @@ ynh_system_user_create --username="$app" --home_dir="$final_path" --use_shell
 ynh_script_progression --message="Configure hub..."
 
 mkdir "$final_path/.config/"
-cp ../conf/hub_config "$final_path/.config/hub"
-ynh_replace_string --match_string="__GITHUBUSER__" --replace_string="$github_account" --target_file="$final_path/.config/hub"
-ynh_replace_string --match_string="__GITHUBTOKEN__" --replace_string="$github_token" --target_file="$final_path/.config/hub"
+ynh_add_config --template="../conf/hub_config" --destination="$final_path/.config/hub"
 
 cat <<EOF > "$final_path/.bashrc"
 eval "$(hub alias -s /bin/bash)"
@@ -147,25 +145,10 @@ db_pwd=$(ynh_app_setting_get --app="$app" --key=psqlpwd)
 admin_mail=$(ynh_user_get_info --username="$admin" --key=mail)
 key=$(ynh_string_random --length=50)
 redis_db=$(ynh_redis_get_free_db)
-
+path_url="${path_url%/}"
 settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
-cp "../conf/settings.py" "$settings"
 
-ynh_replace_string --match_string="__NAME__" --replace_string="$app" --target_file="$settings"
-ynh_replace_string --match_string="__DB_PWD__" --replace_string="$db_pwd" --target_file="$settings"
-ynh_replace_string --match_string="__ADMIN__" --replace_string="$admin" --target_file="$settings"
-ynh_replace_string --match_string="__ADMINMAIL__" --replace_string="$admin_mail" --target_file="$settings"
-ynh_replace_string --match_string="__DOMAIN__" --replace_string="$domain" --target_file="$settings"
-ynh_replace_string --match_string="__KEY__" --replace_string="$key" --target_file="$settings"
-ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$settings"
-ynh_replace_string --match_string="__GITHUBUSER__" --replace_string="$github_account" --target_file="$settings"
-ynh_replace_string --match_string="__GITHUBTOKEN__" --replace_string="$github_token" --target_file="$settings"
-ynh_replace_string --match_string="__REDIS_DB__" --replace_string="$redis_db" --target_file="$settings"
-ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$settings"
-ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$settings"
-
-# remove last "/" of $path_url
-ynh_replace_string --match_string="__PATHURL__" --replace_string="${path_url%/}" --target_file="$settings"
+ynh_add_config --template="../conf/settings.py" --destination="$settings"
 
 ynh_app_setting_set --app="$app" --key=redis_db --value="$redis_db"
 
@@ -211,16 +194,9 @@ ynh_store_file_checksum --file="$settings"
 #=================================================
 ynh_script_progression --message="Configure uwsgi..."
 
-
 finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
-cp ../conf/uwsgi.ini "$finaluwsgiini"
 
-ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$finaluwsgiini"
-ynh_replace_string --match_string="__PATH__" --replace_string="$path_url" --target_file="$finaluwsgiini"
-ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$finaluwsgiini"
-ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$finaluwsgiini"
-
-ynh_store_file_checksum --file="$finaluwsgiini"
+ynh_add_config --template="../conf/uwsgi.ini" --destination="$finaluwsgiini"
 
 #=================================================
 # SETUP SYSTEMD
@@ -235,10 +211,8 @@ ynh_add_systemd_config --service="$app" --template="weblate.service"
 ynh_script_progression --message="Configure celery..."
 
 celeryconf="$final_path/celery-weblate"
-cp ../conf/celery-weblate "$celeryconf"
 
-ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$celeryconf"
-ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$celeryconf"
+ynh_add_config --template="../conf/celery-weblate" --destination="$celeryconf"
 
 ynh_add_systemd_config --service="$app-celery" --template="celery-weblate.service"
 
@@ -276,9 +250,7 @@ yunohost service add "$app-celery" --log "/var/log/$app/weblate-celery-w1.log"
 #=================================================
 # SETUP SSOWAT
 #=================================================
-ynh_script_progression --message="Configuring SSOwat..."
-
-
+ynh_script_progression --message="Configuring permissions..."
 
 # Make app public if necessary
 if [ "$is_public" -eq 1 ]
@@ -311,5 +283,9 @@ If you facing an issue or want to improve this app, please open a new issue in t
 "
 
 ynh_send_readme_to_admin "$message" "$admin"
+
+#=================================================
+# END OF SCRIPT
+#=================================================
 
 ynh_script_progression --message="Installation of $app completed" --last
