@@ -1,15 +1,11 @@
-# See here for more informations
-# https://github.com/YunoHost/package_check#syntax-check_process-file
-
-# Move this file from check_process.default to check_process when you have filled it.
 
 ;; Test complet
 	; Manifest
-		domain="domain.tld"	(DOMAIN)
-		path="/path"	(PATH)
-		admin="john"	(USER)
+		domain="domain.tld"
+		path="/path"
+		admin="john"
 		password="randompass"
-		is_public=1	(PUBLIC|public=1|private=0)
+		is_public=1
 		github_account="myaccount"
 		github_token="myoauthtoken"
 	; Checks
@@ -20,15 +16,19 @@
 		setup_private=1
 		setup_public=1
 		upgrade=1
-		upgrade=1		from_commit=cef22ac5634565cecd2d8545229efe3fe79d85bc
+		#4.4
+		upgrade=1		from_commit=66eb909e771d11b092dfff2acf50ff63fa6f6ec6
+		#4.6.1
+		upgrade=1		from_commit=3f8363cdc588e609a775cb8b78b9d080f96405d9
 		backup_restore=1
 		multi_instance=1
-		port_already_use=0
 		change_url=1
 ;;; Options
 Email=
 Notification=all
 ;;; Upgrade options
-	; commit=cef22ac5634565cecd2d8545229efe3fe79d85bc
-		name=Upgrade from 3.11.3
+	; commit=66eb909e771d11b092dfff2acf50ff63fa6f6ec6
+		name=Upgrade from 4.4
+	; commit=3f8363cdc588e609a775cb8b78b9d080f96405d9
+		name=Upgrade from 4.6.1
 		manifest_arg=domain=DOMAIN&path=PATH&admin=USER&is_public=1&github_account=fake&github_token=fake

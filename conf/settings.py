@@ -42,7 +42,7 @@ from logging.handlers import SysLogHandler
 DEBUG = False
 
 ADMINS = (
-    ('__ADMIN__', '__ADMINMAIL__'),
+    ('__ADMIN__', '__ADMIN_MAIL__'),
 )
 
 MANAGERS = ADMINS
@@ -52,9 +52,9 @@ DATABASES = {
         # Use "postgresql" or "mysql".
         "ENGINE": "django.db.backends.postgresql",
         # Database name.
-        "NAME": "__NAME__",
+        "NAME": "__APP__",
         # Database user.
-        "USER": "__NAME__",
+        "USER": "__APP__",
         # Name of role to alter to set parameters in PostgreSQL,
         # use in case role name is different than user used for authentication.
         # "ALTER_ROLE": "weblate",
@@ -158,7 +158,7 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # URL prefix to use, please see documentation for more details
-URL_PREFIX = "__PATHURL__"
+URL_PREFIX = "__PATH_URL__"
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 MEDIA_ROOT = os.path.join(DATA_DIR, "media")
@@ -221,8 +221,8 @@ TEMPLATES = [
 
 # GitHub username and token for sending pull requests.
 # Please see the documentation for more details.
-GITHUB_USERNAME = "__GITHUBUSER__"
-GITHUB_TOKEN = "__GITHUBTOKEN__"
+GITHUB_USERNAME = "__GITHUB_ACCOUNT__"
+GITHUB_TOKEN = "__GITHUB_TOKEN__"
 
 # GitLab username and token for sending merge requests.
 # Please see the documentation for more details.

@@ -33,7 +33,7 @@ app=$YNH_APP_INSTANCE_NAME
 #=================================================
 # CHECK IF THE APP CAN BE INSTALLED WITH THESE ARGS
 #=================================================
-ynh_script_progression --message="Validating installation parameters..."
+ynh_script_progression --message="Validating installation parameters..." --weight=1
 
 final_path=/var/www/$app
 test ! -e "$final_path" || ynh_die --message="This path already contains a folder"
@@ -46,7 +46,7 @@ mkdir -p "$final_path"
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
-ynh_script_progression --message="Storing installation settings..."
+ynh_script_progression --message="Storing installation settings..." --weight=1
 
 ynh_app_setting_set --app="$app" --key=domain --value="$domain"
 ynh_app_setting_set --app="$app" --key=path --value="$path_url"
@@ -67,7 +67,7 @@ ynh_exec_warn_less ynh_install_app_dependencies "$pkg_dependencies"
 #=================================================
 # CREATE A PostgreSQL DATABASE
 #=================================================
-ynh_script_progression --message="Creating a PostgreSQL database..."
+ynh_script_progression --message="Creating a PostgreSQL database..." --weight=2
 
 db_name=$(ynh_sanitize_dbid --db_name="$app")
 db_user=$db_name
@@ -81,7 +81,7 @@ ynh_psql_setup_db --db_user="$db_user" --db_name="$db_name"
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring nginx web server..."
+ynh_script_progression --message="Configuring NGINX web server..." --weight=2
 
 # Create a dedicated nginx config
 ynh_add_nginx_config
@@ -89,7 +89,7 @@ ynh_add_nginx_config
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
-ynh_script_progression --message="Configuring system user..."
+ynh_script_progression --message="Configuring system user..." --weight=1
 
 # Hub needs a home directory with a config file
 ynh_system_user_create --username="$app" --home_dir="$final_path" --use_shell
@@ -97,12 +97,10 @@ ynh_system_user_create --username="$app" --home_dir="$final_path" --use_shell
 #=================================================
 # CONFIGURE HUB
 #=================================================
-ynh_script_progression --message="Configure hub..."
+ynh_script_progression --message="Configure hub..." --weight=1
 
 mkdir "$final_path/.config/"
-cp ../conf/hub_config "$final_path/.config/hub"
-ynh_replace_string --match_string="__GITHUBUSER__" --replace_string="$github_account" --target_file="$final_path/.config/hub"
-ynh_replace_string --match_string="__GITHUBTOKEN__" --replace_string="$github_token" --target_file="$final_path/.config/hub"
+ynh_add_config --template="../conf/hub_config" --destination="$final_path/.config/hub"
 
 cat <<EOF > "$final_path/.bashrc"
 eval "$(hub alias -s /bin/bash)"
@@ -141,31 +139,16 @@ chown -R "$app": "$final_path"
 # https://docs.weblate.org/en/latest/admin/install.html#installation
 # TODO: use --extra-search-dir=/path/to/dists
 #=================================================
-ynh_script_progression --message="Create weblate configuration file..."
+ynh_script_progression --message="Create weblate configuration file..." --weight=1
 
 db_pwd=$(ynh_app_setting_get --app="$app" --key=psqlpwd)
 admin_mail=$(ynh_user_get_info --username="$admin" --key=mail)
 key=$(ynh_string_random --length=50)
 redis_db=$(ynh_redis_get_free_db)
-
+path_url="${path_url%/}"
 settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
-cp "../conf/settings.py" "$settings"
 
-ynh_replace_string --match_string="__NAME__" --replace_string="$app" --target_file="$settings"
-ynh_replace_string --match_string="__DB_PWD__" --replace_string="$db_pwd" --target_file="$settings"
-ynh_replace_string --match_string="__ADMIN__" --replace_string="$admin" --target_file="$settings"
-ynh_replace_string --match_string="__ADMINMAIL__" --replace_string="$admin_mail" --target_file="$settings"
-ynh_replace_string --match_string="__DOMAIN__" --replace_string="$domain" --target_file="$settings"
-ynh_replace_string --match_string="__KEY__" --replace_string="$key" --target_file="$settings"
-ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$settings"
-ynh_replace_string --match_string="__GITHUBUSER__" --replace_string="$github_account" --target_file="$settings"
-ynh_replace_string --match_string="__GITHUBTOKEN__" --replace_string="$github_token" --target_file="$settings"
-ynh_replace_string --match_string="__REDIS_DB__" --replace_string="$redis_db" --target_file="$settings"
-ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$settings"
-ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$settings"
-
-# remove last "/" of $path_url
-ynh_replace_string --match_string="__PATHURL__" --replace_string="${path_url%/}" --target_file="$settings"
+ynh_add_config --template="../conf/settings.py" --destination="$settings"
 
 ynh_app_setting_set --app="$app" --key=redis_db --value="$redis_db"
 
@@ -209,36 +192,27 @@ ynh_store_file_checksum --file="$settings"
 #=================================================
 # SPECIFIC SETUP UWSGI
 #=================================================
-ynh_script_progression --message="Configure uwsgi..."
-
+ynh_script_progression --message="Configure uwsgi..." --weight=1
 
 finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
-cp ../conf/uwsgi.ini "$finaluwsgiini"
 
-ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$finaluwsgiini"
-ynh_replace_string --match_string="__PATH__" --replace_string="$path_url" --target_file="$finaluwsgiini"
-ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$finaluwsgiini"
-ynh_replace_string --match_string="__PYTHONPATH__" --replace_string="$weblate_pypath" --target_file="$finaluwsgiini"
-
-ynh_store_file_checksum --file="$finaluwsgiini"
+ynh_add_config --template="../conf/uwsgi.ini" --destination="$finaluwsgiini"
 
 #=================================================
 # SETUP SYSTEMD
 #=================================================
-ynh_script_progression --message="Configuring a systemd service..."
+ynh_script_progression --message="Configuring a systemd service..." --weight=2
 
 ynh_add_systemd_config --service="$app" --template="weblate.service"
 
 #=================================================
 # ACTIVATE CELERY
 #=================================================
-ynh_script_progression --message="Configure celery..."
+ynh_script_progression --message="Configure celery..." --weight=1
 
 celeryconf="$final_path/celery-weblate"
-cp ../conf/celery-weblate "$celeryconf"
 
-ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$celeryconf"
-ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$celeryconf"
+ynh_add_config --template="../conf/celery-weblate" --destination="$celeryconf"
 
 ynh_add_systemd_config --service="$app-celery" --template="celery-weblate.service"
 
@@ -260,7 +234,7 @@ chmod -R o-rwx "$final_path"
 #=================================================
 # SETUP LOGROTATE
 #=================================================
-ynh_script_progression --message="Configuring log rotation..."
+ynh_script_progression --message="Configuring log rotation..." --weight=1
 
 # Use logrotate to manage application logfile(s)
 ynh_use_logrotate --non-append
@@ -268,7 +242,7 @@ ynh_use_logrotate --non-append
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
-ynh_script_progression --message="Integrating service in YunoHost..."
+ynh_script_progression --message="Integrating service in YunoHost..." --weight=3
 
 yunohost service add "$app" --log "/var/log/$app/weblate.log"
 yunohost service add "$app-celery" --log "/var/log/$app/weblate-celery-w1.log"
@@ -276,9 +250,7 @@ yunohost service add "$app-celery" --log "/var/log/$app/weblate-celery-w1.log"
 #=================================================
 # SETUP SSOWAT
 #=================================================
-ynh_script_progression --message="Configuring SSOwat..."
-
-
+ynh_script_progression --message="Configuring permissions..." --weight=1
 
 # Make app public if necessary
 if [ "$is_public" -eq 1 ]
@@ -297,7 +269,7 @@ ynh_systemd_action --service_name="$app-celery" --action="start"
 #=================================================
 # RELOAD NGINX
 #=================================================
-ynh_script_progression --message="Reloading nginx web server..."
+ynh_script_progression --message="Reloading NGINX web server..." --weight=1
 
 ynh_systemd_action --service_name="nginx" --action="reload"
 
@@ -311,5 +283,9 @@ If you facing an issue or want to improve this app, please open a new issue in t
 "
 
 ynh_send_readme_to_admin "$message" "$admin"
+
+#=================================================
+# END OF SCRIPT
+#=================================================
 
 ynh_script_progression --message="Installation of $app completed" --last
