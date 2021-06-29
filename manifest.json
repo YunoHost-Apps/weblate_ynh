@@ -18,8 +18,8 @@
     },
 	"license": "AGPL-3.0",
 	"maintainer": {
-		"name": "",
-		"email": ""
+		"name": "YunoHost Contributors",
+		"email": "apps@yunohost.org"
 	},
 	"previous_maintainers": [{
 		"name": "Jean-Baptiste Holcroft",
