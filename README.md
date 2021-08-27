@@ -15,7 +15,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 ## Overview
 
-Translation platform using Git and Python
+Weblate is a libre web-based translation tool with tight version control integration. It provides two user interfaces, propagation of translations across components, quality checks and automatic linking to source files.
 
 **Shipped version:** 4.8~ynh1
 

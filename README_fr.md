@@ -11,7 +11,7 @@ Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour
 
 ## Vue d'ensemble
 
-Plateforme de traduction utilisant Git et Python
+Weblate est un outil de traduction libre avec une intégration étroite du contrôle de version. Il fournit deux interfaces utilisateur, la propagation des traductions entre les composants, les contrôles de qualité et la liaison automatique aux fichiers source. 
 
 **Version incluse :** 4.8~ynh1
 
