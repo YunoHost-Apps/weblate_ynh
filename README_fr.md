@@ -13,7 +13,7 @@ Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour
 
 Plateforme de traduction utilisant Git et Python
 
-**Version incluse :** 4.7~ynh2
+**Version incluse :** 4.8~ynh1
 
 **Démo :** https://translate.yunohost.org
 

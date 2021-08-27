@@ -17,7 +17,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 Translation platform using Git and Python
 
-**Shipped version:** 4.7~ynh2
+**Shipped version:** 4.8~ynh1
 
 **Demo:** https://translate.yunohost.org
 
