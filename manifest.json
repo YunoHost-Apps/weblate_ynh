@@ -11,7 +11,7 @@
 	"upstream": {
         "license": "AGPL-3.0",
         "website": "https://weblate.org",
-        "demo": "https://translate.yunohost.org",
+        "demo": "https://hosted.weblate.org/",
         "admindoc": "https://docs.weblate.org/",
         "userdoc": "https://yunohost.org/apps",
         "code": "https://github.com/WeblateOrg/weblate"
