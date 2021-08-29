@@ -19,7 +19,7 @@ Weblate is a libre web-based translation tool with tight version control integra
 
 **Shipped version:** 4.8~ynh1
 
-**Demo:** https://translate.yunohost.org
+**Demo:** https://hosted.weblate.org/
 
 ## Screenshots
 

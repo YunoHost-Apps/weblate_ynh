@@ -15,7 +15,7 @@ Weblate est un outil de traduction libre avec une intégration étroite du contr
 
 **Version incluse :** 4.8~ynh1
 
-**Démo :** https://translate.yunohost.org
+**Démo :** https://hosted.weblate.org/
 
 ## Captures d'écran
 
