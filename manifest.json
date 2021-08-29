@@ -13,7 +13,7 @@
         "website": "https://weblate.org",
         "demo": "https://hosted.weblate.org/",
         "admindoc": "https://docs.weblate.org/",
-        "userdoc": "https://yunohost.org/apps",
+        "userdoc": "https://docs.weblate.org/",
         "code": "https://github.com/WeblateOrg/weblate"
     },
 	"license": "AGPL-3.0",
