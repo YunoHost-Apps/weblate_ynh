@@ -43,7 +43,7 @@ Cela ne fonctionne pas encore, mais bien que [cela semble faisable](https://docs
 ## Documentations et ressources
 
 * Site officiel de l'app : https://weblate.org
-* Documentation officielle utilisateur : https://yunohost.org/apps
+* Documentation officielle utilisateur : https://docs.weblate.org/
 * Documentation officielle de l'admin : https://docs.weblate.org/
 * Dépôt de code officiel de l'app : https://github.com/WeblateOrg/weblate
 * Documentation YunoHost pour cette app : https://yunohost.org/app_weblate

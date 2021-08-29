@@ -48,7 +48,7 @@ It doesn't work yet, but while [it looks doable](https://docs.weblate.org/en/lat
 ## Documentation and resources
 
 * Official app website: https://weblate.org
-* Official user documentation: https://yunohost.org/apps
+* Official user documentation: https://docs.weblate.org/
 * Official admin documentation: https://docs.weblate.org/
 * Upstream app code repository: https://github.com/WeblateOrg/weblate
 * YunoHost documentation for this app: https://yunohost.org/app_weblate
