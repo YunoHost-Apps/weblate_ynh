@@ -35,6 +35,15 @@ import os
 import platform
 from logging.handlers import SysLogHandler
 
+# Title of site to use
+SITE_TITLE = "Weblate"
+
+# Site domain
+SITE_DOMAIN = "__DOMAIN__"
+
+# Whether site uses https
+ENABLE_HTTPS = True
+
 #
 # Django settings for Weblate project.
 #
@@ -42,7 +51,7 @@ from logging.handlers import SysLogHandler
 DEBUG = False
 
 ADMINS = (
-    ('__ADMIN__', '__ADMINMAIL__'),
+    ('__ADMIN__', '__ADMIN_MAIL__'),
 )
 
 MANAGERS = ADMINS
@@ -52,9 +61,9 @@ DATABASES = {
         # Use "postgresql" or "mysql".
         "ENGINE": "django.db.backends.postgresql",
         # Database name.
-        "NAME": "__NAME__",
+        "NAME": "__APP__",
         # Database user.
-        "USER": "__NAME__",
+        "USER": "__APP__",
         # Name of role to alter to set parameters in PostgreSQL,
         # use in case role name is different than user used for authentication.
         # "ALTER_ROLE": "weblate",
@@ -135,6 +144,7 @@ LANGUAGES = (
     ("sr", "Српски"),
     ("sr-latn", "Srpski"),
     ("sv", "Svenska"),
+    ("th", "ไทย"),
     ("tr", "Türkçe"),
     ("uk", "Українська"),
     ("zh-hans", "简体字"),
@@ -158,7 +168,7 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # URL prefix to use, please see documentation for more details
-URL_PREFIX = "__PATHURL__"
+URL_PREFIX = "__PATH_URL__"
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 MEDIA_ROOT = os.path.join(DATA_DIR, "media")
@@ -221,8 +231,8 @@ TEMPLATES = [
 
 # GitHub username and token for sending pull requests.
 # Please see the documentation for more details.
-GITHUB_USERNAME = "__GITHUBUSER__"
-GITHUB_TOKEN = "__GITHUBTOKEN__"
+GITHUB_USERNAME = "__GITHUB_ACCOUNT__"
+GITHUB_TOKEN = "__GITHUB_TOKEN__"
 
 # GitLab username and token for sending merge requests.
 # Please see the documentation for more details.
@@ -365,6 +375,7 @@ MIDDLEWARE = [
     "weblate.accounts.middleware.RequireLoginMiddleware",
     "weblate.api.middleware.ThrottlingMiddleware",
     "weblate.middleware.SecurityMiddleware",
+    "weblate.wladmin.middleware.ManageMiddleware",
 ]
 
 ROOT_URLCONF = "weblate.urls"
@@ -529,6 +540,7 @@ MT_SERVICES = (
     #     "weblate.machinery.glosbe.GlosbeTranslation",
     #     "weblate.machinery.google.GoogleTranslation",
     #     "weblate.machinery.googlev3.GoogleV3Translation",
+    #     "weblate.machinery.libretranslate.LibreTranslateTranslation",
     #     "weblate.machinery.microsoft.MicrosoftCognitiveTranslation",
     #     "weblate.machinery.microsoftterminology.MicrosoftTerminologyService",
     #     "weblate.machinery.modernmt.ModernMTTranslation",
@@ -550,6 +562,10 @@ MT_APERTIUM_APY = None
 
 # DeepL API key
 MT_DEEPL_KEY = None
+
+# LibreTranslate
+MT_LIBRETRANSLATE_API_URL = None
+MT_LIBRETRANSLATE_KEY = None
 
 # Microsoft Cognitive Services Translator API, register at
 # https://portal.azure.com/
@@ -598,15 +614,6 @@ MT_SAP_SANDBOX_APIKEY = None
 MT_SAP_USERNAME = None
 MT_SAP_PASSWORD = None
 MT_SAP_USE_MT = True
-
-# Title of site to use
-SITE_TITLE = "Weblate"
-
-# Site domain
-SITE_DOMAIN = "__DOMAIN__"
-
-# Whether site uses https
-ENABLE_HTTPS = True
 
 # Use HTTPS when creating redirect URLs for social authentication, see
 # documentation for more details:
@@ -716,6 +723,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.checks.format.PerlFormatCheck",
 #     "weblate.checks.format.JavaScriptFormatCheck",
 #     "weblate.checks.format.LuaFormatCheck",
+#     "weblate.checks.format.ObjectPascalFormatCheck",
 #     "weblate.checks.format.SchemeFormatCheck",
 #     "weblate.checks.format.CSharpFormatCheck",
 #     "weblate.checks.format.JavaFormatCheck",
@@ -931,7 +939,7 @@ MATOMO_SITE_ID = None
 MATOMO_URL = None
 GOOGLE_ANALYTICS_ID = None
 SENTRY_DSN = None
-SENTRY_ENVIRONMENT = None
+SENTRY_ENVIRONMENT = SITE_DOMAIN
 AKISMET_API_KEY = None
 
 try:
