@@ -36,8 +36,7 @@
 		"install" : [
 			{
 				"name": "domain",
-				"type": "domain",
-				"example": "domain.org"
+				"type": "domain"
 			},
 			{
 				"name": "path",
@@ -56,13 +55,11 @@
 			},
 			{
 				"name": "admin",
-				"type": "user",
-				"example": "johndoe"
+				"type": "user"
 			},
 			{
 				"name": "password",
-				"type": "password",
-				"example": "Choose a password"
+				"type": "password"
 			},
 			{
 				"name": "github_account",
