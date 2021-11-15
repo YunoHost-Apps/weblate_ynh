@@ -5,7 +5,7 @@
 #=================================================
 
 # dependencies used by the app
-pkg_dependencies="libxml2-dev libxslt-dev libfreetype6-dev libjpeg-dev libz-dev libyaml-dev \
+pkg_dependencies="libffi-dev libxml2-dev libxslt-dev libfreetype6-dev libjpeg-dev libz-dev libyaml-dev \
 	libcairo-dev gir1.2-pango-1.0 libgirepository1.0-dev libacl1-dev libssl-dev \
 	build-essential python3-gdbm python3-enchant python3-dev python3-pip python3-virtualenv virtualenv git \
 	uwsgi uwsgi-plugin-python3 redis-server postgresql postgresql-contrib \
