@@ -85,6 +85,8 @@ DATABASES = {
             # Change connection timeout in case you get MySQL gone away error:
             # "connect_timeout": 28800,
         },
+        # Persistent connections
+        "CONN_MAX_AGE": 0,
     }
 }
 
@@ -733,6 +735,8 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.checks.format.I18NextInterpolationCheck",
 #     "weblate.checks.format.ESTemplateLiteralsCheck",
 #     "weblate.checks.angularjs.AngularJSInterpolationCheck",
+#     "weblate.checks.icu.ICUMessageFormatCheck",
+#     "weblate.checks.icu.ICUSourceCheck",
 #     "weblate.checks.qt.QtFormatCheck",
 #     "weblate.checks.qt.QtPluralCheck",
 #     "weblate.checks.ruby.RubyFormatCheck",
