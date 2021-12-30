@@ -87,6 +87,8 @@ DATABASES = {
         },
         # Persistent connections
         "CONN_MAX_AGE": 0,
+        # Disable server-side cursors, might be needed with pgbouncer
+        "DISABLE_SERVER_SIDE_CURSORS": False,
     }
 }
 
@@ -206,12 +208,6 @@ STATICFILES_FINDERS = (
 # You can generate it using weblate/examples/generate-secret-key
 SECRET_KEY = "__KEY__"
 
-_TEMPLATE_LOADERS = [
-    "django.template.loaders.filesystem.Loader",
-    "django.template.loaders.app_directories.Loader",
-]
-if not DEBUG:
-    _TEMPLATE_LOADERS = [("django.template.loaders.cached.Loader", _TEMPLATE_LOADERS)]
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -225,8 +221,8 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "weblate.trans.context_processors.weblate_context",
             ],
-            "loaders": _TEMPLATE_LOADERS,
         },
+        "APP_DIRS": True,
     }
 ]
 
@@ -261,6 +257,14 @@ AUTH_USER_MODEL = "weblate_auth.User"
 SOCIAL_AUTH_GITHUB_KEY = ""
 SOCIAL_AUTH_GITHUB_SECRET = ""
 SOCIAL_AUTH_GITHUB_SCOPE = ["user:email"]
+
+SOCIAL_AUTH_GITHUB_ORG_KEY = ""
+SOCIAL_AUTH_GITHUB_ORG_SECRET = ""
+SOCIAL_AUTH_GITHUB_ORG_NAME = ""
+
+SOCIAL_AUTH_GITHUB_TEAM_KEY = ""
+SOCIAL_AUTH_GITHUB_TEAM_SECRET = ""
+SOCIAL_AUTH_GITHUB_TEAM_ID = ""
 
 SOCIAL_AUTH_BITBUCKET_KEY = ""
 SOCIAL_AUTH_BITBUCKET_SECRET = ""
@@ -855,6 +859,7 @@ REST_FRAMEWORK = {
         else "rest_framework.permissions.IsAuthenticatedOrReadOnly"
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": (
+        "weblate.api.authentication.ProjectTokenAuthentication",
         "rest_framework.authentication.TokenAuthentication",
         "weblate.api.authentication.BearerAuthentication",
         "rest_framework.authentication.SessionAuthentication",
