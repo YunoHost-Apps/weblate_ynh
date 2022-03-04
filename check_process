@@ -16,7 +16,7 @@
 		setup_public=1
 		upgrade=1
 		#4.6.1
-		upgrade=1		from_commit=3f8363cdc588e609a775cb8b78b9d080f96405d9
+		upgrade=1	from_commit=3f8363cdc588e609a775cb8b78b9d080f96405d9
 		backup_restore=1
 		multi_instance=1
 		port_already_use=0

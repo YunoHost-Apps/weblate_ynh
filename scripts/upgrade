@@ -5,6 +5,7 @@
 #=================================================
 # IMPORT GENERIC HELPERS
 #=================================================
+
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -15,18 +16,19 @@ ynh_script_progression --message="Loading installation settings..." --weight=1
 
 app=$YNH_APP_INSTANCE_NAME
 
-path_url=$(ynh_app_setting_get --app="$app" --key=path)
-final_path=$(ynh_app_setting_get --app="$app" --key=final_path)
-db_name=$(ynh_app_setting_get --app="$app" --key=db_name)
+domain=$(ynh_app_setting_get --app=$app --key=domain)
+path_url=$(ynh_app_setting_get --app=$app --key=path)
+admin=$(ynh_app_setting_get --app=$app --key=admin)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
+db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 db_user=$db_name
-domain=$(ynh_app_setting_get --app="$app" --key=domain)
-db_pwd=$(ynh_app_setting_get --app="$app" --key=psqlpwd)
-admin=$(ynh_app_setting_get --app="$app" --key=admin)
+db_pwd=$(ynh_app_setting_get --app=$app --key=psqlpwd)
+
 admin_mail=$(ynh_user_get_info "$admin" mail)
-github_account=$(ynh_app_setting_get --app="$app" --key=github_account)
-github_token=$(ynh_app_setting_get --app="$app" --key=github_token)
+github_account=$(ynh_app_setting_get --app=$app --key=github_account)
+github_token=$(ynh_app_setting_get --app=$app --key=github_token)
 key=$(ynh_string_random 50)
-redis_db=$(ynh_app_setting_get --app="$app" --key=redis_db)
+redis_db=$(ynh_app_setting_get --app=$app --key=redis_db)
 
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
@@ -36,26 +38,34 @@ ynh_script_progression --message="Backing up the app before upgrading (may take 
 # Backup the current version of the app
 ynh_backup_before_upgrade
 ynh_clean_setup () {
-	# restore it if the upgrade fails
+	ynh_clean_check_starting
+	# Restore it if the upgrade fails
 	ynh_restore_upgradebackup
 }
 # Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
 
 #=================================================
-# Migrate legacy permissions to new system
+# STANDARD UPGRADE STEPS
 #=================================================
+# STOP SYSTEMD SERVICE
+#=================================================
+ynh_script_progression --message="Stopping systemd services..." --weight=5
+
+ynh_systemd_action --service_name=$app --action="stop" --log_path="/var/log/$app/weblate.log" --line_match="goodbye to uWSGI"
+ynh_systemd_action --service_name="$app-celery" --action="stop" --log_path="systemd" --line_match="Stopped"
+
+#=================================================
+# ENSURE DOWNWARD COMPATIBILITY
+#=================================================
+ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
+
 if ynh_legacy_permissions_exists
 then
 	ynh_legacy_permissions_delete_all
 
 	ynh_app_setting_delete --app=$app --key=is_public
 fi
-
-#=================================================
-# ENSURE DOWNWARD COMPATIBILITY
-#=================================================
-ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
 
 if [[ -d "$final_path/bin/" ]]
 then
@@ -65,47 +75,37 @@ fi
 # (<3.8) log cleanups
 if [[ -e "/var/log/uwsgi/app/$app" ]]
 then
-    ynh_systemd_action --service_name="$app" --action="stop"
+    ynh_systemd_action --service_name=$app --action="stop"
     ynh_systemd_action --service_name="$app-celery" --action="stop"
 	ynh_secure_remove --file="/var/log/uwsgi/app/$app"
 	ynh_secure_remove --file="/var/log/$app-celery"
 fi
 
 #=================================================
-# STANDARD UPGRADE STEPS
+# CREATE DEDICATED USER
 #=================================================
-# STOP SYSTEMD SERVICE
-#=================================================
-ynh_script_progression --message="Stopping systemd services..." --weight=5
+ynh_script_progression --message="Making sure dedicated system user exists..." --weight=1
 
-ynh_systemd_action --service_name="$app" --action="stop"
-ynh_systemd_action --service_name="$app-celery" --action="stop"
+# Create a dedicated user (if not existing)
+ynh_system_user_create --username=$app --home_dir="$final_path" --use_shell
 
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
 ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=3
 
-# Create a dedicated nginx config
+# Create a dedicated NGINX config
 ynh_add_nginx_config
 
 #=================================================
-# SPECIFIC UPGRADE
-#=================================================
-# Update dependencies
+# UPGRADE DEPENDENCIES
 #=================================================
 ynh_script_progression --message="Upgrading dependencies..." --weight=5
 
 ynh_exec_warn_less ynh_install_app_dependencies "$pkg_dependencies"
 
 #=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Making sure dedicated system user exists..." --weight=1
-
-# Create a system user
-ynh_system_user_create --username="$app" --home_dir="$final_path" --use_shell
-
+# SPECIFIC UPGRADE
 #=================================================
 # CONFIGURE HUB
 #=================================================
@@ -119,30 +119,20 @@ eval "$(hub alias -s /bin/bash)"
 EOF
 
 #=================================================
-# SPECIFIC SETUP UWSGI
+# UPDATE A CONFIG FILE
 #=================================================
-ynh_script_progression --message="Configure uwsgi..." --weight=2
+ynh_script_progression --message="Updating a configuration file..." --weight=2
 
-finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
+ynh_add_config --template="../conf/uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
 
-ynh_add_config --template="../conf/uwsgi.ini" --destination="$finaluwsgiini"
+ynh_add_config --template="../conf/celery-weblate" --destination="$final_path/celery-weblate"
 
 #=================================================
 # SETUP SYSTEMD
 #=================================================
 ynh_script_progression --message="Configuring a systemd service..." --weight=3
 
-ynh_add_systemd_config --service="$app" --template="weblate.service"
-
-#=================================================
-# ACTIVATE CELERY
-#=================================================
-ynh_script_progression --message="Configure celery..." --weight=2
-
-celeryconf="$final_path/celery-weblate"
-
-ynh_add_config --template="../conf/celery-weblate" --destination="$celeryconf"
-
+ynh_add_systemd_config --service=$app --template="weblate.service"
 ynh_add_systemd_config --service="$app-celery" --template="celery-weblate.service"
 
 #=================================================
@@ -157,10 +147,8 @@ upgrade() {
 	#=================================================
 	ynh_script_progression --message="Install weblate using PIP..." --weight=15
 
-	ynh_systemd_action --service_name="$app-celery" --action="stop"
-
 	virtualenv --python=python3 "${final_path}/venv"
-	chown -R "$app": "$final_path"
+	chown -R $app: "$final_path"
 
 	#run source in a 'sub shell'
 	(
@@ -190,7 +178,7 @@ upgrade() {
 
 	ynh_add_config --template="../conf/settings.py" --destination="$settings"
 
-	ynh_app_setting_set --app="$app" --key=redis_db --value="$redis_db"
+	ynh_app_setting_set --app=$app --key=redis_db --value="$redis_db"
 
 	# Recalculate and store the config file checksum into the app settings
 	ynh_store_file_checksum --file="$settings"
@@ -224,6 +212,8 @@ upgrade() {
 			sudo --user=$app $final_path/venv/bin/weblate check --deploy || true
 		fi
 	)
+
+	ynh_systemd_action --service_name="$app-celery" --action="stop"
 }
 
 file_version="${final_path}/venv/lib/$weblate_pypath/site-packages/weblate/__init__.py"
@@ -248,6 +238,17 @@ fi
 
 upgrade $weblate_version "../conf/settings.py"
 
+# Set right permissions for curl installation
+mkdir -p "$final_path/avatar-cache"
+chown -R $app: "$final_path"
+chown "$app:www-data" "$final_path"
+chown -R "$app:www-data" "$final_path/data"
+
+chmod 750 "$final_path"
+chmod -R o-rwx "$final_path"
+
+#=================================================
+# GENERIC FINALIZATION
 #=================================================
 # SETUP LOGROTATE
 #=================================================
@@ -261,31 +262,16 @@ ynh_use_logrotate --non-append
 #=================================================
 ynh_script_progression --message="Integrating service in YunoHost..." --weight=2
 
-yunohost service add "$app" --log "/var/log/$app/weblate.log"
-yunohost service add "$app-celery" --log "/var/log/$app/weblate-celery-w1.log"
-
-#=================================================
-# GENERIC FINALIZATION
-#=================================================
-# SECURE FILES AND DIRECTORIES
-#=================================================
-
-# Set right permissions for curl installation
-mkdir -p "$final_path/avatar-cache"
-chown -R "$app": "$final_path"
-chown "$app:www-data" "$final_path"
-chown -R "$app:www-data" "$final_path/data"
-
-chmod 750 "$final_path"
-chmod -R o-rwx "$final_path"
+yunohost service add $app --log="/var/log/$app/weblate.log"
+yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery-w1.log"
 
 #=================================================
 # START SYSTEMD SERVICES
 #=================================================
 ynh_script_progression --message="Starting systemd services..." --weight=5
 
-ynh_systemd_action --service_name="$app" --action="start"
-ynh_systemd_action --service_name="$app-celery" --action="start"
+ynh_systemd_action --service_name=$app --action="start" --log_path="/var/log/$app/weblate.log" --line_match="spawned uWSGI"
+ynh_systemd_action --service_name="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery-celery.log" --line_match="mingle: all alone"
 
 #=================================================
 # RELOAD NGINX
