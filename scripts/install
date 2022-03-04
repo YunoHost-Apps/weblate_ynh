@@ -189,17 +189,17 @@ ynh_script_progression --message="Filling up the database..." --weight=10
 	cd "${final_path}"
 
 	# the user needs to be weblate for postgresql
-	sudo --user=$app $final_path/venv/bin/weblate migrate --noinput
+	ynh_exec_warn_less sudo --user=$app $final_path/venv/bin/weblate migrate --noinput
 	# generate static files
-	sudo --user=$app $final_path/venv/bin/weblate collectstatic --noinput
-	sudo --user=$app $final_path/venv/bin/weblate createadmin --no-color \
+	ynh_exec_warn_less sudo --user=$app $final_path/venv/bin/weblate collectstatic --noinput
+	ynh_exec_warn_less sudo --user=$app $final_path/venv/bin/weblate createadmin --no-color \
 		--password "$password" \
 		--username "$admin" \
 		--email "$admin_mail"
 
 	# Check the configuration
 	# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
-	sudo --user=$app $final_path/venv/bin/weblate check --deploy || true
+	ynh_exec_warn_less sudo --user=$app $final_path/venv/bin/weblate check --deploy || true
 )
 
 #=================================================
