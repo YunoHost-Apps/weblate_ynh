@@ -126,8 +126,6 @@ chown -R "$app": "$final_path"
 	cd "${final_path}"
 
 	sudo --user=$app $final_path/venv/bin/pip install --upgrade pip setuptools wheel
-	# Tmp fix
-	sudo --user=$app $final_path/venv/bin/pip install --upgrade cffi==1.14
 	# Still needed with latest version of weblate?
 	sudo --user=$app $final_path/venv/bin/pip install Weblate=="$weblate_version"
 	sudo --user=$app $final_path/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply
