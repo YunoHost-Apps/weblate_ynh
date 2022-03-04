@@ -170,6 +170,8 @@ upgrade() {
 		cd "${final_path}"
 
 		sudo --user=$app $final_path/venv/bin/pip install --upgrade pip
+		# Tmp fix
+		sudo --user=$app $final_path/venv/bin/pip install --upgrade cffi==1.14
 
 		# Still needed with latest version of weblate?
 		sudo --user=$app $final_path/venv/bin/pip install --upgrade Weblate=="$new_version"
