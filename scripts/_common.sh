@@ -5,14 +5,20 @@
 #=================================================
 
 # dependencies used by the app
-pkg_dependencies="libxml2-dev libxslt-dev libfreetype6-dev libjpeg-dev libz-dev libyaml-dev \
-	libcairo-dev gir1.2-pango-1.0 libgirepository1.0-dev libacl1-dev libssl-dev \
-	build-essential python3-gdbm python3-enchant python3-dev python3-pip python3-virtualenv virtualenv git \
-	uwsgi uwsgi-plugin-python3 redis-server postgresql postgresql-contrib \
-	libpq-dev libglib2.0-dev mailutils python-celery-common hub"
+weblate_dependencies="libxml2-dev libxslt-dev libfreetype6-dev libjpeg-dev libz-dev libyaml-dev \
+   libffi-dev libcairo-dev gir1.2-pango-1.0 libgirepository1.0-dev \
+   libacl1-dev libssl-dev libpq-dev libjpeg62-turbo-dev build-essential \
+   python3-gdbm python3-dev python3-pip python3-virtualenv virtualenv git \
+   uwsgi uwsgi-plugin-python3 redis-server postgresql postgresql-contrib hub"
+
+# because weblate install borgbackup
+borgbackup_dependencies="libacl1-dev libacl1 libssl-dev liblz4-dev libzstd-dev libxxhash-dev \
+	build-essential pkg-config python3-pkgconfig"
+
+pkg_dependencies="$weblate_dependencies $borgbackup_dependencies"
 
 # Weblate's version for PIP and settings file
-weblate_version="4.11"
+weblate_version="4.11.2"
 
 debian_maj_version=$(sed 's/\..*//' /etc/debian_version)
 
