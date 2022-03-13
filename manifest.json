@@ -1,14 +1,14 @@
 {
-	"name": "Weblate",
-	"id": "weblate",
-	"packaging_format": 1,
-	"description": {
-		"en": "Translation platform using Git and Python",
-		"fr": "Plateforme de traduction utilisant Git et Python" 
-	},
-	"version": "4.11.2~ynh1",
-	"url": "https://weblate.org",
-	"upstream": {
+    "name": "Weblate",
+    "id": "weblate",
+    "packaging_format": 1,
+    "description": {
+        "en": "Translation platform using Git and Python",
+        "fr": "Plateforme de traduction utilisant Git et Python"
+    },
+    "version": "4.11.2~ynh2",
+    "url": "https://weblate.org",
+    "upstream": {
         "license": "AGPL-3.0",
         "website": "https://weblate.org",
         "demo": "https://hosted.weblate.org/",
@@ -16,69 +16,65 @@
         "userdoc": "https://docs.weblate.org/",
         "code": "https://github.com/WeblateOrg/weblate"
     },
-	"license": "AGPL-3.0",
-	"maintainer": {
-		"name": "YunoHost Contributors",
-		"email": "apps@yunohost.org"
-	},
-	"previous_maintainers": [{
-		"name": "Jean-Baptiste Holcroft",
-		"email": "jean-baptiste@holcroft.fr"
-	}],
-	"requirements": {
-		"yunohost": ">= 4.2.0"
-	},
-	"multi_instance": true,
-	"services": [
-		"nginx"
-	],
-	"arguments": {
-		"install" : [
-			{
-				"name": "domain",
-				"type": "domain"
-			},
-			{
-				"name": "path",
-				"type": "path",
-				"example": "/weblate",
-				"default": "/weblate"
-			},
-			{
-				"name": "is_public",
-				"type": "boolean",
-				"help": {
-					"en": "Any YunoHost user and anonymous people from the web will be able to access the application",
-					"fr": "Tout utilisateur YunoHost et les personnes anonymes pourront accéder à l'application"
-				},
-				"default": false
-			},
-			{
-				"name": "admin",
-				"type": "user"
-			},
-			{
-				"name": "password",
-				"type": "password"
-			},
-			{
-				"name": "github_account",
-				"type": "string",
-				"ask": {
-				    "en": "GitHub's username",
-				    "fr": "Nom d'utilisateur de GitHub"
-				},
-				"example": "Github account"
-			},
-			{
-				"name": "github_token",
-				"type": "string",
-				"ask": {
-				    "en": "GitHub's token (OAuth)",
-				    "fr": "Jeton GitHub (OAuth)"
-				},
-				"example": "A secret token"
-			}
-		]
-	}
+    "license": "AGPL-3.0",
+    "maintainer": {
+        "name": "YunoHost Contributors",
+        "email": "apps@yunohost.org"
+    },
+    "previous_maintainers": [{
+        "name": "Jean-Baptiste Holcroft",
+        "email": "jean-baptiste@holcroft.fr"
+    }],
+    "requirements": {
+        "yunohost": ">= 4.3.0"
+    },
+    "multi_instance": true,
+    "services": [
+        "nginx"
+    ],
+    "arguments": {
+        "install": [
+            {
+                "name": "domain",
+                "type": "domain"
+            },
+            {
+                "name": "path",
+                "type": "path",
+                "example": "/weblate",
+                "default": "/weblate"
+            },
+            {
+                "name": "is_public",
+                "type": "boolean",
+                "default": false
+            },
+            {
+                "name": "admin",
+                "type": "user"
+            },
+            {
+                "name": "password",
+                "type": "password"
+            },
+            {
+                "name": "github_account",
+                "type": "string",
+                "ask": {
+                    "en": "GitHub's username",
+                    "fr": "Nom d'utilisateur de GitHub"
+                },
+                "example": "Github account"
+            },
+            {
+                "name": "github_token",
+                "type": "string",
+                "ask": {
+                    "en": "GitHub's token (OAuth)",
+                    "fr": "Jeton GitHub (OAuth)"
+                },
+                "example": "A secret token"
+            }
+        ]
+    }
 }

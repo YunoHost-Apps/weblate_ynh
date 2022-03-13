@@ -6,9 +6,18 @@
 # IMPORT GENERIC HELPERS
 #=================================================
 
+# Keep this path for calling _common.sh inside the execution's context of backup and restore scripts
 source ../settings/scripts/_common.sh
 source /usr/share/yunohost/helpers
 
+#=================================================
+# MANAGE SCRIPT FAILURE
+#=================================================
+
+ynh_clean_setup () {
+	true
+}
+# Exit if an error occurs during the execution of the script
 ynh_abort_if_errors
 
 #=================================================
@@ -18,9 +27,9 @@ ynh_print_info --message="Loading installation settings..."
 
 app=$YNH_APP_INSTANCE_NAME
 
-final_path=$(ynh_app_setting_get --app="$app" --key=final_path)
-domain=$(ynh_app_setting_get --app="$app" --key=domain)
-db_name=$(ynh_app_setting_get --app="$app" --key=db_name)
+final_path=$(ynh_app_setting_get --app=$app --key=final_path)
+domain=$(ynh_app_setting_get --app=$app --key=domain)
+db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 
 #=================================================
 # DECLARE DATA AND CONF FILES TO BACKUP
@@ -40,12 +49,6 @@ ynh_backup --src_path="$final_path"
 ynh_backup --src_path="/etc/nginx/conf.d/$domain.d/$app.conf"
 
 #=================================================
-# BACKUP THE PostgreSQL DATABASE
-#=================================================
-
-ynh_psql_dump_db --database="$db_name" > db.sql
-
-#=================================================
 # SPECIFIC BACKUP
 #=================================================
 # BACKUP LOGROTATE
@@ -54,17 +57,24 @@ ynh_psql_dump_db --database="$db_name" > db.sql
 ynh_backup --src_path="/etc/logrotate.d/$app"
 
 #=================================================
-# BACKUP THE UWSGI files
-#=================================================
-
-ynh_backup --src_path="/etc/uwsgi/apps-available/$app.ini"
-
-#=================================================
 # BACKUP SYSTEMD
 #=================================================
 
 ynh_backup --src_path="/etc/systemd/system/$app.service"
 ynh_backup --src_path="/etc/systemd/system/$app-celery.service"
+
+#=================================================
+# BACKUP VARIOUS FILES
+#=================================================
+
+ynh_backup --src_path="/etc/uwsgi/apps-available/$app.ini"
+
+#=================================================
+# BACKUP THE POSTGRESQL DATABASE
+#=================================================
+ynh_print_info --message="Backing up the PostgreSQL database..."
+
+ynh_psql_dump_db --database="$db_name" > db.sql
 
 #=================================================
 # END OF SCRIPT
