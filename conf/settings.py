@@ -151,8 +151,8 @@ LANGUAGES = (
     ("th", "ไทย"),
     ("tr", "Türkçe"),
     ("uk", "Українська"),
-    ("zh-hans", "简体字"),
-    ("zh-hant", "正體字"),
+    ("zh-hans", "简体中文"),
+    ("zh-hant", "正體中文"),
 )
 
 SITE_ID = 1
@@ -242,7 +242,7 @@ AUTHENTICATION_BACKENDS = (
     "social_core.backends.email.EmailAuth",
     # "social_core.backends.google.GoogleOAuth2",
     # "social_core.backends.github.GithubOAuth2",
-    # "social_core.backends.bitbucket.BitbucketOAuth",
+    # "social_core.backends.bitbucket.BitbucketOAuth2",
     # "social_core.backends.suse.OpenSUSEOpenId",
     # "social_core.backends.ubuntu.UbuntuOpenId",
     # "social_core.backends.fedora.FedoraOpenId",
@@ -266,9 +266,9 @@ SOCIAL_AUTH_GITHUB_TEAM_KEY = ""
 SOCIAL_AUTH_GITHUB_TEAM_SECRET = ""
 SOCIAL_AUTH_GITHUB_TEAM_ID = ""
 
-SOCIAL_AUTH_BITBUCKET_KEY = ""
-SOCIAL_AUTH_BITBUCKET_SECRET = ""
-SOCIAL_AUTH_BITBUCKET_VERIFIED_EMAILS_ONLY = True
+SOCIAL_AUTH_BITBUCKET_OAUTH2_KEY = ""
+SOCIAL_AUTH_BITBUCKET_OAUTH2_SECRET = ""
+SOCIAL_AUTH_BITBUCKET_OAUTH2_VERIFIED_EMAILS_ONLY = True
 
 SOCIAL_AUTH_FACEBOOK_KEY = ""
 SOCIAL_AUTH_FACEBOOK_SECRET = ""
@@ -902,6 +902,7 @@ if REQUIRE_LOGIN:
 #    rf"{URL_PREFIX}/js/i18n/$",  # JavaScript localization
 #    rf"{URL_PREFIX}/contact/$",  # Optional for contact form
 #    rf"{URL_PREFIX}/legal/(.*)$",  # Optional for legal app
+#    rf"{URL_PREFIX}/avatar/(.*)$",  # Optional for avatars
 # )
 
 # Silence some of the Django system checks
