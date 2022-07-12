@@ -23,12 +23,19 @@ final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 db_user=$db_name
 db_pwd=$(ynh_app_setting_get --app=$app --key=psqlpwd)
-
-admin_mail=$(ynh_user_get_info "$admin" mail)
 github_account=$(ynh_app_setting_get --app=$app --key=github_account)
 github_token=$(ynh_app_setting_get --app=$app --key=github_token)
-key=$(ynh_string_random 50)
 redis_db=$(ynh_app_setting_get --app=$app --key=redis_db)
+
+admin_mail=$(ynh_user_get_info --username="$admin" --key=mail)
+key=$(ynh_string_random --length=50)
+
+#=================================================
+# CHECK VERSION
+#=================================================
+ynh_script_progression --message="Checking version..."
+
+upgrade_type=$(ynh_check_app_version_changed)
 
 #=================================================
 # BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
@@ -90,19 +97,19 @@ ynh_script_progression --message="Making sure dedicated system user exists..." -
 ynh_system_user_create --username=$app --home_dir="$final_path" --use_shell
 
 #=================================================
+# UPGRADE DEPENDENCIES
+#=================================================
+ynh_script_progression --message="Upgrading dependencies..." --weight=5
+
+ynh_exec_warn_less ynh_install_app_dependencies "$pkg_dependencies"
+
+#=================================================
 # NGINX CONFIGURATION
 #=================================================
 ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=3
 
 # Create a dedicated NGINX config
 ynh_add_nginx_config
-
-#=================================================
-# UPGRADE DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Upgrading dependencies..." --weight=5
-
-ynh_exec_warn_less ynh_install_app_dependencies "$pkg_dependencies"
 
 #=================================================
 # SPECIFIC UPGRADE
@@ -210,7 +217,7 @@ upgrade() {
 		
 		# Check the configuration
 		# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
-		if [ "$new_version" == "$weblate_version" ]; then
+		if [ "$new_version" == "$(ynh_app_upstream_version)" ]; then
 			sudo --user=$app $final_path/venv/bin/weblate check --deploy || true
 		fi
 	)
@@ -238,7 +245,7 @@ then
 	upgrade "4.1.1" "../conf/settings.4.1.1.py"
 fi
 
-upgrade $weblate_version "../conf/settings.py"
+upgrade $(ynh_app_upstream_version) "../conf/settings.py"
 
 # Set right permissions for curl installation
 mkdir -p "$final_path/avatar-cache"
