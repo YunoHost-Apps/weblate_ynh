@@ -18,7 +18,7 @@ borgbackup_dependencies="libacl1-dev libacl1 libssl-dev liblz4-dev libzstd-dev l
 pkg_dependencies="$weblate_dependencies $borgbackup_dependencies"
 
 # Weblate's version for PIP and settings file
-weblate_version="4.12"
+weblate_version="4.13"
 
 debian_maj_version=$(sed 's/\..*//' /etc/debian_version)
 
