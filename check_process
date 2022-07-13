@@ -2,9 +2,9 @@
 	; Manifest
 		domain="domain.tld"
 		path="/path"
-		admin="john"
-		password="randompass"
 		is_public=1
+		admin="john"
+		password="1Strong-Password"
 		github_account="myaccount"
 		github_token="myoauthtoken"
 	; Checks
@@ -16,7 +16,7 @@
 		setup_public=1
 		upgrade=1
 		# 4.9~ynh1
-		upgrade=1		from_commit=7fec5a47a80e00458a31f1270c4ace822961e7bf
+		upgrade=1	from_commit=7fec5a47a80e00458a31f1270c4ace822961e7bf
 		backup_restore=1
 		multi_instance=1
 		port_already_use=0

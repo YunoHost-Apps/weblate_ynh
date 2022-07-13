@@ -91,6 +91,19 @@ ynh_script_progression --message="Removing dependencies..." --weight=10
 ynh_exec_warn_less ynh_remove_app_dependencies
 
 #=================================================
+# REMOVE XXHASH
+#=================================================
+ynh_script_progression --message="Removing xxHash..."
+
+tempdir="$(mktemp -d)"
+ynh_setup_source --dest_dir=$tempdir --source_id="libxxhash"
+pushd $tempdir
+	make
+	make uninstall
+popd
+ynh_secure_remove --file="$tempdir"
+
+#=================================================
 # SPECIFIC REMOVE
 #=================================================
 # REMOVE VARIOUS FILES
