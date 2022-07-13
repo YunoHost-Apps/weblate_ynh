@@ -96,6 +96,19 @@ ynh_psql_execute_as_root --sql="CREATE EXTENSION IF NOT EXISTS pg_trgm;" --datab
 ynh_psql_connect_as --user=$db_user --password=$db_pwd --database=$db_name < ./db.sql
 
 #=================================================
+# INSTALL XXHASH
+#=================================================
+ynh_script_progression --message="Installing xxHash..."
+
+tempdir="$(mktemp -d)"
+ynh_setup_source --dest_dir=$tempdir --source_id="libxxhash"
+pushd $tempdir
+	make
+	make install
+popd
+ynh_secure_remove --file="$tempdir"
+
+#=================================================
 # RESTORE VARIOUS FILES
 #=================================================
 ynh_script_progression --message="Restoring various files..." --weight=1

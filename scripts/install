@@ -113,6 +113,19 @@ ynh_add_nginx_config
 #=================================================
 # SPECIFIC SETUP
 #=================================================
+# INSTALL XXHASH
+#=================================================
+ynh_script_progression --message="Installing xxHash..."
+
+tempdir="$(mktemp -d)"
+ynh_setup_source --dest_dir=$tempdir --source_id="libxxhash"
+pushd $tempdir
+	make
+	make install
+popd
+ynh_secure_remove --file="$tempdir"
+
+#=================================================
 # CONFIGURE HUB
 #=================================================
 ynh_script_progression --message="Configure hub..." --weight=1
@@ -139,7 +152,7 @@ chown -R $app: "$final_path"
 	set -o nounset
 	cd "${final_path}"
 
-	sudo --user=$app $final_path/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig
+	sudo --user=$app $final_path/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig  xxhash
 
 	# Read the "Note" section in https://docs.weblate.org/en/weblate-4.11/admin/install/venv-debian.html#python-modules
 	sudo --user=$app $final_path/venv/bin/pip install --force-reinstall --no-binary :all: cffi
