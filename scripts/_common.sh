@@ -17,9 +17,6 @@ borgbackup_dependencies="libacl1-dev libacl1 libssl-dev liblz4-dev libzstd-dev l
 
 pkg_dependencies="$weblate_dependencies $borgbackup_dependencies"
 
-# Weblate's version for PIP and settings file
-weblate_version="4.12"
-
 debian_maj_version=$(sed 's/\..*//' /etc/debian_version)
 
 if [ "$debian_maj_version" -eq 9 ] ; then
@@ -29,6 +26,10 @@ elif [ "$debian_maj_version" -eq 10 ] ; then
 elif [ "$debian_maj_version" -eq 11 ] ; then
     weblate_pypath="python3.9"
 fi
+
+#=================================================
+# PERSONAL HELPERS
+#=================================================
 
 #=================================================
 # EXPERIMENTAL HELPERS
@@ -141,5 +142,5 @@ ynh_redis_remove_db() {
 }
 
 #=================================================
-# EXPERIMENTAL HELPERS
+# FUTURE OFFICIAL HELPERS
 #=================================================
