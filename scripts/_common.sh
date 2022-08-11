@@ -32,8 +32,7 @@ fi
 #=================================================
 
 set_forge_variables() {
-	if [ $used_forge -eq "GitHub" ]
-	then
+	if [ $used_forge = "GitHub" ] ; then
 		github_username="\"$forge_username\""
 		github_token="\"$forge_token\""
 		gitlab_username="None"
