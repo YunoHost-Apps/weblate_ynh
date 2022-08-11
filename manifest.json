@@ -72,7 +72,7 @@
                 "type": "string",
                 "ask": {
                     "en": "Your forge's username",
-                    "fr": "Nom d'utilisateur sur votre forge"
+                    "fr": "Nom d'utilisateur de votre forge"
                 },
                 "example": "Your username"
             },
