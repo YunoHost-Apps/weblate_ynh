@@ -132,6 +132,12 @@ ynh_secure_remove --file="$tempdir"
 #=================================================
 ynh_script_progression --message="Configure hub..." --weight=1
 
+if [ $used_forge = "GitHub" ] ; then
+	forge_website="github.com"
+else
+	forge_website="gitlab.com"
+fi
+
 mkdir "$final_path/.config/"
 ynh_add_config --template="../conf/hub_config" --destination="$final_path/.config/hub"
 
