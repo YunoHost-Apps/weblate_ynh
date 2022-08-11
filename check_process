@@ -6,7 +6,7 @@
 		admin="john"
 		password="1Strong-Password"
 		used_forge="GitLab"
-		forge_account="myaccount"
+		forge_username="myusername"
 		forge_token="myoauthtoken"
 	; Checks
 		pkg_linter=1
