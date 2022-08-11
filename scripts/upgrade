@@ -24,7 +24,7 @@ db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 db_user=$db_name
 db_pwd=$(ynh_app_setting_get --app=$app --key=psqlpwd)
 used_forge=$(ynh_app_setting_get --app=$app --key=used_forge)
-forge_account=$(ynh_app_setting_get --app=$app --key=forge_account)
+forge_username=$(ynh_app_setting_get --app=$app --key=forge_username)
 forge_token=$(ynh_app_setting_get --app=$app --key=forge_token)
 redis_db=$(ynh_app_setting_get --app=$app --key=redis_db)
 
@@ -88,13 +88,13 @@ then
 	ynh_secure_remove --file="/var/log/$app-celery"
 fi
 
-# If used_forge, forge_account, forge_token don't exist, create them
+# If used_forge, forge_username, forge_token don't exist, create them
 if [ -z "$used_forge" ]; then
 	used_forge="GitHub"
-	forge_account=$(ynh_app_setting_get --app=$app --key=github_account)
+	forge_username=$(ynh_app_setting_get --app=$app --key=github_account)
 	forge_token=$(ynh_app_setting_get --app=$app --key=github_token)
 	ynh_app_setting_set --app=$app --key=used_forge --value=$used_forge
-	ynh_app_setting_set --app=$app --key=forge_account --value=$forge_account
+	ynh_app_setting_set --app=$app --key=forge_username --value=$forge_username
 	ynh_app_setting_set --app=$app --key=forge_token --value=$forge_token
 fi
 
