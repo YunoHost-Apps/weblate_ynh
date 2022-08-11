@@ -1,4 +1,4 @@
-__FORGE_WEBSITE__:
+github.com:
 - user: __FORGE_USERNAME__
   oauth_token: __FORGE_TOKEN__
   protocol: https

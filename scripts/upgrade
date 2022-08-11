@@ -139,20 +139,17 @@ ynh_secure_remove --file="$tempdir"
 #=================================================
 # CONFIGURE HUB
 #=================================================
-ynh_script_progression --message="Configure hub..." --weight=2
 
 if [ $used_forge = "GitHub" ] ; then
-	forge_website="github.com"
-else
-	forge_website="gitlab.com"
-fi
+	ynh_script_progression --message="Configure hub..." --weight=1
+	
+	mkdir "$final_path/.config/"
+	ynh_add_config --template="../conf/hub_config" --destination="$final_path/.config/hub"
 
-mkdir -p "$final_path/.config/"
-ynh_add_config --template="../conf/hub_config" --destination="$final_path/.config/hub"
-
-cat <<EOF > "$final_path/.bashrc"
-eval "$(hub alias -s /bin/bash)"
+	cat <<EOF > "$final_path/.bashrc"
+	eval "$(hub alias -s /bin/bash)"
 EOF
+fi
 
 #=================================================
 # UPDATE A CONFIG FILE
