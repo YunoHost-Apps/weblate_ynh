@@ -23,8 +23,9 @@ final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 db_user=$db_name
 db_pwd=$(ynh_app_setting_get --app=$app --key=psqlpwd)
-github_account=$(ynh_app_setting_get --app=$app --key=github_account)
-github_token=$(ynh_app_setting_get --app=$app --key=github_token)
+used_forge=$(ynh_app_setting_get --app=$app --key=used_forge)
+forge_account=$(ynh_app_setting_get --app=$app --key=forge_account)
+forge_token=$(ynh_app_setting_get --app=$app --key=forge_token)
 redis_db=$(ynh_app_setting_get --app=$app --key=redis_db)
 
 admin_mail=$(ynh_user_get_info --username="$admin" --key=mail)
@@ -33,7 +34,6 @@ key=$(ynh_string_random --length=50)
 #=================================================
 # CHECK VERSION
 #=================================================
-ynh_script_progression --message="Checking version..."
 
 upgrade_type=$(ynh_check_app_version_changed)
 
@@ -86,6 +86,16 @@ then
     ynh_systemd_action --service_name="$app-celery" --action="stop"
 	ynh_secure_remove --file="/var/log/uwsgi/app/$app"
 	ynh_secure_remove --file="/var/log/$app-celery"
+fi
+
+# If used_forge, forge_account, forge_token don't exist, create them
+if [ -z "$used_forge" ]; then
+	used_forge="GitHub"
+	forge_account=$(ynh_app_setting_get --app=$app --key=github_account)
+	forge_token=$(ynh_app_setting_get --app=$app --key=github_token)
+	ynh_app_setting_set --app=$app --key=used_forge --value=$used_forge
+	ynh_app_setting_set --app=$app --key=forge_account --value=$forge_account
+	ynh_app_setting_set --app=$app --key=forge_token --value=$forge_token
 fi
 
 #=================================================
@@ -197,6 +207,8 @@ upgrade() {
 	# save old settings file
 	settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 	path_url="${path_url%/}"
+
+	set_forge_variables
 
 	ynh_add_config --template="../conf/settings.py" --destination="$settings"
 
