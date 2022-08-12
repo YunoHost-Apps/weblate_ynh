@@ -143,7 +143,7 @@ ynh_secure_remove --file="$tempdir"
 if [ $used_forge = "GitHub" ] ; then
 	ynh_script_progression --message="Configure hub..." --weight=1
 	
-	mkdir "$final_path/.config/"
+	#mkdir "$final_path/.config/"
 	ynh_add_config --template="../conf/hub_config" --destination="$final_path/.config/hub"
 
 	cat <<EOF > "$final_path/.bashrc"
