@@ -21,10 +21,12 @@
         "name": "YunoHost Contributors",
         "email": "apps@yunohost.org"
     },
-    "previous_maintainers": [{
-        "name": "Jean-Baptiste Holcroft",
-        "email": "jean-baptiste@holcroft.fr"
-    }],
+    "previous_maintainers": [
+        {
+            "name": "Jean-Baptiste Holcroft",
+            "email": "jean-baptiste@holcroft.fr"
+        }
+    ],
     "requirements": {
         "yunohost": ">= 4.3.0"
     },
