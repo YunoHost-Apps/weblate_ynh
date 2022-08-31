@@ -20,7 +20,6 @@ Weblate is a libre web-based translation tool with tight version control integra
 **Shipped version:** 4.14~ynh1
 
 
-
 **Demo:** https://hosted.weblate.org/
 
 ## Screenshots
