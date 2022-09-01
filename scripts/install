@@ -28,8 +28,9 @@ path_url=$YNH_APP_ARG_PATH
 is_public=$YNH_APP_ARG_IS_PUBLIC
 admin=$YNH_APP_ARG_ADMIN
 password=$YNH_APP_ARG_PASSWORD
-github_account=$YNH_APP_ARG_GITHUB_ACCOUNT
-github_token=$YNH_APP_ARG_GITHUB_TOKEN
+used_forge=$YNH_APP_ARG_USED_FORGE
+forge_username=$YNH_APP_ARG_FORGE_USERNAME
+forge_token=$YNH_APP_ARG_FORGE_TOKEN
 
 app=$YNH_APP_INSTANCE_NAME
 
@@ -55,8 +56,9 @@ ynh_script_progression --message="Storing installation settings..." --weight=1
 ynh_app_setting_set --app=$app --key=domain --value=$domain
 ynh_app_setting_set --app=$app --key=path --value=$path_url
 ynh_app_setting_set --app=$app --key=admin --value=$admin
-ynh_app_setting_set --app=$app --key=github_account --value=$github_account
-ynh_app_setting_set --app=$app --key=github_token --value=$github_token
+ynh_app_setting_set --app=$app --key=used_forge --value=$used_forge
+ynh_app_setting_set --app=$app --key=forge_username --value=$forge_username
+ynh_app_setting_set --app=$app --key=forge_token --value=$forge_token
 
 #=================================================
 # STANDARD MODIFICATIONS
@@ -128,14 +130,17 @@ ynh_secure_remove --file="$tempdir"
 #=================================================
 # CONFIGURE HUB
 #=================================================
-ynh_script_progression --message="Configure hub..." --weight=1
 
-mkdir "$final_path/.config/"
-ynh_add_config --template="../conf/hub_config" --destination="$final_path/.config/hub"
+if [ $used_forge = "GitHub" ] ; then
+	ynh_script_progression --message="Configure hub..." --weight=1
+	
+	mkdir "$final_path/.config/"
+	ynh_add_config --template="../conf/hub_config" --destination="$final_path/.config/hub"
 
-cat <<EOF > "$final_path/.bashrc"
-eval "$(hub alias -s /bin/bash)"
+	cat <<EOF > "$final_path/.bashrc"
+	eval "$(hub alias -s /bin/bash)"
 EOF
+fi
 
 #=================================================
 # PIP INSTALLATION
@@ -173,6 +178,8 @@ redis_db=$(ynh_redis_get_free_db)
 ynh_app_setting_set --app=$app --key=redis_db --value="$redis_db"
 path_url="${path_url%/}"
 settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
+
+set_forge_variables
 
 ynh_add_config --template="../conf/settings.py" --destination="$settings"
 ynh_add_config --template="../conf/celery-weblate" --destination="$final_path/celery-weblate"

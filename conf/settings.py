@@ -229,13 +229,13 @@ TEMPLATES = [
 
 # GitHub username and token for sending pull requests.
 # Please see the documentation for more details.
-GITHUB_USERNAME = "__GITHUB_ACCOUNT__"
-GITHUB_TOKEN = "__GITHUB_TOKEN__"
+GITHUB_USERNAME = __GITHUB_USERNAME__
+GITHUB_TOKEN = __GITHUB_TOKEN__
 
 # GitLab username and token for sending merge requests.
 # Please see the documentation for more details.
-GITLAB_USERNAME = None
-GITLAB_TOKEN = None
+GITLAB_USERNAME = __GITLAB_USERNAME__
+GITLAB_TOKEN = __GITLAB_TOKEN__
 
 # Authentication configuration
 AUTHENTICATION_BACKENDS = (

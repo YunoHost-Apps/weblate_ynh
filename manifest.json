@@ -58,20 +58,30 @@
                 "type": "password"
             },
             {
-                "name": "github_account",
+                "name": "used_forge",
                 "type": "string",
                 "ask": {
-                    "en": "GitHub's username",
-                    "fr": "Nom d'utilisateur de GitHub"
+                    "en":"Choose the forge you use",
+                    "fr":"Choisissez la forge que vous utilisez"
                 },
-                "example": "Github account"
+                "choices": ["GitHub", "GitLab"],
+                "default": "GitHub"
             },
             {
-                "name": "github_token",
+                "name": "forge_username",
                 "type": "string",
                 "ask": {
-                    "en": "GitHub's token (OAuth)",
-                    "fr": "Jeton GitHub (OAuth)"
+                    "en": "Your forge's username",
+                    "fr": "Nom d'utilisateur de votre forge"
+                },
+                "example": "Your username"
+            },
+            {
+                "name": "forge_token",
+                "type": "string",
+                "ask": {
+                    "en": "Your forge's token (OAuth)",
+                    "fr": "Jeton de votre forge (OAuth)"
                 },
                 "example": "A secret token"
             }

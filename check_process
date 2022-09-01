@@ -5,8 +5,9 @@
 		is_public=1
 		admin="john"
 		password="1Strong-Password"
-		github_account="myaccount"
-		github_token="myoauthtoken"
+		used_forge="GitLab"
+		forge_username="myusername"
+		forge_token="myoauthtoken"
 	; Checks
 		pkg_linter=1
 		setup_sub_dir=1

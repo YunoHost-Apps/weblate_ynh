@@ -23,8 +23,9 @@ final_path=$(ynh_app_setting_get --app=$app --key=final_path)
 db_name=$(ynh_app_setting_get --app=$app --key=db_name)
 db_user=$db_name
 db_pwd=$(ynh_app_setting_get --app=$app --key=psqlpwd)
-github_account=$(ynh_app_setting_get --app=$app --key=github_account)
-github_token=$(ynh_app_setting_get --app=$app --key=github_token)
+used_forge=$(ynh_app_setting_get --app=$app --key=used_forge)
+forge_username=$(ynh_app_setting_get --app=$app --key=forge_username)
+forge_token=$(ynh_app_setting_get --app=$app --key=forge_token)
 redis_db=$(ynh_app_setting_get --app=$app --key=redis_db)
 
 admin_mail=$(ynh_user_get_info --username="$admin" --key=mail)
@@ -33,7 +34,6 @@ key=$(ynh_string_random --length=50)
 #=================================================
 # CHECK VERSION
 #=================================================
-ynh_script_progression --message="Checking version..."
 
 upgrade_type=$(ynh_check_app_version_changed)
 
@@ -88,6 +88,16 @@ then
 	ynh_secure_remove --file="/var/log/$app-celery"
 fi
 
+# If used_forge, forge_username, forge_token don't exist, create them
+if [ -z "$used_forge" ]; then
+	used_forge="GitHub"
+	forge_username=$(ynh_app_setting_get --app=$app --key=github_account)
+	forge_token=$(ynh_app_setting_get --app=$app --key=github_token)
+	ynh_app_setting_set --app=$app --key=used_forge --value=$used_forge
+	ynh_app_setting_set --app=$app --key=forge_username --value=$forge_username
+	ynh_app_setting_set --app=$app --key=forge_token --value=$forge_token
+fi
+
 #=================================================
 # CREATE DEDICATED USER
 #=================================================
@@ -129,14 +139,17 @@ ynh_secure_remove --file="$tempdir"
 #=================================================
 # CONFIGURE HUB
 #=================================================
-ynh_script_progression --message="Configure hub..." --weight=2
 
-mkdir -p "$final_path/.config/"
-ynh_add_config --template="../conf/hub_config" --destination="$final_path/.config/hub"
+if [ $used_forge = "GitHub" ] ; then
+	ynh_script_progression --message="Configure hub..." --weight=1
+	
+	#mkdir "$final_path/.config/"
+	ynh_add_config --template="../conf/hub_config" --destination="$final_path/.config/hub"
 
-cat <<EOF > "$final_path/.bashrc"
-eval "$(hub alias -s /bin/bash)"
+	cat <<EOF > "$final_path/.bashrc"
+	eval "$(hub alias -s /bin/bash)"
 EOF
+fi
 
 #=================================================
 # UPDATE A CONFIG FILE
@@ -197,6 +210,8 @@ upgrade() {
 	# save old settings file
 	settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 	path_url="${path_url%/}"
+
+	set_forge_variables
 
 	ynh_add_config --template="../conf/settings.py" --destination="$settings"
 
