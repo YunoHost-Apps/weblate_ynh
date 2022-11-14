@@ -6,7 +6,7 @@
         "en": "Translation platform using Git and Python",
         "fr": "Plateforme de traduction utilisant Git et Python"
     },
-    "version": "4.14~ynh1",
+    "version": "4.14.2~ynh1",
     "url": "https://weblate.org",
     "upstream": {
         "license": "AGPL-3.0",
@@ -21,10 +21,12 @@
         "name": "YunoHost Contributors",
         "email": "apps@yunohost.org"
     },
-    "previous_maintainers": [{
-        "name": "Jean-Baptiste Holcroft",
-        "email": "jean-baptiste@holcroft.fr"
-    }],
+    "previous_maintainers": [
+        {
+            "name": "Jean-Baptiste Holcroft",
+            "email": "jean-baptiste@holcroft.fr"
+        }
+    ],
     "requirements": {
         "yunohost": ">= 4.3.0"
     },
@@ -58,20 +60,30 @@
                 "type": "password"
             },
             {
-                "name": "github_account",
+                "name": "used_forge",
                 "type": "string",
                 "ask": {
-                    "en": "GitHub's username",
-                    "fr": "Nom d'utilisateur de GitHub"
+                    "en":"Choose the forge you use",
+                    "fr":"Choisissez la forge que vous utilisez"
                 },
-                "example": "Github account"
+                "choices": ["GitHub", "GitLab"],
+                "default": "GitHub"
             },
             {
-                "name": "github_token",
+                "name": "forge_username",
                 "type": "string",
                 "ask": {
-                    "en": "GitHub's token (OAuth)",
-                    "fr": "Jeton GitHub (OAuth)"
+                    "en": "Your forge's username",
+                    "fr": "Nom d'utilisateur de votre forge"
+                },
+                "example": "Your username"
+            },
+            {
+                "name": "forge_token",
+                "type": "string",
+                "ask": {
+                    "en": "Your forge's token (OAuth)",
+                    "fr": "Jeton de votre forge (OAuth)"
                 },
                 "example": "A secret token"
             }

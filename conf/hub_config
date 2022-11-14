@@ -1,4 +1,4 @@
 github.com:
-- user: __GITHUB_ACCOUNT__
-  oauth_token: __GITHUB_TOKEN__
+- user: __FORGE_USERNAME__
+  oauth_token: __FORGE_TOKEN__
   protocol: https
