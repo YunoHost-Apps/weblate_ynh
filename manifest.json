@@ -6,7 +6,7 @@
         "en": "Translation platform using Git and Python",
         "fr": "Plateforme de traduction utilisant Git et Python"
     },
-    "version": "4.14.2~ynh1",
+    "version": "4.15~ynh1",
     "url": "https://weblate.org",
     "upstream": {
         "license": "AGPL-3.0",
@@ -63,10 +63,13 @@
                 "name": "used_forge",
                 "type": "string",
                 "ask": {
-                    "en":"Choose the forge you use",
-                    "fr":"Choisissez la forge que vous utilisez"
+                    "en": "Choose the forge you use",
+                    "fr": "Choisissez la forge que vous utilisez"
                 },
-                "choices": ["GitHub", "GitLab"],
+                "choices": [
+                    "GitHub",
+                    "GitLab"
+                ],
                 "default": "GitHub"
             },
             {
