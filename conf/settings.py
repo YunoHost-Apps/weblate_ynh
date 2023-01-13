@@ -92,10 +92,9 @@ DATABASES = {
     }
 }
 
-BASE_DIR = "__FINALPATH__"
-
-# Data directory
-DATA_DIR = os.path.join(BASE_DIR, "data")
+# Data directory, you can use following for the development purposes:
+# os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+DATA_DIR = os.path.join("__FINALPATH__", "data")
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -205,7 +204,7 @@ STATICFILES_FINDERS = (
 )
 
 # Make this unique, and don't share it with anybody.
-# You can generate it using weblate/examples/generate-secret-key
+# You can generate it using weblate-generate-secret-key
 SECRET_KEY = "__KEY__"
 
 TEMPLATES = [
@@ -229,13 +228,21 @@ TEMPLATES = [
 
 # GitHub username and token for sending pull requests.
 # Please see the documentation for more details.
-GITHUB_USERNAME = __GITHUB_USERNAME__
-GITHUB_TOKEN = __GITHUB_TOKEN__
+GITHUB_CREDENTIALS = {
+    "api.github.com": {
+        "username": "__GITHUB_USERNAME__",
+        "token": "__GITHUB_TOKEN__",
+    }
+}
 
 # GitLab username and token for sending merge requests.
 # Please see the documentation for more details.
-GITLAB_USERNAME = __GITLAB_USERNAME__
-GITLAB_TOKEN = __GITLAB_TOKEN__
+GITLAB_CREDENTIALS = {
+    "gitlab.com": {
+        "username": "__GITLAB_USERNAME__",
+        "token": "__GITLAB_TOKEN__",
+    }
+}
 
 # Authentication configuration
 AUTHENTICATION_BACKENDS = (
@@ -638,6 +645,7 @@ SESSION_COOKIE_SECURE = ENABLE_HTTPS
 SESSION_COOKIE_HTTPONLY = True
 # SSL redirect
 SECURE_SSL_REDIRECT = ENABLE_HTTPS
+SECURE_SSL_HOST = SITE_DOMAIN
 # Sent referrrer only for same origin links
 SECURE_REFERRER_POLICY = "same-origin"
 # SSL redirect URL exemption list
@@ -648,6 +656,8 @@ SESSION_COOKIE_AGE_AUTHENTICATED = 1209600
 SESSION_COOKIE_SAMESITE = "Lax"
 # Increase allowed upload size
 DATA_UPLOAD_MAX_MEMORY_SIZE = 50000000
+# Allow more fields for case with a lot of subscriptions in profile
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
 
 # Apply session coookie settings to language cookie as ewll
 LANGUAGE_COOKIE_SECURE = SESSION_COOKIE_SECURE
@@ -800,6 +810,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.addons.generate.PseudolocaleAddon",
 #     "weblate.addons.generate.PrefillAddon",
 #     "weblate.addons.json.JSONCustomizeAddon",
+#     "weblate.addons.xml.XMLCustomizeAddon",
 #     "weblate.addons.properties.PropertiesSortAddon",
 #     "weblate.addons.git.GitSquashAddon",
 #     "weblate.addons.removal.RemoveComments",
@@ -835,6 +846,7 @@ CACHES = {
             "CONNECTION_POOL_KWARGS": {},
         },
         "KEY_PREFIX": "weblate",
+        "TIMEOUT": 3600,
     },
     "avatar": {
         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
