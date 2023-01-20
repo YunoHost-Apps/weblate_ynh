@@ -5,25 +5,25 @@ It shall NOT be edited by hand.
 
 # Weblate pour YunoHost
 
-[![Niveau d'intégration](https://dash.yunohost.org/integration/weblate.svg)](https://dash.yunohost.org/appci/app/weblate) ![Statut du fonctionnement](https://ci-apps.yunohost.org/ci/badges/weblate.status.svg) ![Statut de maintenance](https://ci-apps.yunohost.org/ci/badges/weblate.maintain.svg)  
+[![Niveau d’intégration](https://dash.yunohost.org/integration/weblate.svg)](https://dash.yunohost.org/appci/app/weblate) ![Statut du fonctionnement](https://ci-apps.yunohost.org/ci/badges/weblate.status.svg) ![Statut de maintenance](https://ci-apps.yunohost.org/ci/badges/weblate.maintain.svg)  
 [![Installer Weblate avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=weblate)
 
 *[Read this readme in english.](./README.md)*
 
-> *Ce package vous permet d'installer Weblate rapidement et simplement sur un serveur YunoHost.
-Si vous n'avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l'installer et en profiter.*
+> *Ce package vous permet d’installer Weblate rapidement et simplement sur un serveur YunoHost.
+Si vous n’avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) pour savoir comment l’installer et en profiter.*
 
-## Vue d'ensemble
+## Vue d’ensemble
 
 Weblate est un outil de traduction libre avec une intégration étroite du contrôle de version. Il fournit deux interfaces utilisateur, la propagation des traductions entre les composants, les contrôles de qualité et la liaison automatique aux fichiers source. 
 
-**Version incluse :** 4.15~ynh1
+**Version incluse :** 4.15.1~ynh1
 
 **Démo :** https://hosted.weblate.org/
 
-## Captures d'écran
+## Captures d’écran
 
-![Capture d'écran de Weblate](./doc/screenshots/BigScreenshot.png)
+![Capture d’écran de Weblate](./doc/screenshots/BigScreenshot.png)
 
 ## Avertissements / informations importantes
 
@@ -46,10 +46,10 @@ Vous pouvez éditer le fichier `$final_path/local_settings.py` pour activer ou d
 Cela ne fonctionne pas encore, mais bien que [cela semble faisable](https://docs.weblate.org/en/latest/admin/auth.html?highlight=LDAP#ldap-authentication), je ne suis pas sûr que ce soit le cas une bonne idée de connecter ce genre d'outils à votre LDAP. 
 ## Documentations et ressources
 
-* Site officiel de l'app : <https://weblate.org>
+* Site officiel de l’app : <https://weblate.org>
 * Documentation officielle utilisateur : <https://docs.weblate.org/>
-* Documentation officielle de l'admin : <https://docs.weblate.org/>
-* Dépôt de code officiel de l'app : <https://github.com/WeblateOrg/weblate>
+* Documentation officielle de l’admin : <https://docs.weblate.org/>
+* Dépôt de code officiel de l’app : <https://github.com/WeblateOrg/weblate>
 * Documentation YunoHost pour cette app : <https://yunohost.org/app_weblate>
 * Signaler un bug : <https://github.com/YunoHost-Apps/weblate_ynh/issues>
 
@@ -65,4 +65,4 @@ ou
 sudo yunohost app upgrade weblate -u https://github.com/YunoHost-Apps/weblate_ynh/tree/testing --debug
 ```
 
-**Plus d'infos sur le packaging d'applications :** <https://yunohost.org/packaging_apps>
+**Plus d’infos sur le packaging d’applications :** <https://yunohost.org/packaging_apps>
