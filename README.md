@@ -6,6 +6,7 @@ It shall NOT be edited by hand.
 # Weblate for YunoHost
 
 [![Integration level](https://dash.yunohost.org/integration/weblate.svg)](https://dash.yunohost.org/appci/app/weblate) ![Working status](https://ci-apps.yunohost.org/ci/badges/weblate.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/weblate.maintain.svg)
+
 [![Install Weblate with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=weblate)
 
 *[Lire ce readme en français.](./README_fr.md)*
