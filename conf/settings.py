@@ -32,7 +32,7 @@ ENABLE_HTTPS = True
 # Django settings for Weblate project.
 #
 
-DEBUG = True
+DEBUG = False
 
 ADMINS = (
     ('__ADMIN__', '__ADMIN_MAIL__'),
