@@ -6,6 +6,7 @@ It shall NOT be edited by hand.
 # Weblate for YunoHost
 
 [![Integration level](https://dash.yunohost.org/integration/weblate.svg)](https://dash.yunohost.org/appci/app/weblate) ![Working status](https://ci-apps.yunohost.org/ci/badges/weblate.status.svg) ![Maintenance status](https://ci-apps.yunohost.org/ci/badges/weblate.maintain.svg)
+
 [![Install Weblate with YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=weblate)
 
 *[Lire ce readme en français.](./README_fr.md)*
@@ -17,7 +18,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 Weblate is a libre web-based translation tool with tight version control integration. It provides two user interfaces, propagation of translations across components, quality checks and automatic linking to source files.
 
-**Shipped version:** 4.15.2~ynh1
+**Shipped version:** 4.16.4~ynh1
 
 **Demo:** https://hosted.weblate.org/
 
