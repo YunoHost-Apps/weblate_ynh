@@ -51,7 +51,7 @@ Cela ne fonctionne pas encore, mais bien que [cela semble faisable](https://docs
 * Documentation officielle utilisateur : <https://docs.weblate.org/>
 * Documentation officielle de l’admin : <https://docs.weblate.org/>
 * Dépôt de code officiel de l’app : <https://github.com/WeblateOrg/weblate>
-* Documentation YunoHost pour cette app : <https://yunohost.org/app_weblate>
+* YunoHost Store: <https://apps.yunohost.org/app/weblate>
 * Signaler un bug : <https://github.com/YunoHost-Apps/weblate_ynh/issues>
 
 ## Informations pour les développeurs

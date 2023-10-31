@@ -52,7 +52,7 @@ It doesn't work yet, but while [it looks doable](https://docs.weblate.org/en/lat
 * Official user documentation: <https://docs.weblate.org/>
 * Official admin documentation: <https://docs.weblate.org/>
 * Upstream app code repository: <https://github.com/WeblateOrg/weblate>
-* YunoHost documentation for this app: <https://yunohost.org/app_weblate>
+* YunoHost Store: <https://apps.yunohost.org/app/weblate>
 * Report a bug: <https://github.com/YunoHost-Apps/weblate_ynh/issues>
 
 ## Developer info
