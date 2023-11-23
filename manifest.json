@@ -6,7 +6,7 @@
         "en": "Translation platform using Git and Python",
         "fr": "Plateforme de traduction utilisant Git et Python"
     },
-    "version": "4.18.2~ynh1",
+    "version": "5.2.1~ynh1",
     "url": "https://weblate.org",
     "upstream": {
         "license": "AGPL-3.0",
