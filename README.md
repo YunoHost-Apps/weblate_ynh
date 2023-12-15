@@ -18,7 +18,7 @@ If you don't have YunoHost, please consult [the guide](https://yunohost.org/#/in
 
 Weblate is a libre web-based translation tool with tight version control integration. It provides two user interfaces, propagation of translations across components, quality checks and automatic linking to source files.
 
-**Shipped version:** 4.18.2~ynh1
+**Shipped version:** 5.3~ynh1
 
 **Demo:** https://hosted.weblate.org/
 
@@ -52,7 +52,7 @@ It doesn't work yet, but while [it looks doable](https://docs.weblate.org/en/lat
 * Official user documentation: <https://docs.weblate.org/>
 * Official admin documentation: <https://docs.weblate.org/>
 * Upstream app code repository: <https://github.com/WeblateOrg/weblate>
-* YunoHost documentation for this app: <https://yunohost.org/app_weblate>
+* YunoHost Store: <https://apps.yunohost.org/app/weblate>
 * Report a bug: <https://github.com/YunoHost-Apps/weblate_ynh/issues>
 
 ## Developer info

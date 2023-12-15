@@ -18,7 +18,7 @@ Si vous n’avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) po
 
 Weblate est un outil de traduction libre avec une intégration étroite du contrôle de version. Il fournit deux interfaces utilisateur, la propagation des traductions entre les composants, les contrôles de qualité et la liaison automatique aux fichiers source. 
 
-**Version incluse :** 4.18.2~ynh1
+**Version incluse :** 5.3~ynh1
 
 **Démo :** https://hosted.weblate.org/
 
@@ -51,7 +51,7 @@ Cela ne fonctionne pas encore, mais bien que [cela semble faisable](https://docs
 * Documentation officielle utilisateur : <https://docs.weblate.org/>
 * Documentation officielle de l’admin : <https://docs.weblate.org/>
 * Dépôt de code officiel de l’app : <https://github.com/WeblateOrg/weblate>
-* Documentation YunoHost pour cette app : <https://yunohost.org/app_weblate>
+* YunoHost Store: <https://apps.yunohost.org/app/weblate>
 * Signaler un bug : <https://github.com/YunoHost-Apps/weblate_ynh/issues>
 
 ## Informations pour les développeurs
