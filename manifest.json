@@ -28,7 +28,7 @@
         }
     ],
     "requirements": {
-        "yunohost": ">= 4.3.0"
+        "yunohost": ">= 11.2"
     },
     "multi_instance": true,
     "services": [
@@ -61,7 +61,7 @@
             },
             {
                 "name": "used_forge",
-                "type": "string",
+                "type": "select",
                 "ask": {
                     "en": "Choose the forge you use",
                     "fr": "Choisissez la forge que vous utilisez"
