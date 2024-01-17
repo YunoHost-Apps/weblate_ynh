@@ -72,6 +72,14 @@ ram.runtime = "3G"
     optional = true
 
 [resources]
+
+    [resources.sources]
+        [resources.sources.libxxhash]
+        url = "https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.1.tar.gz"
+        sha256 = "3bb6b7d6f30c591dd65aaaff1c8b7a5b94d81687998ca9400082c739a690436c"
+        in_subdir = true
+        autoupdate.strategy = "latest_github_tag"
+
     [resources.system_user]
 
     [resources.install_dir]
@@ -80,7 +88,15 @@ ram.runtime = "3G"
     main.url = "/"
 
     [resources.apt]
-    packages = "libxml2-dev, libxslt-dev, libfreetype6-dev, libjpeg-dev, libz-dev, libyaml-dev, libacl1-dev, libacl1, libssl-dev, liblz4-dev, libzstd-dev, libxxhash-dev"
+    #first § = weblate dependecies, second § = borgbackup dependencies
+    packages = "libxml2-dev, libxslt-dev, libfreetype6-dev, libjpeg-dev, libz-dev, libyaml-dev \
+   libffi-dev, libcairo-dev, gir1.2-pango-1.0, libgirepository1.0-dev \
+   libacl1-dev, libssl-dev, libpq-dev, libjpeg62-turbo-dev, build-essential \
+   python3-gdbm, python3-dev, python3-pip, python3-virtualenv, virtualenv, git \
+   uwsgi, uwsgi-plugin-python3, redis-server, postgresql, postgresql-contrib, hub
+   
+   libacl1-dev, libacl1, libssl-dev, liblz4-dev, libzstd-dev, libxxhash-dev \
+	build-essential, pkg-config, python3-pkgconfig"
 
     [resources.database]
     type = "postgresql"
