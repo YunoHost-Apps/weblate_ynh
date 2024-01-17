@@ -63,7 +63,7 @@ DATABASES = {
     }
 }
 
-BASE_DIR = "__FINALPATH__"
+BASE_DIR = "__INSTALL_DIR__"
 
 # Data directory
 DATA_DIR = os.path.join(BASE_DIR, "data")
@@ -136,7 +136,7 @@ USE_L10N = True
 USE_TZ = True
 
 # URL prefix to use, please see documentation for more details
-URL_PREFIX = "__PATH_URL__"
+URL_PREFIX = "__PATH__"
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 MEDIA_ROOT = os.path.join(DATA_DIR, "media")

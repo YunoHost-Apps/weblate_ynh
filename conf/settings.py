@@ -5,7 +5,7 @@
 ################################################################################
 
 # Please do not modify this file, it will be reset at the next update.
-# You can edit the file __FINALPATH__/local_settings.py and add/modify the settings you need.
+# You can edit the file __INSTALL_DIR__/local_settings.py and add/modify the settings you need.
 # The parameters you add in local_settings.py will overwrite these,
 # but you can use the options and documentation in this file to find out what can be done.
 
@@ -78,7 +78,7 @@ DATABASES = {
 
 # Data directory, you can use following for the development purposes:
 # os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
-DATA_DIR = os.path.join("__FINALPATH__", "data")
+DATA_DIR = os.path.join("__INSTALL_DIR__", "data")
 CACHE_DIR = f"{DATA_DIR}/cache"
 
 # Local time zone for this installation. Choices can be found here:
@@ -156,7 +156,7 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # URL prefix to use, please see documentation for more details
-URL_PREFIX = "__PATH_URL__"
+URL_PREFIX = "__PATH__"
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 MEDIA_ROOT = os.path.join(DATA_DIR, "media")

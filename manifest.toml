@@ -1,0 +1,86 @@
+#:schema https://raw.githubusercontent.com/YunoHost/apps/master/schemas/manifest.v2.schema.json
+
+packaging_format = 2
+
+id = "weblate"
+name = "Weblate"
+description.en = "Translation platform using Git and Python"
+description.fr = "Plateforme de traduction utilisant Git et Python"
+
+version = "4.18.2~ynh1"
+
+maintainers = ["YunoHost Contributors"]
+
+[upstream]
+license = "AGPL-3.0"
+website = "https://weblate.org"
+demo = "https://hosted.weblate.org/"
+admindoc = "https://docs.weblate.org/"
+userdoc = "https://docs.weblate.org/"
+code = "https://github.com/WeblateOrg/weblate"
+cpe = "cpe:2.3:a:weblate:weblate"
+
+[integration]
+yunohost = ">= 11.2.0"
+architectures = "all"
+multi_instance = true
+ldap = "false"
+sso = "false"
+
+disk = "1G"
+ram.build = "3G"
+ram.runtime = "3G"
+
+[install]
+    [install.domain]
+    type = "domain"
+
+    [install.path]
+    type = "path"
+    default = "/weblate"
+
+    [install.init_main_permission]
+    type = "group"
+    default = false
+
+    [install.admin]
+    type = "user"
+
+    [install.password]
+    type = "password"
+
+    [install.used_forge]
+    ask.en = "Choose the forge you use"
+    ask.fr = "Choisissez la forge que vous utilisez"
+    type = "string"
+    choices = ["GitHub", "GitLab"]
+    default = "GitHub"
+    optional = true
+
+    [install.forge_username]
+    ask.en = "Your forge's username"
+    ask.fr = "Nom d'utilisateur de votre forge"
+    type = "string"
+    example = "Your username"
+    optional = true
+
+    [install.forge_token]
+    ask.en = "Your forge's token (OAuth)"
+    ask.fr = "Jeton de votre forge (OAuth)"
+    type = "string"
+    example = "A secret token"
+    optional = true
+
+[resources]
+    [resources.system_user]
+
+    [resources.install_dir]
+
+    [resources.permissions]
+    main.url = "/"
+
+    [resources.apt]
+    packages = "libxml2-dev, libxslt-dev, libfreetype6-dev, libjpeg-dev, libz-dev, libyaml-dev, libacl1-dev, libacl1, libssl-dev, liblz4-dev, libzstd-dev, libxxhash-dev"
+
+    [resources.database]
+    type = "postgresql"
