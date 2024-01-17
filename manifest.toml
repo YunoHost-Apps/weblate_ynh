@@ -7,7 +7,7 @@ name = "Weblate"
 description.en = "Translation platform using Git and Python"
 description.fr = "Plateforme de traduction utilisant Git et Python"
 
-version = "4.18.2~ynh1"
+version = "5.3.1~ynh1"
 
 maintainers = ["YunoHost Contributors"]
 
