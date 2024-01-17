@@ -24,8 +24,8 @@ cpe = "cpe:2.3:a:weblate:weblate"
 yunohost = ">= 11.2.0"
 architectures = "all"
 multi_instance = true
-ldap = "false"
-sso = "false"
+ldap = false
+sso = false
 
 disk = "1G"
 ram.build = "3G"
@@ -52,7 +52,7 @@ ram.runtime = "3G"
     [install.used_forge]
     ask.en = "Choose the forge you use"
     ask.fr = "Choisissez la forge que vous utilisez"
-    type = "string"
+    type = "select"
     choices = ["GitHub", "GitLab"]
     default = "GitHub"
     optional = true
