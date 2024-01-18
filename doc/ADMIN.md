@@ -8,7 +8,7 @@ This user will only be used to open the pull-request, each translation keep his 
 ## Settings and upgrades
 
 Almost everything related to Weblate's configuration is handled in a `settings.py` file.
-You can edit the file `$final_path/local_settings.py` to enable or disable features.
+You can edit the file `__INSTALL_DIR__/local_settings.py` to enable or disable features.
 
 # Miscellaneous
 
