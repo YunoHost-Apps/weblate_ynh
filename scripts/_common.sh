@@ -40,13 +40,6 @@ set_forge_variables() {
 # EXPERIMENTAL HELPERS
 #=================================================
 
-#=================================================
-#
-# Redis HELPERS
-#
-# Point of contact : Jean-Baptiste Holcroft <jean-baptiste@holcroft.fr>
-#=================================================
-
 # get the first available redis database
 #
 # usage: ynh_redis_get_free_db
@@ -70,7 +63,7 @@ ynh_redis_get_free_db() {
  		db=-1
 	done
 
-	test "$db" -eq -1 && ynh_die "No available Redis databases..."
+	test "$db" -eq -1 && ynh_die --message="No available Redis databases..."
 
 	echo "$db"
 }
