@@ -99,7 +99,7 @@ pushd $install_dir
 	# Read the "Note" section in https://docs.weblate.org/en/weblate-5.3/admin/install/venv-debian.html#python-modules
 	ynh_exec_warn_less pip install install --force-reinstall --no-binary :all: cffi
 
-	ynh_exec_warn_less pip install Weblate=="$(ynh_app_upstream_version)"
+	ynh_exec_warn_less pip install Weblate[all]=="$(ynh_app_upstream_version)"
 
 	ynh_exec_warn_less pip install psycopg2-binary ruamel.yaml aeidon phply
 
