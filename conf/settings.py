@@ -56,7 +56,7 @@ DATABASES = {
         # Set to empty string for localhost.
         "HOST": "127.0.0.1",
         # Set to empty string for default.
-        "PORT": "__PORT__",
+        "PORT": "",
         # Customizations for databases.
         "OPTIONS": {
             # In case of using an older MySQL server,
