@@ -110,27 +110,33 @@ ynh_add_systemd_config --service="$app-celery" --template="celery-weblate.servic
 upgrade() {
 	new_version=$1
 	settings_template=$2
-#=================================================
-# PIP INSTALLATION
-#=================================================
-ynh_script_progression --message="Install weblate using PIP..." --weight=5
+	#=================================================
+	# PIP INSTALLATION
+	#=================================================
+	ynh_script_progression --message="Install weblate using PIP..." --weight=15
 
-pushd $install_dir
-	python3 -m venv $install_dir/venv
-	source $install_dir/venv/bin/activate
-        ynh_exec_warn_less pip install --upgrade pip setuptools wheel toml pyyaml pkgconfig  xxhash
+	ynh_secure_remove --file="${install_dir}/venv"
+	virtualenv --python=python3 "${install_dir}/venv"
+	chown -R $app: "$install_dir"
 
-	# Read the "Note" section in https://docs.weblate.org/en/weblate-5.3/admin/install/venv-debian.html#python-modules
-	ynh_exec_warn_less pip install install --force-reinstall --no-binary :all: cffi
+	#run source in a 'sub shell'
+	(
+		set +o nounset
+		source "${install_dir}/venv/bin/activate"
+		set -o nounset
+		cd "${install_dir}"
 
-	ynh_exec_warn_less pip install Weblate=="$(ynh_app_upstream_version)"
+		sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash
 
-	ynh_exec_warn_less pip install psycopg2-binary ruamel.yaml aeidon phply
-
-	# specific to YunoHost package:
-	ynh_exec_warn_less pip install django_sendmail_backend
-
-popd
+		# Read the "Note" section in https://docs.weblate.org/en/weblate-4.11/admin/install/venv-debian.html#python-modules
+		sudo --user=$app $install_dir/venv/bin/pip install --force-reinstall --no-binary :all: cffi
+		# Still needed with latest version of weblate?
+		sudo --user=$app $install_dir/venv/bin/pip install --upgrade Weblate=="$new_version"
+		sudo --user=$app $install_dir/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply
+		#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
+		# specific to YunoHost package:
+		sudo --user=$app $install_dir/venv/bin/pip install django_sendmail_backend
+	)
 
 	#=================================================
 	# MODIFY A CONFIG FILE
@@ -159,23 +165,25 @@ popd
 
 	ynh_systemd_action --service_name="$app-celery" --action="start"
 
-	export DJANGO_SETTINGS_MODULE="weblate.settings"
+	(
+		set +o nounset
+		source "${install_dir}/venv/bin/activate"
+		set -o nounset
+		export DJANGO_SETTINGS_MODULE="weblate.settings"
+		cd "${install_dir}"
 
-	ynh_exec_warn_less $install_dir/venv/bin/weblate migrate --noinput
-
-	ynh_exec_warn_less $install_dir/venv/bin/weblate collectstatic --noinput
-
-	ynh_exec_warn_less $install_dir/venv/bin/weblate setuplang
-
-	ynh_exec_warn_less $install_dir/venv/bin/weblate setupgroups
-
-	ynh_exec_warn_less $install_dir/venv/bin/weblate compilemessages
-
-	# Check the configuration
-	# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
-	if [ "$new_version" == "$(ynh_app_upstream_version)" ]; then
-		ynh_exec_warn_less $install_dir/venv/bin/weblate check --deploy || true
-	fi
+		sudo --user=$app $install_dir/venv/bin/weblate migrate --noinput
+		sudo --user=$app $install_dir/venv/bin/weblate collectstatic --noinput
+		sudo --user=$app $install_dir/venv/bin/weblate setuplang
+		sudo --user=$app $install_dir/venv/bin/weblate setupgroups
+		sudo --user=$app $install_dir/venv/bin/weblate compilemessages
+		
+		# Check the configuration
+		# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
+		if [ "$new_version" == "$(ynh_app_upstream_version)" ]; then
+			sudo --user=$app $install_dir/venv/bin/weblate check --deploy || true
+		fi
+	)
 
 	ynh_systemd_action --service_name="$app-celery" --action="stop"
 }
@@ -222,7 +230,7 @@ ynh_use_logrotate --non-append
 ynh_script_progression --message="Integrating service in YunoHost..." --weight=2
 
 yunohost service add $app --log="/var/log/$app/weblate.log"
-yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery.log"
+yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery-w1.log"
 
 #=================================================
 # START SYSTEMD SERVICES
@@ -230,7 +238,7 @@ yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery.log"
 ynh_script_progression --message="Starting systemd services..." --weight=5
 
 ynh_systemd_action --service_name=$app --action="start" --log_path="/var/log/$app/weblate.log" --line_match="spawned uWSGI"
-ynh_systemd_action --service_name="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery.log" --line_match="mingle: all alone"
+ynh_systemd_action --service_name="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery-celery.log" --line_match="mingle: all alone"
 
 #=================================================
 # END OF SCRIPT
