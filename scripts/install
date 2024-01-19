@@ -128,7 +128,7 @@ set_forge_variables
 
 ynh_add_config --template="../conf/settings.py" --destination="$settings"
 ynh_add_config --template="../conf/celery-weblate" --destination="$install_dir/celery-weblate"
-ynh_add_config --template="../conf/uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
+ynh_add_config --template="../conf/uwsgi.ini" --destination="$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/$app.ini"
 
 touch "$install_dir/local_settings.py"
 ln -sf "$install_dir/local_settings.py" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
