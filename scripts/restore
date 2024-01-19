@@ -85,7 +85,7 @@ ynh_restore_file --origin_path="/etc/logrotate.d/$app"
 ynh_script_progression --message="Integrating service in YunoHost..." --weight=3
 
 yunohost service add $app --log="/var/log/$app/weblate.log"
-yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery.log"
+yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery-w1.log"
 
 #=================================================
 # START SYSTEMD SERVICE
