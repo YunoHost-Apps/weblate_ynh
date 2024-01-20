@@ -79,7 +79,7 @@ DATABASES = {
 
 # Data directory, you can use following for the development purposes:
 # os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
-DATA_DIR = "__INSTALL_DIR__/"
+DATA_DIR = "__INSTALL_DIR__/data"
 CACHE_DIR = f"{DATA_DIR}/cache"
 
 # Local time zone for this installation. Choices can be found here:
