@@ -15,6 +15,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+# Copyright © Michal Čihař <michal@weblate.org>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import os
 import platform
 from logging.handlers import SysLogHandler
@@ -70,7 +74,8 @@ DATABASES = {
             # "connect_timeout": 28800,
         },
         # Persistent connections
-        "CONN_MAX_AGE": 0,
+        "CONN_MAX_AGE": None,
+        "CONN_HEALTH_CHECKS": True,
         # Disable server-side cursors, might be needed with pgbouncer
         "DISABLE_SERVER_SIDE_CURSORS": False,
     }
@@ -78,7 +83,7 @@ DATABASES = {
 
 # Data directory, you can use following for the development purposes:
 # os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
-DATA_DIR = os.path.join("__FINALPATH__", "data")
+DATA_DIR = "__FINALPATH__/data"
 CACHE_DIR = f"{DATA_DIR}/cache"
 
 # Local time zone for this installation. Choices can be found here:
@@ -95,11 +100,12 @@ LANGUAGES = (
     ("ar", "العربية"),
     ("az", "Azərbaycan"),
     ("be", "Беларуская"),
-    ("be@latin", "Biełaruskaja"),
+    ("be-latn", "Biełaruskaja"),
     ("bg", "Български"),
     ("br", "Brezhoneg"),
     ("ca", "Català"),
     ("cs", "Čeština"),
+    ("cy", "Cymraeg"),
     ("da", "Dansk"),
     ("de", "Deutsch"),
     ("en", "English"),
@@ -144,10 +150,6 @@ SITE_ID = 1
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
 USE_I18N = True
-
-# If you set this to False, Django will not format dates, numbers and
-# calendars according to the current locale.
-USE_L10N = True
 
 # If you set this to False, Django will not use timezone-aware datetimes.
 USE_TZ = True
@@ -219,6 +221,9 @@ GITHUB_CREDENTIALS = {
         "token": "__GITHUB_TOKEN__",
     }
 }
+# Azure DevOps username and token for sending pull requests.
+# Please see the documentation for more details.
+AZURE_DEVOPS_CREDENTIALS = {}
 
 # GitLab username and token for sending merge requests.
 # Please see the documentation for more details.
@@ -238,6 +243,7 @@ AUTHENTICATION_BACKENDS = (
     "social_core.backends.email.EmailAuth",
     # "social_core.backends.google.GoogleOAuth2",
     # "social_core.backends.github.GithubOAuth2",
+    # "social_core.backends.github_enterprise.GithubEnterpriseOAuth2",
     # "social_core.backends.bitbucket.BitbucketOAuth2",
     # "social_core.backends.suse.OpenSUSEOpenId",
     # "social_core.backends.ubuntu.UbuntuOpenId",
@@ -261,6 +267,12 @@ SOCIAL_AUTH_GITHUB_ORG_NAME = ""
 SOCIAL_AUTH_GITHUB_TEAM_KEY = ""
 SOCIAL_AUTH_GITHUB_TEAM_SECRET = ""
 SOCIAL_AUTH_GITHUB_TEAM_ID = ""
+
+SOCIAL_AUTH_GITHUB_ENTERPRISE_KEY = ""
+SOCIAL_AUTH_GITHUB_ENTERPRISE_SECRET = ""
+SOCIAL_AUTH_GITHUB_ENTERPRISE_URL = ""
+SOCIAL_AUTH_GITHUB_ENTERPRISE_API_URL = ""
+SOCIAL_AUTH_GITHUB_ENTERPRISE_SCOPE = ""
 
 SOCIAL_AUTH_BITBUCKET_OAUTH2_KEY = ""
 SOCIAL_AUTH_BITBUCKET_OAUTH2_SECRET = ""
@@ -298,6 +310,7 @@ SOCIAL_AUTH_PIPELINE = (
     "weblate.accounts.pipeline.user_full_name",
     "weblate.accounts.pipeline.store_email",
     "weblate.accounts.pipeline.notify_connect",
+    "weblate.accounts.pipeline.handle_invite",
     "weblate.accounts.pipeline.password_reset",
 )
 SOCIAL_AUTH_DISCONNECT_PIPELINE = (
@@ -329,7 +342,7 @@ SOCIAL_AUTH_SLUGIFY_FUNCTION = "weblate.accounts.pipeline.slugify_username"
 # Password validation configuration
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"  # noqa: E501, pylint: disable=line-too-long
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -443,8 +456,11 @@ HAVE_SYSLOG = False
 if platform.system() != "Windows":
     try:
         handler = SysLogHandler(address="/dev/log", facility=SysLogHandler.LOG_LOCAL2)
+        # Since Python 3.7 connect failures are silently discarded, so
+        # the exception is almost never raised here. Instead we look whether the socket
+        # to syslog is open after init.
+        HAVE_SYSLOG = handler.socket.fileno() != -1
         handler.close()
-        HAVE_SYSLOG = True
     except OSError:
         HAVE_SYSLOG = False
 
@@ -519,6 +535,7 @@ LOGGING = {
         #     "handlers": [DEFAULT_LOG],
         #     "level": "DEBUG",
         # },
+        "redis_lock": {"handlers": [DEFAULT_LOG], "level": DEFAULT_LOGLEVEL},
         "weblate": {"handlers": [DEFAULT_LOG], "level": DEFAULT_LOGLEVEL},
         # Logging VCS operations
         "weblate.vcs": {"handlers": [DEFAULT_LOG], "level": DEFAULT_LOGLEVEL},
@@ -534,89 +551,6 @@ LOGGING = {
 # Remove syslog setup if it's not present
 if not HAVE_SYSLOG:
     del LOGGING["handlers"]["syslog"]
-
-# List of machine translations
-MT_SERVICES = (
-    #     "weblate.machinery.apertium.ApertiumAPYTranslation",
-    #     "weblate.machinery.baidu.BaiduTranslation",
-    #     "weblate.machinery.deepl.DeepLTranslation",
-    #     "weblate.machinery.glosbe.GlosbeTranslation",
-    #     "weblate.machinery.google.GoogleTranslation",
-    #     "weblate.machinery.googlev3.GoogleV3Translation",
-    #     "weblate.machinery.libretranslate.LibreTranslateTranslation",
-    #     "weblate.machinery.microsoft.MicrosoftCognitiveTranslation",
-    #     "weblate.machinery.microsoftterminology.MicrosoftTerminologyService",
-    #     "weblate.machinery.modernmt.ModernMTTranslation",
-    #     "weblate.machinery.mymemory.MyMemoryTranslation",
-    #     "weblate.machinery.netease.NeteaseSightTranslation",
-    #     "weblate.machinery.tmserver.AmagamaTranslation",
-    #     "weblate.machinery.tmserver.TMServerTranslation",
-    #     "weblate.machinery.yandex.YandexTranslation",
-    #     "weblate.machinery.saptranslationhub.SAPTranslationHub",
-    #     "weblate.machinery.youdao.YoudaoTranslation",
-    "weblate.machinery.weblatetm.WeblateTranslation",
-    "weblate.memory.machine.WeblateMemory",
-)
-
-# Machine translation API keys
-
-# URL of the Apertium APy server
-MT_APERTIUM_APY = None
-
-# DeepL API key
-MT_DEEPL_KEY = None
-
-# LibreTranslate
-MT_LIBRETRANSLATE_API_URL = None
-MT_LIBRETRANSLATE_KEY = None
-
-# Microsoft Cognitive Services Translator API, register at
-# https://portal.azure.com/
-MT_MICROSOFT_COGNITIVE_KEY = None
-MT_MICROSOFT_REGION = None
-
-# ModernMT
-MT_MODERNMT_KEY = None
-
-# MyMemory identification email, see
-# https://mymemory.translated.net/doc/spec.php
-MT_MYMEMORY_EMAIL = None
-
-# Optional MyMemory credentials to access private translation memory
-MT_MYMEMORY_USER = None
-MT_MYMEMORY_KEY = None
-
-# Google API key for Google Translate API v2
-MT_GOOGLE_KEY = None
-
-# Google Translate API3 credentials and project id
-MT_GOOGLE_CREDENTIALS = None
-MT_GOOGLE_PROJECT = None
-
-# Baidu app key and secret
-MT_BAIDU_ID = None
-MT_BAIDU_SECRET = None
-
-# Youdao Zhiyun app key and secret
-MT_YOUDAO_ID = None
-MT_YOUDAO_SECRET = None
-
-# Netease Sight (Jianwai) app key and secret
-MT_NETEASE_KEY = None
-MT_NETEASE_SECRET = None
-
-# API key for Yandex Translate API
-MT_YANDEX_KEY = None
-
-# tmserver URL
-MT_TMSERVER = None
-
-# SAP Translation Hub
-MT_SAP_BASE_URL = None
-MT_SAP_SANDBOX_APIKEY = None
-MT_SAP_USERNAME = None
-MT_SAP_PASSWORD = None
-MT_SAP_USE_MT = True
 
 # Use HTTPS when creating redirect URLs for social authentication, see
 # documentation for more details:
@@ -636,7 +570,7 @@ SESSION_COOKIE_HTTPONLY = True
 # SSL redirect
 SECURE_SSL_REDIRECT = ENABLE_HTTPS
 SECURE_SSL_HOST = SITE_DOMAIN
-# Sent referrrer only for same origin links
+# Sent referrer only for same origin links
 SECURE_REFERRER_POLICY = "same-origin"
 # SSL redirect URL exemption list
 SECURE_REDIRECT_EXEMPT = (r"healthz/$",)  # Allowing HTTP access to health check
@@ -683,7 +617,7 @@ ANONYMOUS_USER_NAME = "anonymous"
 # Reverse proxy settings
 IP_PROXY_HEADER = "HTTP_X_FORWARDED_FOR"
 IP_BEHIND_REVERSE_PROXY = False
-IP_PROXY_OFFSET = 0
+IP_PROXY_OFFSET = -1
 
 # Sending HTML in mails
 EMAIL_SEND_HTML = True
@@ -728,6 +662,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.checks.format.PHPFormatCheck",
 #     "weblate.checks.format.CFormatCheck",
 #     "weblate.checks.format.PerlFormatCheck",
+#     "weblate.checks.format.PerlBraceFormatCheck",
 #     "weblate.checks.format.JavaScriptFormatCheck",
 #     "weblate.checks.format.LuaFormatCheck",
 #     "weblate.checks.format.ObjectPascalFormatCheck",
@@ -748,6 +683,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.checks.consistency.PluralsCheck",
 #     "weblate.checks.consistency.SamePluralsCheck",
 #     "weblate.checks.consistency.ConsistencyCheck",
+#     "weblate.checks.consistency.ReusedCheck",
 #     "weblate.checks.consistency.TranslatedCheck",
 #     "weblate.checks.chars.EscapedNewlineCountingCheck",
 #     "weblate.checks.chars.NewLineCountCheck",
@@ -770,6 +706,12 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.checks.source.LongUntranslatedCheck",
 #     "weblate.checks.format.MultipleUnnamedFormatsCheck",
 #     "weblate.checks.glossary.GlossaryCheck",
+#     "weblate.checks.fluent.syntax.FluentSourceSyntaxCheck",
+#     "weblate.checks.fluent.syntax.FluentTargetSyntaxCheck",
+#     "weblate.checks.fluent.parts.FluentPartsCheck",
+#     "weblate.checks.fluent.references.FluentReferencesCheck",
+#     "weblate.checks.fluent.inner_html.FluentSourceInnerHTMLCheck",
+#     "weblate.checks.fluent.inner_html.FluentTargetInnerHTMLCheck",
 # )
 
 # List of automatic fixups
@@ -778,6 +720,8 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.trans.autofixes.chars.ReplaceTrailingDotsWithEllipsis",
 #     "weblate.trans.autofixes.chars.RemoveZeroSpace",
 #     "weblate.trans.autofixes.chars.RemoveControlChars",
+#     "weblate.trans.autofixes.chars.DevanagariDanda",
+#     "weblate.trans.autofixes.html.BleachHTML",
 # )
 
 # List of enabled addons
@@ -800,6 +744,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.addons.generate.GenerateFileAddon",
 #     "weblate.addons.generate.PseudolocaleAddon",
 #     "weblate.addons.generate.PrefillAddon",
+#     "weblate.addons.generate.FillReadOnlyAddon",
 #     "weblate.addons.json.JSONCustomizeAddon",
 #     "weblate.addons.xml.XMLCustomizeAddon",
 #     "weblate.addons.properties.PropertiesSortAddon",
@@ -824,14 +769,13 @@ ALLOWED_HOSTS = ["__DOMAIN__"]
 # Configuration for caching
 CACHES = {
     "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
+        "BACKEND": "redis_lock.django_cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/__REDIS_DB__",
         # If redis is running on same host as Weblate, you might
         # want to use unix sockets instead:
         # "LOCATION": "unix:///var/run/redis/redis.sock?db=1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "PARSER_CLASS": "redis.connection.HiredisParser",
             # If you set password here, adjust CELERY_BROKER_URL as well
             "PASSWORD": None,
             "CONNECTION_POOL_KWARGS": {},
@@ -883,10 +827,8 @@ FONTS_CDN_URL = None
 
 # Django compressor offline mode
 COMPRESS_OFFLINE = False
-COMPRESS_OFFLINE_CONTEXT = [
-    {"fonts_cdn_url": FONTS_CDN_URL, "STATIC_URL": STATIC_URL, "LANGUAGE_BIDI": True},
-    {"fonts_cdn_url": FONTS_CDN_URL, "STATIC_URL": STATIC_URL, "LANGUAGE_BIDI": False},
-]
+COMPRESS_OFFLINE_CONTEXT = "weblate.utils.compress.offline_context"
+COMPRESS_CSS_HASHING_METHOD = "content"
 
 # Require login for all URLs
 if REQUIRE_LOGIN:
@@ -897,7 +839,7 @@ if REQUIRE_LOGIN:
 #    rf"{URL_PREFIX}/accounts/(.*)$",  # Required for login
 #    rf"{URL_PREFIX}/admin/login/(.*)$",  # Required for admin login
 #    rf"{URL_PREFIX}/static/(.*)$",  # Required for development mode
-#    rf"{URL_PREFIX}/widgets/(.*)$",  # Allowing public access to widgets
+#    rf"{URL_PREFIX}/widget/(.*)$",  # Allowing public access to widgets
 #    rf"{URL_PREFIX}/data/(.*)$",  # Allowing public access to data exports
 #    rf"{URL_PREFIX}/hooks/(.*)$",  # Allowing public access to notification hooks
 #    rf"{URL_PREFIX}/healthz/$",  # Allowing public access to health check
@@ -958,8 +900,3 @@ GOOGLE_ANALYTICS_ID = None
 SENTRY_DSN = None
 SENTRY_ENVIRONMENT = SITE_DOMAIN
 AKISMET_API_KEY = None
-
-try:
-    from .local_settings import *
-except ImportError:
-    pass
