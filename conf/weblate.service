@@ -15,7 +15,7 @@ RuntimeDirectory=__APP__
 ExecStartPre=/bin/chown -R __APP__ /var/log/__APP__
 
 ExecStart=/usr/bin/uwsgi \
-        --ini __INSTALL_DIR__/venv/lib/__WEBLATE_PYPATH__/site-packages/weblate/__APP__.ini \
+        --ini /etc/uwsgi/apps-available/__APP__.ini \
         --logto /var/log/__APP__/weblate.log
 
 
