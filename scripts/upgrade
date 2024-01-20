@@ -60,7 +60,7 @@ ynh_abort_if_errors
 ynh_script_progression --message="Stopping systemd services..." --weight=5
 
 ynh_systemd_action --service_name=$app --action="stop" --log_path="/var/log/$app/weblate.log" --line_match="goodbye to uWSGI"
-ynh_systemd_action --service_name="$app-celery" --action="stop" --log_path="systemd" --line_match="Stopped"
+ynh_systemd_action --service_name="$app-celery" --action="stop" --log_path="systemd"
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
