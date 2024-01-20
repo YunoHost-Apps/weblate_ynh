@@ -109,7 +109,7 @@ chown -R $app: "$install_dir"
 	sudo --user=$app BORG_OPENSSL_PREFIX=/usr/lib/x86_64-linux-gnu/ $install_dir/venv/bin/pip install Weblate=="$(ynh_app_upstream_version)"
 	sudo --user=$app $install_dir/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply
 	#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
-	
+
 	# specific to YunoHost package:
 	sudo --user=$app $install_dir/venv/bin/pip install django_sendmail_backend
 )
@@ -128,7 +128,7 @@ set_forge_variables
 
 ynh_add_config --template="../conf/settings.py" --destination="$settings"
 ynh_add_config --template="../conf/celery-weblate" --destination="$install_dir/celery-weblate"
-ynh_add_config --template="../conf/uwsgi.ini" --destination="/etc/uwsgi/apps-available//$app.ini"
+ynh_add_config --template="../conf/uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
 
 touch "$install_dir/local_settings.py"
 ln -sf "$install_dir/local_settings.py" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
