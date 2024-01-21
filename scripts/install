@@ -165,7 +165,7 @@ ynh_script_progression --message="Filling up the database..." --weight=10
 	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate collectstatic --noinput
 
 	# https://docs.weblate.org/en/latest/admin/install/venv-debian.html
-	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate compress --noinput
+	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate compress
 
 	# Check the configuration
 	# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
