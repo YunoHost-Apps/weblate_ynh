@@ -860,7 +860,7 @@ SILENCED_SYSTEM_CHECKS = [
 # CELERY_TASK_EAGER_PROPAGATES = True
 # Celery worker configuration for production
 CELERY_TASK_ALWAYS_EAGER = False
-CELERY_BROKER_URL = "redis://127.0.0.1:6379"
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/__REDIS_DB__"
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 # Celery settings, it is not recommended to change these
