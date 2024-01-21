@@ -155,12 +155,17 @@ ynh_script_progression --message="Filling up the database..." --weight=10
 
 	# the user needs to be weblate for postgresql
 	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate migrate --noinput
-	# generate static files
-	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate collectstatic --noinput
+	
 	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate createadmin --no-color \
 		--password "$password" \
 		--username "$admin" \
 		--email "$admin_mail"
+
+	# generate static files
+	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate collectstatic --noinput
+
+	# https://docs.weblate.org/en/latest/admin/install/venv-debian.html
+	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate compress --noinput
 
 	# Check the configuration
 	# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
