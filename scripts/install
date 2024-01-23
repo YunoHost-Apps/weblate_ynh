@@ -30,7 +30,7 @@ ynh_app_setting_set --app=$app --key=forge_token --value=$forge_token
 #=================================================
 
 # Remove trailing "/" for next commands
-path2=${path%/}
+path_no_slash=${path%/}
 
 #=================================================
 # CREATE A POSTGRESQL DATABASE
