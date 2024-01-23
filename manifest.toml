@@ -54,7 +54,8 @@ ram.runtime = "3G"
     ask.en = "Choose the forge you use"
     ask.fr = "Choisissez la forge que vous utilisez"
     type = "select"
-    choices = ["GitHub", "GitLab"]
+    choices.github = "Github"
+    choices.gitlab = "GitLab"
     default = "GitHub"
     optional = true
 
