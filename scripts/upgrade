@@ -135,7 +135,7 @@ upgrade() {
 		sudo --user=$app $install_dir/venv/bin/pip install --force-reinstall --no-binary :all: cffi
 		# Still needed with latest version of weblate?
 		sudo --user=$app $install_dir/venv/bin/pip install --upgrade Weblate=="$new_version"
-		sudo --user=$app $install_dir/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply
+		sudo --user=$app $install_dir/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply boto3 aliyunsdkalimt google openai
 		#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
 		# specific to YunoHost package:
 		sudo --user=$app $install_dir/venv/bin/pip install django_sendmail_backend
