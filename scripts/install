@@ -29,6 +29,9 @@ ynh_app_setting_set --app=$app --key=forge_token --value=$forge_token
 # STANDARD MODIFICATIONS
 #=================================================
 
+# Remove trailing "/" for next commands
+path2=${path%/}
+
 #=================================================
 # CREATE A POSTGRESQL DATABASE
 #=================================================
