@@ -121,7 +121,7 @@ ynh_script_progression --message="Adding a configuration file..." --weight=1
 
 redis_db=$(ynh_redis_get_free_db)
 ynh_app_setting_set --app=$app --key=redis_db --value="$redis_db"
-path="${path%/}"
+#path="${path%/}"
 settings="$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 
 set_forge_variables
