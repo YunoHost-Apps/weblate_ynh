@@ -154,7 +154,7 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # URL prefix to use, please see documentation for more details
-# WARNING: this must be without trailing slash (this is why we set __PATH2__ (cf. loaded settings in install and upgrade))
+# WARNING: this must be without trailing slash (this is why we set __PATH_NO_SLASH__ (cf. loaded settings in install and upgrade))
 URL_PREFIX = "__PATH_NO_SLASH__"
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
