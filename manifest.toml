@@ -56,7 +56,7 @@ ram.runtime = "3G"
     type = "select"
     choices.github = "Github"
     choices.gitlab = "GitLab"
-    default = "GitHub"
+    default = "github"
     optional = true
 
     [install.forge_username]
