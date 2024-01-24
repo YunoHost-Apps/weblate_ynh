@@ -898,3 +898,9 @@ GOOGLE_ANALYTICS_ID = None
 SENTRY_DSN = None
 SENTRY_ENVIRONMENT = SITE_DOMAIN
 AKISMET_API_KEY = None
+
+# Yunohost hack so users can define a new conf, and we can just replace the conf
+try:
+    from .local_settings import *
+except ImportError:
+    pass
