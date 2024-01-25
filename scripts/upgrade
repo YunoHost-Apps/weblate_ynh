@@ -20,9 +20,6 @@ key=$(ynh_string_random --length=50)
 # Remove trailing "/" from the path
 path_no_slash=${path%/}
 
-Github=$github
-GitLab=gitlab
-
 #=================================================
 # CHECK VERSION
 #=================================================
