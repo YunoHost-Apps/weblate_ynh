@@ -180,7 +180,8 @@ upgrade() {
 		sudo --user=$app $install_dir/venv/bin/weblate setuplang
 		sudo --user=$app $install_dir/venv/bin/weblate setupgroups
 		sudo --user=$app $install_dir/venv/bin/weblate compilemessages
-		
+                sudo --user=$app $install_dir/venv/bin/weblate compress
+
 		# Check the configuration
 		# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
 		if [ "$new_version" == "$(ynh_app_upstream_version)" ]; then
