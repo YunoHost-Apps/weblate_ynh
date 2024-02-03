@@ -15,6 +15,10 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+# Copyright © Michal Čihař <michal@weblate.org>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 import os
 import platform
 from logging.handlers import SysLogHandler
@@ -218,6 +222,9 @@ GITHUB_CREDENTIALS = {
         "token": "__GITHUB_TOKEN__",
     }
 }
+# Azure DevOps username and token for sending pull requests.
+# Please see the documentation for more details.
+AZURE_DEVOPS_CREDENTIALS = {}
 
 # Azure DevOps username and token for sending pull requests.
 # Please see the documentation for more details.
