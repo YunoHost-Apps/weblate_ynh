@@ -1,0 +1,103 @@
+#:schema https://raw.githubusercontent.com/YunoHost/apps/master/schemas/manifest.v2.schema.json
+
+packaging_format = 2
+
+id = "weblate"
+name = "Weblate"
+description.en = "Translation platform using Git and Python"
+description.fr = "Plateforme de traduction utilisant Git et Python"
+
+version = "5.3.1~ynh1"
+
+maintainers = ["Thovi98"]
+
+[upstream]
+license = "AGPL-3.0"
+website = "https://weblate.org"
+demo = "https://hosted.weblate.org/"
+admindoc = "https://docs.weblate.org/"
+userdoc = "https://docs.weblate.org/"
+code = "https://github.com/WeblateOrg/weblate"
+cpe = "cpe:2.3:a:weblate:weblate"
+fund = "https://weblate.org/fr/donate/"
+
+[integration]
+yunohost = ">= 11.2.0"
+architectures = "all"
+multi_instance = true
+ldap = false
+sso = false
+
+disk = "1G"
+ram.build = "3G"
+ram.runtime = "3G"
+
+[install]
+    [install.domain]
+    type = "domain"
+
+    [install.path]
+    type = "path"
+    default = "/weblate"
+
+    [install.init_main_permission]
+    type = "group"
+    default = false
+
+    [install.admin]
+    type = "user"
+
+    [install.password]
+    type = "password"
+
+    [install.used_forge]
+    ask.en = "Choose the forge you use"
+    ask.fr = "Choisissez la forge que vous utilisez"
+    type = "select"
+    choices.github = "Github"
+    choices.gitlab = "GitLab"
+    default = "github"
+    optional = true
+
+    [install.forge_username]
+    ask.en = "Your forge's username"
+    ask.fr = "Nom d'utilisateur de votre forge"
+    type = "string"
+    example = "Your username"
+    optional = true
+
+    [install.forge_token]
+    ask.en = "Your forge's token (OAuth)"
+    ask.fr = "Jeton de votre forge (OAuth)"
+    type = "string"
+    example = "A secret token"
+    optional = true
+
+[resources]
+
+    [resources.sources]
+        [resources.sources.libxxhash]
+        url = "https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.1.tar.gz"
+        sha256 = "3bb6b7d6f30c591dd65aaaff1c8b7a5b94d81687998ca9400082c739a690436c"
+        in_subdir = true
+        autoupdate.strategy = "latest_github_tag"
+
+    [resources.system_user]
+
+    [resources.install_dir]
+
+    [resources.permissions]
+    main.url = "/"
+
+    [resources.ports]
+    main.default = 8080
+
+    [resources.apt]
+    # §1 = weblate dependecies, §2 = borgbackup dependencies
+    packages = ["libxml2-dev", "libxslt-dev", "libfreetype6-dev", "libjpeg-dev", "libz-dev", "libyaml-dev", "libffi-dev", "libcairo-dev", "gir1.2-pango-1.0", "libgirepository1.0-dev", "libacl1-dev", "libssl-dev", "libpq-dev", "libjpeg62-turbo-dev", "build-essential", "python3-gdbm", "python3-dev", "python3-pip", "python3-venv", "python3-virtualenv", "virtualenv", "git", "uwsgi", "uwsgi-plugin-python3", "redis-server", "postgresql", "postgresql-contrib", "hub", 
+    
+    
+    "libacl1-dev", "libacl1", "libssl-dev", "liblz4-dev", "libzstd-dev", "libxxhash-dev", "build-essential", "pkg-config", "python3-pkgconfig"]
+
+    [resources.database]
+    type = "postgresql"

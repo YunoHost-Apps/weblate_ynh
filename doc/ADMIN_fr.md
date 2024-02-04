@@ -8,7 +8,7 @@ Cet utilisateur ne sera utilisé que pour ouvrir la pull-request, chaque traduct
 ## Paramètres et mises à niveau
 
 Presque tout ce qui concerne la configuration de Weblate est géré dans un fichier `settings.py`.
-Vous pouvez éditer le fichier `$final_path/local_settings.py` pour activer ou désactiver des fonctionnalités.
+Vous pouvez éditer le fichier `__INSTALL_DIR__/local_settings.py` pour activer ou désactiver des fonctionnalités.
 
 # Divers
 

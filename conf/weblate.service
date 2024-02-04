@@ -22,7 +22,7 @@ ExecStart=/usr/bin/uwsgi \
 Restart=on-failure
 KillSignal=SIGQUIT
 Type=notify
-StandardError=syslog
+StandardError=inherit
 NotifyAccess=all
 
 [Install]
