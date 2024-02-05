@@ -207,6 +207,11 @@ fi
 
 ynh_psql_execute_as_root --sql="CREATE EXTENSION IF NOT EXISTS pg_trgm;" --database=$db_name
 
+if [ "$current_version" -lt "5" ]
+then
+	upgrade "5.0.2" "../conf/settings.py"
+fi
+
 upgrade $(ynh_app_upstream_version) "../conf/settings.py"
 
 # Set right permissions for curl installation
