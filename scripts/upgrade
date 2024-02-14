@@ -14,43 +14,17 @@ source /usr/share/yunohost/helpers
 #=================================================
 ynh_script_progression --message="Loading installation settings..." --weight=1
 
-app=$YNH_APP_INSTANCE_NAME
-
-domain=$(ynh_app_setting_get --app=$app --key=domain)
-path_url=$(ynh_app_setting_get --app=$app --key=path)
-admin=$(ynh_app_setting_get --app=$app --key=admin)
-final_path=$(ynh_app_setting_get --app=$app --key=final_path)
-db_name=$(ynh_app_setting_get --app=$app --key=db_name)
-db_user=$db_name
-db_pwd=$(ynh_app_setting_get --app=$app --key=psqlpwd)
-used_forge=$(ynh_app_setting_get --app=$app --key=used_forge)
-forge_username=$(ynh_app_setting_get --app=$app --key=forge_username)
-forge_token=$(ynh_app_setting_get --app=$app --key=forge_token)
-redis_db=$(ynh_app_setting_get --app=$app --key=redis_db)
-
 admin_mail=$(ynh_user_get_info --username="$admin" --key=mail)
 key=$(ynh_string_random --length=50)
+
+# Remove trailing "/" from the path
+path_no_slash=${path%/}
 
 #=================================================
 # CHECK VERSION
 #=================================================
 
 upgrade_type=$(ynh_check_app_version_changed)
-
-#=================================================
-# BACKUP BEFORE UPGRADE THEN ACTIVE TRAP
-#=================================================
-ynh_script_progression --message="Backing up the app before upgrading (may take a while)..." --weight=40
-
-# Backup the current version of the app
-ynh_backup_before_upgrade
-ynh_clean_setup () {
-	ynh_clean_check_starting
-	# Restore it if the upgrade fails
-	ynh_restore_upgradebackup
-}
-# Exit if an error occurs during the execution of the script
-ynh_abort_if_errors
 
 #=================================================
 # STANDARD UPGRADE STEPS
@@ -67,27 +41,6 @@ ynh_systemd_action --service_name="$app-celery" --action="stop" --log_path="syst
 #=================================================
 ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
 
-if ynh_legacy_permissions_exists
-then
-	ynh_legacy_permissions_delete_all
-
-	ynh_app_setting_delete --app=$app --key=is_public
-fi
-
-if [[ -d "$final_path/bin/" ]]
-then
-	ynh_secure_remove --file="$final_path/bin/"
-fi
-
-# (<3.8) log cleanups
-if [[ -e "/var/log/uwsgi/app/$app" ]]
-then
-    ynh_systemd_action --service_name=$app --action="stop"
-    ynh_systemd_action --service_name="$app-celery" --action="stop"
-	ynh_secure_remove --file="/var/log/uwsgi/app/$app"
-	ynh_secure_remove --file="/var/log/$app-celery"
-fi
-
 # If used_forge, forge_username, forge_token don't exist, create them
 if [ -z "$used_forge" ]; then
 	used_forge="GitHub"
@@ -97,21 +50,6 @@ if [ -z "$used_forge" ]; then
 	ynh_app_setting_set --app=$app --key=forge_username --value=$forge_username
 	ynh_app_setting_set --app=$app --key=forge_token --value=$forge_token
 fi
-
-#=================================================
-# CREATE DEDICATED USER
-#=================================================
-ynh_script_progression --message="Making sure dedicated system user exists..." --weight=1
-
-# Create a dedicated user (if not existing)
-ynh_system_user_create --username=$app --home_dir="$final_path" --use_shell
-
-#=================================================
-# UPGRADE DEPENDENCIES
-#=================================================
-ynh_script_progression --message="Upgrading dependencies..." --weight=5
-
-ynh_exec_warn_less ynh_install_app_dependencies "$pkg_dependencies"
 
 #=================================================
 # NGINX CONFIGURATION
@@ -143,10 +81,10 @@ ynh_secure_remove --file="$tempdir"
 if [ $used_forge = "GitHub" ] ; then
 	ynh_script_progression --message="Configure hub..." --weight=1
 	
-	#mkdir "$final_path/.config/"
-	ynh_add_config --template="../conf/hub_config" --destination="$final_path/.config/hub"
+	#mkdir "$install_dir/.config/"
+	ynh_add_config --template="../conf/hub_config" --destination="$install_dir/.config/hub"
 
-	cat <<EOF > "$final_path/.bashrc"
+	cat <<EOF > "$install_dir/.bashrc"
 	eval "$(hub alias -s /bin/bash)"
 EOF
 fi
@@ -158,7 +96,7 @@ ynh_script_progression --message="Updating a configuration file..." --weight=2
 
 ynh_add_config --template="../conf/uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
 
-ynh_add_config --template="../conf/celery-weblate" --destination="$final_path/celery-weblate"
+ynh_add_config --template="../conf/celery-weblate" --destination="$install_dir/celery-weblate"
 
 #=================================================
 # SETUP SYSTEMD
@@ -180,27 +118,27 @@ upgrade() {
 	#=================================================
 	ynh_script_progression --message="Install weblate using PIP..." --weight=15
 
-	ynh_secure_remove --file="${final_path}/venv"
-	virtualenv --python=python3 "${final_path}/venv"
-	chown -R $app: "$final_path"
+	ynh_secure_remove --file="${install_dir}/venv"
+	virtualenv --python=python3 "${install_dir}/venv"
+	chown -R $app: "$install_dir"
 
 	#run source in a 'sub shell'
 	(
 		set +o nounset
-		source "${final_path}/venv/bin/activate"
+		source "${install_dir}/venv/bin/activate"
 		set -o nounset
-		cd "${final_path}"
+		cd "${install_dir}"
 
-		sudo --user=$app $final_path/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash
+		sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash
 
 		# Read the "Note" section in https://docs.weblate.org/en/weblate-4.11/admin/install/venv-debian.html#python-modules
-		sudo --user=$app $final_path/venv/bin/pip install --force-reinstall --no-binary :all: cffi
+		sudo --user=$app $install_dir/venv/bin/pip install --force-reinstall --no-binary :all: cffi
 		# Still needed with latest version of weblate?
-		sudo --user=$app $final_path/venv/bin/pip install --upgrade Weblate=="$new_version"
-		sudo --user=$app $final_path/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply
+		sudo --user=$app $install_dir/venv/bin/pip install --upgrade Weblate=="$new_version"
+		sudo --user=$app $install_dir/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply boto3 google openai
 		#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
 		# specific to YunoHost package:
-		sudo --user=$app $final_path/venv/bin/pip install django_sendmail_backend
+		sudo --user=$app $install_dir/venv/bin/pip install django_sendmail_backend
 	)
 
 	#=================================================
@@ -208,8 +146,8 @@ upgrade() {
 	#=================================================
 	ynh_script_progression --message="Create weblate configuration file..." --weight=2
 	# save old settings file
-	settings="$final_path/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
-	path_url="${path_url%/}"
+	settings="$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
+	path="${path%/}"
 
 	set_forge_variables
 
@@ -220,8 +158,8 @@ upgrade() {
 	# Recalculate and store the config file checksum into the app settings
 	ynh_store_file_checksum --file="$settings"
 
-	touch "$final_path/local_settings.py"
-	ln -sf "$final_path/local_settings.py" "$final_path/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
+	touch "$install_dir/local_settings.py"
+	ln -sf "$install_dir/local_settings.py" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
 
 	#=================================================
 	# MIGRATE WEBLATE
@@ -232,34 +170,35 @@ upgrade() {
 
 	(
 		set +o nounset
-		source "${final_path}/venv/bin/activate"
+		source "${install_dir}/venv/bin/activate"
 		set -o nounset
 		export DJANGO_SETTINGS_MODULE="weblate.settings"
-		cd "${final_path}"
+		cd "${install_dir}"
 
-		sudo --user=$app $final_path/venv/bin/weblate migrate --noinput
-		sudo --user=$app $final_path/venv/bin/weblate collectstatic --noinput
-		sudo --user=$app $final_path/venv/bin/weblate setuplang
-		sudo --user=$app $final_path/venv/bin/weblate setupgroups
-		sudo --user=$app $final_path/venv/bin/weblate compilemessages
-		
+		sudo --user=$app $install_dir/venv/bin/weblate migrate --noinput
+		sudo --user=$app $install_dir/venv/bin/weblate collectstatic --noinput
+		sudo --user=$app $install_dir/venv/bin/weblate setuplang
+		sudo --user=$app $install_dir/venv/bin/weblate setupgroups
+		sudo --user=$app $install_dir/venv/bin/weblate compilemessages
+                sudo --user=$app $install_dir/venv/bin/weblate compress
+
 		# Check the configuration
 		# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
 		if [ "$new_version" == "$(ynh_app_upstream_version)" ]; then
-			sudo --user=$app $final_path/venv/bin/weblate check --deploy || true
+			sudo --user=$app $install_dir/venv/bin/weblate check --deploy || true
 		fi
 	)
 
 	ynh_systemd_action --service_name="$app-celery" --action="stop"
 }
 
-file_version="${final_path}/venv/lib/$weblate_pypath/site-packages/weblate/__init__.py"
+file_version="${install_dir}/venv/lib/$weblate_pypath/site-packages/weblate/__init__.py"
 if [ -e $file_version ]
 then
 	current_version=$(cat $file_version | grep "^VERSION = " | grep -o "[0-9].[0-9]" | head -n1 | cut -d"." -f1)
 	if [ -z "$current_version" ]
 	then
-		file_version="${final_path}/venv/lib/$weblate_pypath/site-packages/weblate/utils/version.py"
+		file_version="${install_dir}/venv/lib/$weblate_pypath/site-packages/weblate/utils/version.py"
 		current_version=$(cat $file_version | grep "^VERSION = " | grep -o "[0-9].[0-9]" | head -n1 | cut -d"." -f1)
 	fi
 else
@@ -268,21 +207,21 @@ fi
 
 ynh_psql_execute_as_root --sql="CREATE EXTENSION IF NOT EXISTS pg_trgm;" --database=$db_name
 
-if [ "$current_version" -lt "4" ]
+if [ "$current_version" -lt "5" ]
 then
-	upgrade "4.1.1" "../conf/settings.4.1.1.py"
+	upgrade "5.0.2" "../conf/settings.py"
 fi
 
 upgrade $(ynh_app_upstream_version) "../conf/settings.py"
 
 # Set right permissions for curl installation
-mkdir -p "$final_path/avatar-cache"
-chown -R $app: "$final_path"
-chown "$app:www-data" "$final_path"
-chown -R "$app:www-data" "$final_path/data"
+mkdir -p "$install_dir/avatar-cache"
+chown -R $app: "$install_dir"
+chown "$app:www-data" "$install_dir"
+chown -R "$app:www-data" "$install_dir/data"
 
-chmod 750 "$final_path"
-chmod -R o-rwx "$final_path"
+chmod 750 "$install_dir"
+chmod -R o-rwx "$install_dir"
 
 #=================================================
 # GENERIC FINALIZATION
@@ -309,13 +248,6 @@ ynh_script_progression --message="Starting systemd services..." --weight=5
 
 ynh_systemd_action --service_name=$app --action="start" --log_path="/var/log/$app/weblate.log" --line_match="spawned uWSGI"
 ynh_systemd_action --service_name="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery-celery.log" --line_match="mingle: all alone"
-
-#=================================================
-# RELOAD NGINX
-#=================================================
-ynh_script_progression --message="Reloading NGINX web server..." --weight=1
-
-ynh_systemd_action --service_name=nginx --action=reload
 
 #=================================================
 # END OF SCRIPT

@@ -5,7 +5,7 @@
 ################################################################################
 
 # Please do not modify this file, it will be reset at the next update.
-# You can edit the file __FINALPATH__/local_settings.py and add/modify the settings you need.
+# You can edit the file __INSTALL_DIR__/local_settings.py and add/modify the settings you need.
 # The parameters you add in local_settings.py will overwrite these,
 # but you can use the options and documentation in this file to find out what can be done.
 
@@ -83,7 +83,7 @@ DATABASES = {
 
 # Data directory, you can use following for the development purposes:
 # os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
-DATA_DIR = "__FINALPATH__/data"
+DATA_DIR = "__INSTALL_DIR__/data"
 CACHE_DIR = f"{DATA_DIR}/cache"
 
 # Local time zone for this installation. Choices can be found here:
@@ -158,7 +158,8 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # URL prefix to use, please see documentation for more details
-URL_PREFIX = "__PATH_URL__"
+# WARNING: this must be without trailing slash (this is why we set __PATH_NO_SLASH__ (cf. loaded settings in install and upgrade))
+URL_PREFIX = "__PATH_NO_SLASH__"
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 MEDIA_ROOT = os.path.join(DATA_DIR, "media")
@@ -221,6 +222,10 @@ GITHUB_CREDENTIALS = {
         "token": "__GITHUB_TOKEN__",
     }
 }
+# Azure DevOps username and token for sending pull requests.
+# Please see the documentation for more details.
+AZURE_DEVOPS_CREDENTIALS = {}
+
 # Azure DevOps username and token for sending pull requests.
 # Please see the documentation for more details.
 AZURE_DEVOPS_CREDENTIALS = {}
@@ -757,7 +762,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 # )
 
 # E-mail address that error messages come from.
-SERVER_EMAIL = "noreply@__DOMAIN__"
+SERVER_EMAIL = "__APP__@__DOMAIN__"
 
 # Default email address to use for various automated correspondence from
 # the site managers. Used for registration emails.
@@ -826,7 +831,7 @@ REST_FRAMEWORK = {
 FONTS_CDN_URL = None
 
 # Django compressor offline mode
-COMPRESS_OFFLINE = False
+COMPRESS_OFFLINE = True
 COMPRESS_OFFLINE_CONTEXT = "weblate.utils.compress.offline_context"
 COMPRESS_CSS_HASHING_METHOD = "content"
 
@@ -863,7 +868,7 @@ SILENCED_SYSTEM_CHECKS = [
 # CELERY_TASK_EAGER_PROPAGATES = True
 # Celery worker configuration for production
 CELERY_TASK_ALWAYS_EAGER = False
-CELERY_BROKER_URL = "redis://127.0.0.1:6379"
+CELERY_BROKER_URL = "redis://127.0.0.1:6379/__REDIS_DB__"
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 # Celery settings, it is not recommended to change these
@@ -900,3 +905,9 @@ GOOGLE_ANALYTICS_ID = None
 SENTRY_DSN = None
 SENTRY_ENVIRONMENT = SITE_DOMAIN
 AKISMET_API_KEY = None
+
+# Yunohost hack so users can define a new conf, and we can just replace the conf
+try:
+    from .local_settings import *
+except ImportError:
+    pass
