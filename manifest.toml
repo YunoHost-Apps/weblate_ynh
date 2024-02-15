@@ -77,8 +77,8 @@ ram.runtime = "3G"
 
     [resources.sources]
         [resources.sources.libxxhash]
-        url = "https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.1.tar.gz"
-        sha256 = "3bb6b7d6f30c591dd65aaaff1c8b7a5b94d81687998ca9400082c739a690436c"
+        url = "https://github.com/WeblateOrg/weblate/archive/refs/tags/weblate-5.4.tar.gz"
+        sha256 = "e5dde3d1e33a2d047269e7b6b84f8e82cb117c14bc0cfa6a5dd8482c380e1aa8"
         in_subdir = true
         autoupdate.strategy = "latest_github_tag"
 
