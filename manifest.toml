@@ -80,7 +80,8 @@ ram.runtime = "3G"
         url = "https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.1.tar.gz"
         sha256 = "3bb6b7d6f30c591dd65aaaff1c8b7a5b94d81687998ca9400082c739a690436c"
         in_subdir = true
-        autoupdate.strategy = "latest_github_tag"
+        autoupdate.strategy = "latest_github_release"
+        autoupdate.upstream = "https://github.com/Cyan4973/xxHash"
 
     [resources.system_user]
 
