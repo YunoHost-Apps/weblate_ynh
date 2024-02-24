@@ -4,8 +4,6 @@
 # COMMON VARIABLES
 #=================================================
 
-#REMOVEME? pkg_dependencies="$weblate_dependencies $borgbackup_dependencies"
-
 debian_maj_version=$(sed 's/\..*//' /etc/debian_version)
 
 if [ "$debian_maj_version" -eq 9 ] ; then

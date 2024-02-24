@@ -26,3 +26,4 @@ test_format = 1.0
     test_upgrade_from.2749e7b.args.forge_token = "11111111111"
 
     test_upgrade_from.52db1ab.name = "5.3.1-ynh2"
+    test_upgrade_from.e075efc.name = "5.4.1"
