@@ -18,7 +18,7 @@ Si vous n’avez pas YunoHost, regardez [ici](https://yunohost.org/#/install) po
 
 Weblate est un outil de traduction libre avec une intégration étroite du contrôle de version. Il fournit deux interfaces utilisateur, la propagation des traductions entre les composants, les contrôles de qualité et la liaison automatique aux fichiers source. 
 
-**Version incluse :** 5.4.1~ynh1
+**Version incluse :** 5.4.2~ynh1
 
 **Démo :** https://hosted.weblate.org/
 

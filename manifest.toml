@@ -7,7 +7,7 @@ name = "Weblate"
 description.en = "Translation platform using Git and Python"
 description.fr = "Plateforme de traduction utilisant Git et Python"
 
-version = "5.4.1~ynh1"
+version = "5.4.2~ynh1"
 
 maintainers = ["Thovi98"]
 
@@ -42,7 +42,7 @@ ram.runtime = "3G"
 
     [install.init_main_permission]
     type = "group"
-    default = false
+    default = "visitors"
 
     [install.admin]
     type = "user"
@@ -77,8 +77,8 @@ ram.runtime = "3G"
 
     [resources.sources]
         [resources.sources.libxxhash]
-        url = "https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.1.tar.gz"
-        sha256 = "3bb6b7d6f30c591dd65aaaff1c8b7a5b94d81687998ca9400082c739a690436c"
+        url = "https://github.com/Cyan4973/xxHash/archive/refs/tags/v0.8.2.tar.gz"
+        sha256 = "baee0c6afd4f03165de7a4e67988d16f0f2b257b51d0e3cb91909302a26a79c4"
         in_subdir = true
         autoupdate.strategy = "latest_github_release"
         autoupdate.upstream = "https://github.com/Cyan4973/xxHash"
