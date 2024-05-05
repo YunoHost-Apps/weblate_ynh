@@ -15,9 +15,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# Copyright © Michal Čihař <michal@weblate.org>
-#
-# SPDX-License-Identifier: GPL-3.0-or-later
+# mypy: disable-error-code="var-annotated"
 
 import os
 import platform
@@ -138,6 +136,7 @@ LANGUAGES = (
     ("sr", "Српски"),
     ("sr-latn", "Srpski"),
     ("sv", "Svenska"),
+    ("ta", "தமிழ்"),
     ("th", "ไทย"),
     ("tr", "Türkçe"),
     ("uk", "Українська"),
@@ -158,7 +157,7 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # URL prefix to use, please see documentation for more details
-# WARNING: this must be without trailing slash (this is why we set __PATH_NO_SLASH__ (cf. loaded settings in install and upgrade))
+# YUNOHOST_WARNING: this must be without trailing slash (this is why we set __PATH_NO_SLASH__ (cf. loaded settings in install and upgrade))
 URL_PREFIX = "__PATH_NO_SLASH__"
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
@@ -222,9 +221,6 @@ GITHUB_CREDENTIALS = {
         "token": "__GITHUB_TOKEN__",
     }
 }
-# Azure DevOps username and token for sending pull requests.
-# Please see the documentation for more details.
-AZURE_DEVOPS_CREDENTIALS = {}
 
 # Azure DevOps username and token for sending pull requests.
 # Please see the documentation for more details.
@@ -244,7 +240,7 @@ GITLAB_CREDENTIALS = {
 BITBUCKETSERVER_CREDENTIALS = {}
 
 # Authentication configuration
-AUTHENTICATION_BACKENDS = (
+AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     "social_core.backends.email.EmailAuth",
     # "social_core.backends.google.GoogleOAuth2",
     # "social_core.backends.github.GithubOAuth2",
@@ -431,7 +427,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django.contrib.admin.apps.SimpleAdminConfig",
+    "django.contrib.admin",
     "django.contrib.admindocs",
     "django.contrib.sitemaps",
     "django.contrib.humanize",
@@ -464,7 +460,7 @@ if platform.system() != "Windows":
         # Since Python 3.7 connect failures are silently discarded, so
         # the exception is almost never raised here. Instead we look whether the socket
         # to syslog is open after init.
-        HAVE_SYSLOG = handler.socket.fileno() != -1
+        HAVE_SYSLOG = handler.socket.fileno() != -1  # type: ignore[attr-defined]
         handler.close()
     except OSError:
         HAVE_SYSLOG = False
@@ -477,7 +473,7 @@ DEFAULT_LOGLEVEL = "DEBUG" if DEBUG else "INFO"
 # the site admins on every HTTP 500 error when DEBUG=False.
 # See http://docs.djangoproject.com/en/stable/topics/logging for
 # more details on how to customize your logging configuration.
-LOGGING = {
+LOGGING: dict = {
     "version": 1,
     "disable_existing_loggers": True,
     "filters": {"require_debug_false": {"()": "django.utils.log.RequireDebugFalse"}},
@@ -615,6 +611,10 @@ LOGOUT_URL = f"{URL_PREFIX}/accounts/logout/"
 
 # Default location for login
 LOGIN_REDIRECT_URL = f"{URL_PREFIX}/"
+LOGOUT_REDIRECT_URL = f"{URL_PREFIX}/"
+
+# Opt-in for Django 6.0 default
+FORMS_URLFIELD_ASSUME_HTTPS = True
 
 # Anonymous user name
 ANONYMOUS_USER_NAME = "anonymous"
@@ -657,6 +657,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.checks.chars.EndColonCheck",
 #     "weblate.checks.chars.EndQuestionCheck",
 #     "weblate.checks.chars.EndExclamationCheck",
+#     "weblate.checks.chars.EndInterrobangCheck",
 #     "weblate.checks.chars.EndEllipsisCheck",
 #     "weblate.checks.chars.EndSemicolonCheck",
 #     "weblate.checks.chars.MaxLengthCheck",
@@ -824,6 +825,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "weblate.api.pagination.StandardPagination",
     "PAGE_SIZE": 50,
     "VIEW_DESCRIPTION_FUNCTION": "weblate.api.views.get_view_description",
+    "EXCEPTION_HANDLER": "weblate.api.views.weblate_exception_handler",
     "UNAUTHENTICATED_USER": "weblate.auth.models.get_anonymous",
 }
 
@@ -850,6 +852,7 @@ if REQUIRE_LOGIN:
 #    rf"{URL_PREFIX}/healthz/$",  # Allowing public access to health check
 #    rf"{URL_PREFIX}/api/(.*)$",  # Allowing access to API
 #    rf"{URL_PREFIX}/js/i18n/$",  # JavaScript localization
+#    rf"{URL_PREFIX}/css/custom\.css$",  # Custom CSS support
 #    rf"{URL_PREFIX}/contact/$",  # Optional for contact form
 #    rf"{URL_PREFIX}/legal/(.*)$",  # Optional for legal app
 #    rf"{URL_PREFIX}/avatar/(.*)$",  # Optional for avatars
@@ -869,7 +872,9 @@ SILENCED_SYSTEM_CHECKS = [
 # Celery worker configuration for production
 CELERY_TASK_ALWAYS_EAGER = False
 CELERY_BROKER_URL = "redis://127.0.0.1:6379/__REDIS_DB__"
-CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_RESULT_BACKEND: str | None = CELERY_BROKER_URL
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_CONNECTION_RETRY = True
 
 # Celery settings, it is not recommended to change these
 CELERY_WORKER_MAX_MEMORY_PER_CHILD = 200000
@@ -887,7 +892,7 @@ CELERY_TASK_ROUTES = {
 
 # CORS allowed origins
 CORS_ALLOWED_ORIGINS = []
-CORS_URLS_REGEX = r"^/api/.*$"
+CORS_URLS_REGEX = rf"^{URL_PREFIX}/api/.*$"
 
 # Enable plain database backups
 DATABASE_BACKUP = "plain"
