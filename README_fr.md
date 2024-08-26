@@ -5,7 +5,7 @@ Il NE doit PAS être modifié à la main.
 
 # Weblate pour YunoHost
 
-[![Niveau d’intégration](https://dash.yunohost.org/integration/weblate.svg)](https://dash.yunohost.org/appci/app/weblate) ![Statut du fonctionnement](https://ci-apps.yunohost.org/ci/badges/weblate.status.svg) ![Statut de maintenance](https://ci-apps.yunohost.org/ci/badges/weblate.maintain.svg)
+[![Niveau d’intégration](https://dash.yunohost.org/integration/weblate.svg)](https://ci-apps.yunohost.org/ci/apps/weblate/) ![Statut du fonctionnement](https://ci-apps.yunohost.org/ci/badges/weblate.status.svg) ![Statut de maintenance](https://ci-apps.yunohost.org/ci/badges/weblate.maintain.svg)
 
 [![Installer Weblate avec YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=weblate)
 
