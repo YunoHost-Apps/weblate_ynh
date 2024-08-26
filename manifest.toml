@@ -22,7 +22,7 @@ cpe = "cpe:2.3:a:weblate:weblate"
 fund = "https://weblate.org/fr/donate/"
 
 [integration]
-yunohost = ">= 11.2.0"
+yunohost = ">= 12.0.0"
 architectures = "all"
 multi_instance = true
 ldap = false
