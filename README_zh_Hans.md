@@ -5,7 +5,7 @@
 
 # YunoHost 上的 Weblate
 
-[![集成程度](https://dash.yunohost.org/integration/weblate.svg)](https://ci-apps.yunohost.org/ci/apps/weblate/) ![工作状态](https://ci-apps.yunohost.org/ci/badges/weblate.status.svg) ![维护状态](https://ci-apps.yunohost.org/ci/badges/weblate.maintain.svg)
+[![集成程度](https://dash.yunohost.org/integration/weblate.svg)](https://dash.yunohost.org/appci/app/weblate) ![工作状态](https://ci-apps.yunohost.org/ci/badges/weblate.status.svg) ![维护状态](https://ci-apps.yunohost.org/ci/badges/weblate.maintain.svg)
 
 [![使用 YunoHost 安装 Weblate](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=weblate)
 
