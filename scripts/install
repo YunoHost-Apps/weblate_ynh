@@ -1,11 +1,5 @@
 #!/bin/bash
 
-#=================================================
-# GENERIC START
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
@@ -19,11 +13,11 @@ key=$(ynh_string_random --length=50)
 #=================================================
 # STORE SETTINGS FROM MANIFEST
 #=================================================
-ynh_script_progression --message="Storing installation settings..." --weight=1
+ynh_script_progression "Storing installation settings..."
 
-ynh_app_setting_set --app=$app --key=used_forge --value=$used_forge
-ynh_app_setting_set --app=$app --key=forge_username --value=$forge_username
-ynh_app_setting_set --app=$app --key=forge_token --value=$forge_token
+ynh_app_setting_set --key=used_forge --value=$used_forge
+ynh_app_setting_set --key=forge_username --value=$forge_username
+ynh_app_setting_set --key=forge_token --value=$forge_token
 
 # Remove trailing "/" from the path
 path_no_slash=${path%/}
@@ -31,36 +25,35 @@ path_no_slash=${path%/}
 #=================================================
 # CREATE A POSTGRESQL DATABASE
 #=================================================
-ynh_script_progression --message="Creating a PostgreSQL database..." --weight=2
+ynh_script_progression "Creating a PostgreSQL database..."
 
-ynh_psql_execute_as_root --sql="CREATE EXTENSION IF NOT EXISTS pg_trgm;" --database=$db_name
+ynh_psql_db_shell <<< "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
 
 #=================================================
 # DOWNLOAD, CHECK AND UNPACK SOURCE
 #=================================================
-ynh_script_progression --message="Setting up source files..."
+ynh_script_progression "Setting up source files..."
 
 mkdir -p "$install_dir/avatar-cache"
 mkdir -p "$install_dir/data"
 
-chmod 750 "$install_dir"
-chmod -R o-rwx "$install_dir"
-chown -R $app:www-data "$install_dir"
-
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod 750 "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod -R o-rwx "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app:www-data "$install_dir"
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Configuring NGINX web server..." --weight=2
+ynh_script_progression "Configuring NGINX web server..."
 
 # Create a dedicated NGINX config
-ynh_add_nginx_config
+ynh_config_add_nginx
 
 #=================================================
 # SPECIFIC SETUP
 #=================================================
 # INSTALL XXHASH
 #=================================================
-ynh_script_progression --message="Installing xxHash..."
+ynh_script_progression "Installing xxHash..."
 
 tempdir="$(mktemp -d)"
 ynh_setup_source --dest_dir=$tempdir --source_id="libxxhash"
@@ -68,17 +61,17 @@ pushd $tempdir
 	make
 	make install
 popd
-ynh_secure_remove --file="$tempdir"
+ynh_safe_rm "$tempdir"
 
 #=================================================
 # CONFIGURE HUB
 #=================================================
 
 if [ $used_forge = "GitHub" ] ; then
-	ynh_script_progression --message="Configure hub..." --weight=1
-	
+	ynh_script_progression "Configure hub..."
+
 	mkdir "$install_dir/.config/"
-	ynh_add_config --template="../conf/hub_config" --destination="$install_dir/.config/hub"
+	ynh_config_add --template="hub_config" --destination="$install_dir/.config/hub"
 
 	cat <<EOF > "$install_dir/.bashrc"
 	eval "$(hub alias -s /bin/bash)"
@@ -88,11 +81,10 @@ fi
 #=================================================
 # PIP INSTALLATION
 #=================================================
-ynh_script_progression --message="Install weblate using PIP..." --weight=80
+ynh_script_progression "Install weblate using PIP..."
 
 virtualenv --python=python3 "${install_dir}/venv"
-chown -R $app: "$install_dir"
-
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app: "$install_dir"
 #run source in a 'sub shell'
 (
 	set +o nounset
@@ -120,33 +112,33 @@ chown -R $app: "$install_dir"
 #=================================================
 # ADD A CONFIGURATION
 #=================================================
-ynh_script_progression --message="Adding a configuration file..." --weight=1
+ynh_script_progression "Adding $app's configuration..."
 
 redis_db=$(ynh_redis_get_free_db)
-ynh_app_setting_set --app=$app --key=redis_db --value="$redis_db"
+ynh_app_setting_set --key=redis_db --value="$redis_db"
 settings="$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 
 set_forge_variables
 
-ynh_add_config --template="../conf/settings.py" --destination="$settings"
-ynh_add_config --template="../conf/celery-weblate" --destination="$install_dir/celery-weblate"
-ynh_add_config --template="../conf/uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
+ynh_config_add --template="settings.py" --destination="$settings"
+ynh_config_add --template="celery-weblate" --destination="$install_dir/celery-weblate"
+ynh_config_add --template="uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
 
 touch "$install_dir/local_settings.py"
 ln -sf "$install_dir/local_settings.py" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
 
 # Set permissions to app files
-chmod 750 "$install_dir"
-chmod -R o-rwx "$install_dir"
-chown -R $app: "$install_dir"
-chown "$app:www-data" "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod 750 "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod -R o-rwx "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app: "$install_dir"
+#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown "$app:www-data" "$install_dir"
 chown -R "$app:www-data" "$install_dir/data"
 
 #=================================================
 # SPECIFIC SETUP Filling up the database
 # https://docs.weblate.org/en/latest/admin/install.html#filling-up-the-database
 #==========================================
-ynh_script_progression --message="Filling up the database..." --weight=10
+ynh_script_progression "Filling up the database..."
 
 (
 	set +o nounset
@@ -156,22 +148,22 @@ ynh_script_progression --message="Filling up the database..." --weight=10
 	cd "${install_dir}"
 
 	# the user needs to be weblate for postgresql
-	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate migrate --noinput
-	
-	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate createadmin --no-color \
+	ynh_hide_warnings sudo --user=$app $install_dir/venv/bin/weblate migrate --noinput
+
+	ynh_hide_warnings sudo --user=$app $install_dir/venv/bin/weblate createadmin --no-color \
 		--password "$password" \
 		--username "$admin" \
 		--email "$admin_mail"
 
 	# generate static files
-	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate collectstatic --noinput
+	ynh_hide_warnings sudo --user=$app $install_dir/venv/bin/weblate collectstatic --noinput
 
 	# https://docs.weblate.org/en/latest/admin/install/venv-debian.html
-	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate compress
+	ynh_hide_warnings sudo --user=$app $install_dir/venv/bin/weblate compress
 
 	# Check the configuration
 	# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
-	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate check --deploy || true
+	ynh_hide_warnings sudo --user=$app $install_dir/venv/bin/weblate check --deploy || true
 )
 
 #fix for multi-instance installs where said dir has not the correct permissions
@@ -180,25 +172,23 @@ chmod -R 755 "$install_dir/data"
 #=================================================
 # SETUP SYSTEMD
 #=================================================
-ynh_script_progression --message="Configuring a systemd service..." --weight=3
+ynh_script_progression "Configuring $app's systemd service..."
 
-ynh_add_systemd_config --service=$app --template="weblate.service"
-ynh_add_systemd_config --service="$app-celery" --template="celery-weblate.service"
+ynh_config_add_systemd  --template="weblate.service"
+ynh_config_add_systemd --service="$app-celery" --template="celery-weblate.service"
 
-#=================================================
-# GENERIC FINALIZATION
 #=================================================
 # SETUP LOGROTATE
 #=================================================
-ynh_script_progression --message="Configuring log rotation..." --weight=1
+ynh_script_progression "Configuring log rotation..."
 
 # Use logrotate to manage application logfile(s)
-ynh_use_logrotate --non-append
+ynh_config_add_logrotate
 
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
-ynh_script_progression --message="Integrating service in YunoHost..." --weight=3
+ynh_script_progression "Integrating service in YunoHost..."
 
 yunohost service add $app --log="/var/log/$app/weblate.log"
 yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery-w1.log"
@@ -206,13 +196,13 @@ yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery-w1.log"
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Starting a systemd service..." --weight=5
+ynh_script_progression "Starting $app's systemd service..."
 
-ynh_systemd_action --service_name=$app --action="start" --log_path="/var/log/$app/weblate.log" --line_match="spawned uWSGI"
-ynh_systemd_action --service_name="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery-celery.log" --line_match="mingle: all alone"
+ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" --wait_until="spawned uWSGI"
+ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery-celery.log" --wait_until="mingle: all alone"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Installation of $app completed" --last
+ynh_script_progression "Installation of $app completed"
