@@ -37,19 +37,17 @@ ynh_script_progression "Setting up source files..."
 mkdir -p "$install_dir/avatar-cache"
 mkdir -p "$install_dir/data"
 
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod 750 "$install_dir"
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod -R o-rwx "$install_dir"
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app:www-data "$install_dir"
+chmod 750 "$install_dir"
+chmod -R o-rwx "$install_dir"
+chown -R $app:www-data "$install_dir"
+
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
 ynh_script_progression "Configuring NGINX web server..."
 
-# Create a dedicated NGINX config
 ynh_config_add_nginx
 
-#=================================================
-# SPECIFIC SETUP
 #=================================================
 # INSTALL XXHASH
 #=================================================
@@ -84,7 +82,7 @@ fi
 ynh_script_progression "Install weblate using PIP..."
 
 virtualenv --python=python3 "${install_dir}/venv"
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app: "$install_dir"
+chown -R $app: "$install_dir"
 #run source in a 'sub shell'
 (
 	set +o nounset
@@ -124,10 +122,10 @@ touch "$install_dir/local_settings.py"
 ln -sf "$install_dir/local_settings.py" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
 
 # Set permissions to app files
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod 750 "$install_dir"
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod -R o-rwx "$install_dir"
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app: "$install_dir"
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown "$app:www-data" "$install_dir"
+chmod 750 "$install_dir"
+chmod -R o-rwx "$install_dir"
+chown -R $app: "$install_dir"
+chown "$app:www-data" "$install_dir"
 chown -R "$app:www-data" "$install_dir/data"
 
 #=================================================
