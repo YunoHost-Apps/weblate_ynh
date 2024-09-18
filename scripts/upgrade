@@ -104,7 +104,7 @@ upgrade() {
 
 	ynh_safe_rm "${install_dir}/venv"
 	virtualenv --python=python3 "${install_dir}/venv"
-	#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app: "$install_dir"
+	chown -R $app: "$install_dir"
 	#run source in a 'sub shell'
 	(
 		set +o nounset
@@ -133,6 +133,7 @@ upgrade() {
 	# MODIFY A CONFIG FILE
 	#=================================================
 	ynh_script_progression "Create weblate configuration file..."
+
 	# save old settings file
 	settings="$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 	path="${path%/}"
@@ -204,12 +205,13 @@ upgrade $(ynh_app_upstream_version) "../conf/settings.py"
 
 # Set right permissions for curl installation
 mkdir -p "$install_dir/avatar-cache"
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown -R $app: "$install_dir"
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chown "$app:www-data" "$install_dir"
+chown -R $app: "$install_dir"
+chown "$app:www-data" "$install_dir"
 chown -R "$app:www-data" "$install_dir/data"
 
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod 750 "$install_dir"
-#REMOVEME? Assuming the install dir is setup using ynh_setup_source, the proper chmod/chowns are now already applied and it shouldn't be necessary to tweak perms | chmod -R o-rwx "$install_dir"
+chmod 750 "$install_dir"
+chmod -R o-rwx "$install_dir"
+
 #=================================================
 # SETUP LOGROTATE
 #=================================================
