@@ -1,18 +1,12 @@
 #!/bin/bash
 
-#=================================================
-# GENERIC START
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
 # LOAD SETTINGS
 #=================================================
-ynh_script_progression --message="Loading installation settings..." --weight=1
+ynh_script_progression "Loading installation settings..."
 
 admin_mail=$(ynh_user_get_info --username="$admin" --key=mail)
 key=$(ynh_string_random --length=50)
@@ -21,50 +15,40 @@ key=$(ynh_string_random --length=50)
 path_no_slash=${path%/}
 
 #=================================================
-# CHECK VERSION
-#=================================================
-
-upgrade_type=$(ynh_check_app_version_changed)
-
-#=================================================
-# STANDARD UPGRADE STEPS
-#=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Stopping systemd services..." --weight=5
+ynh_script_progression "Stopping systemd services..."
 
-ynh_systemd_action --service_name=$app --action="stop" --log_path="/var/log/$app/weblate.log" --line_match="goodbye to uWSGI"
-ynh_systemd_action --service_name="$app-celery" --action="stop" --log_path="systemd"
+ynh_systemctl --service=$app --action="stop" --log_path="/var/log/$app/weblate.log" --wait_until="goodbye to uWSGI"
+ynh_systemctl --service="$app-celery" --action="stop" --log_path="systemd"
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
 #=================================================
-ynh_script_progression --message="Ensuring downward compatibility..." --weight=1
+ynh_script_progression "Ensuring downward compatibility..."
 
 # If used_forge, forge_username, forge_token don't exist, create them
 if [ -z "$used_forge" ]; then
 	used_forge="GitHub"
-	forge_username=$(ynh_app_setting_get --app=$app --key=github_account)
-	forge_token=$(ynh_app_setting_get --app=$app --key=github_token)
-	ynh_app_setting_set --app=$app --key=used_forge --value=$used_forge
-	ynh_app_setting_set --app=$app --key=forge_username --value=$forge_username
-	ynh_app_setting_set --app=$app --key=forge_token --value=$forge_token
+	forge_username=$(ynh_app_setting_get --key=github_account)
+	forge_token=$(ynh_app_setting_get --key=github_token)
+	ynh_app_setting_set --key=used_forge --value=$used_forge
+	ynh_app_setting_set --key=forge_username --value=$forge_username
+	ynh_app_setting_set --key=forge_token --value=$forge_token
 fi
 
 #=================================================
 # NGINX CONFIGURATION
 #=================================================
-ynh_script_progression --message="Upgrading NGINX web server configuration..." --weight=3
+ynh_script_progression "Upgrading NGINX web server configuration..."
 
 # Create a dedicated NGINX config
-ynh_add_nginx_config
+ynh_config_add_nginx
 
-#=================================================
-# SPECIFIC UPGRADE
 #=================================================
 # INSTALL XXHASH
 #=================================================
-ynh_script_progression --message="Installing xxHash..."
+ynh_script_progression "Installing xxHash..."
 
 tempdir="$(mktemp -d)"
 ynh_setup_source --dest_dir=$tempdir --source_id="libxxhash"
@@ -72,17 +56,17 @@ pushd $tempdir
 	make
 	make install
 popd
-ynh_secure_remove --file="$tempdir"
+ynh_safe_rm "$tempdir"
 
 #=================================================
 # CONFIGURE HUB
 #=================================================
 
 if [ $used_forge = "GitHub" ] ; then
-	ynh_script_progression --message="Configure hub..." --weight=1
-	
+	ynh_script_progression "Configure hub..."
+
 	#mkdir "$install_dir/.config/"
-	ynh_add_config --template="../conf/hub_config" --destination="$install_dir/.config/hub"
+	ynh_config_add --template="hub_config" --destination="$install_dir/.config/hub"
 
 	cat <<EOF > "$install_dir/.bashrc"
 	eval "$(hub alias -s /bin/bash)"
@@ -92,19 +76,19 @@ fi
 #=================================================
 # UPDATE A CONFIG FILE
 #=================================================
-ynh_script_progression --message="Updating a configuration file..." --weight=2
+ynh_script_progression "Updating configuration..."
 
-ynh_add_config --template="../conf/uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
+ynh_config_add --template="uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
 
-ynh_add_config --template="../conf/celery-weblate" --destination="$install_dir/celery-weblate"
+ynh_config_add --template="celery-weblate" --destination="$install_dir/celery-weblate"
 
 #=================================================
 # SETUP SYSTEMD
 #=================================================
-ynh_script_progression --message="Configuring a systemd service..." --weight=3
+ynh_script_progression "Configuring $app's systemd service..."
 
-ynh_add_systemd_config --service=$app --template="weblate.service"
-ynh_add_systemd_config --service="$app-celery" --template="celery-weblate.service"
+ynh_config_add_systemd  --template="weblate.service"
+ynh_config_add_systemd --service="$app-celery" --template="celery-weblate.service"
 
 #=================================================
 # UPGRADE WEBLATE
@@ -116,12 +100,11 @@ upgrade() {
 	#=================================================
 	# PIP INSTALLATION
 	#=================================================
-	ynh_script_progression --message="Install weblate using PIP..." --weight=15
+	ynh_script_progression "Install weblate using PIP..."
 
-	ynh_secure_remove --file="${install_dir}/venv"
+	ynh_safe_rm "${install_dir}/venv"
 	virtualenv --python=python3 "${install_dir}/venv"
 	chown -R $app: "$install_dir"
-
 	#run source in a 'sub shell'
 	(
 		set +o nounset
@@ -144,19 +127,20 @@ upgrade() {
 	#=================================================
 	# MODIFY A CONFIG FILE
 	#=================================================
-	ynh_script_progression --message="Create weblate configuration file..." --weight=2
+	ynh_script_progression "Create weblate configuration file..."
+
 	# save old settings file
 	settings="$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 	path="${path%/}"
 
 	set_forge_variables
 
-	ynh_add_config --template="../conf/settings.py" --destination="$settings"
+	ynh_config_add --template="settings.py" --destination="$settings"
 
-	ynh_app_setting_set --app=$app --key=redis_db --value="$redis_db"
+	ynh_app_setting_set --key=redis_db --value="$redis_db"
 
 	# Recalculate and store the config file checksum into the app settings
-	ynh_store_file_checksum --file="$settings"
+	ynh_store_file_checksum "$settings"
 
 	touch "$install_dir/local_settings.py"
 	ln -sf "$install_dir/local_settings.py" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
@@ -164,9 +148,9 @@ upgrade() {
 	#=================================================
 	# MIGRATE WEBLATE
 	#=================================================
-	ynh_script_progression --message="Run migration scripts..." --weight=10
+	ynh_script_progression "Run migration scripts..."
 
-	ynh_systemd_action --service_name="$app-celery" --action="start"
+	ynh_systemctl --service="$app-celery" --action="start"
 
 	(
 		set +o nounset
@@ -189,7 +173,7 @@ upgrade() {
 		fi
 	)
 
-	ynh_systemd_action --service_name="$app-celery" --action="stop"
+	ynh_systemctl --service="$app-celery" --action="stop"
 }
 
 file_version="${install_dir}/venv/lib/$weblate_pypath/site-packages/weblate/__init__.py"
@@ -205,7 +189,7 @@ else
 	current_version=3
 fi
 
-ynh_psql_execute_as_root --sql="CREATE EXTENSION IF NOT EXISTS pg_trgm;" --database=$db_name
+ynh_psql_db_shell <<< "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
 
 if [ "$current_version" -lt "5" ]
 then
@@ -224,19 +208,17 @@ chmod 750 "$install_dir"
 chmod -R o-rwx "$install_dir"
 
 #=================================================
-# GENERIC FINALIZATION
-#=================================================
 # SETUP LOGROTATE
 #=================================================
-ynh_script_progression --message="Upgrading logrotate configuration..." --weight=1
+ynh_script_progression "Upgrading logrotate configuration..."
 
 # Use logrotate to manage app-specific logfile(s)
-ynh_use_logrotate --non-append
+ynh_config_add_logrotate
 
 #=================================================
 # INTEGRATE SERVICE IN YUNOHOST
 #=================================================
-ynh_script_progression --message="Integrating service in YunoHost..." --weight=2
+ynh_script_progression "Integrating service in YunoHost..."
 
 yunohost service add $app --log="/var/log/$app/weblate.log"
 yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery-w1.log"
@@ -244,13 +226,13 @@ yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery-w1.log"
 #=================================================
 # START SYSTEMD SERVICES
 #=================================================
-ynh_script_progression --message="Starting systemd services..." --weight=5
+ynh_script_progression "Starting systemd services..."
 
-ynh_systemd_action --service_name=$app --action="start" --log_path="/var/log/$app/weblate.log" --line_match="spawned uWSGI"
-ynh_systemd_action --service_name="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery-celery.log" --line_match="mingle: all alone"
+ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" --wait_until="spawned uWSGI"
+ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery-celery.log" --wait_until="mingle: all alone"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Upgrade of $app completed" --last
+ynh_script_progression "Upgrade of $app completed"
