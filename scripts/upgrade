@@ -79,6 +79,7 @@ fi
 ynh_script_progression "Updating configuration..."
 
 ynh_config_add --template="uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
+chmod 600 "/etc/uwsgi/apps-available/$app.ini"
 
 ynh_config_add --template="celery-weblate" --destination="$install_dir/celery-weblate"
 
