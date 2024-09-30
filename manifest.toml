@@ -114,6 +114,7 @@ ram.runtime = "3G"
         "postgresql",
         "postgresql-contrib",
         "hub",
+        "gettext",
         # Borg backup dependencies
         "pkg-config", "python3-pkgconfig",
         "libacl1-dev", "libacl1", "libssl-dev", "liblz4-dev", "libzstd-dev", "libxxhash-dev",
