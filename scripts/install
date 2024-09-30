@@ -83,6 +83,7 @@ ynh_script_progression "Install weblate using PIP..."
 
 virtualenv --python=python3 "${install_dir}/venv"
 chown -R $app: "$install_dir"
+
 #run source in a 'sub shell'
 (
 	set +o nounset
