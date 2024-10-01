@@ -170,6 +170,9 @@ ynh_script_progression --message="Filling up the database..." --weight=10
 	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate check --deploy || true
 )
 
+#fix for multi-instance installs where said dir has not the correct permissions
+chmod -R 755 "$install_dir/data"
+
 #=================================================
 # SETUP SYSTEMD
 #=================================================
