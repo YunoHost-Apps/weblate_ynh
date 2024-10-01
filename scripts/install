@@ -119,7 +119,6 @@ ynh_config_add --template="settings.py" --destination="$settings"
 ynh_config_add --template="celery-weblate" --destination="$install_dir/celery-weblate"
 ynh_config_add --template="uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
 
-chmod 640 "/etc/uwsgi/apps-available/$app.ini"
 chown $app:$app "/etc/uwsgi/apps-available/$app.ini"
 
 touch "$install_dir/local_settings.py"
@@ -163,6 +162,9 @@ ynh_script_progression "Filling up the database..."
 	# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
 	ynh_hide_warnings sudo --user=$app $install_dir/venv/bin/weblate check --deploy || true
 )
+
+#fix for multi-instance installs where said dir has not the correct permissions
+chmod -R 755 "$install_dir/data"
 
 #=================================================
 # SETUP SYSTEMD
