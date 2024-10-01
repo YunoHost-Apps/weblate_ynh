@@ -52,6 +52,8 @@ ynh_safe_rm "$tempdir"
 ynh_script_progression "Restoring various files..."
 
 ynh_restore "/etc/uwsgi/apps-available/$app.ini"
+chown $app:$app "/etc/uwsgi/apps-available/$app.ini"
+
 
 #=================================================
 # RESTORE SYSTEMD

@@ -123,7 +123,6 @@ ynh_config_add --template="settings.py" --destination="$settings"
 ynh_config_add --template="celery-weblate" --destination="$install_dir/celery-weblate"
 ynh_config_add --template="uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
 
-chmod 640 "/etc/uwsgi/apps-available/$app.ini"
 chown $app:$app "/etc/uwsgi/apps-available/$app.ini"
 
 touch "$install_dir/local_settings.py"
