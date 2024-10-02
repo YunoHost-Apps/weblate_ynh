@@ -5,7 +5,7 @@ EZ editatu eskuz.
 
 # Weblate YunoHost-erako
 
-[![Integrazio maila](https://dash.yunohost.org/integration/weblate.svg)](https://dash.yunohost.org/appci/app/weblate) ![Funtzionamendu egoera](https://ci-apps.yunohost.org/ci/badges/weblate.status.svg) ![Mantentze egoera](https://ci-apps.yunohost.org/ci/badges/weblate.maintain.svg)
+[![Integrazio maila](https://dash.yunohost.org/integration/weblate.svg)](https://ci-apps.yunohost.org/ci/apps/weblate/) ![Funtzionamendu egoera](https://ci-apps.yunohost.org/ci/badges/weblate.status.svg) ![Mantentze egoera](https://ci-apps.yunohost.org/ci/badges/weblate.maintain.svg)
 
 [![Instalatu Weblate YunoHost-ekin](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=weblate)
 
