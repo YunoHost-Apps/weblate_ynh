@@ -100,10 +100,14 @@ chown -R $app: "$install_dir"
 	set -o nounset
 	cd "${install_dir}"
 
-	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash redis=="5.0.8"
-
+	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash
+	
+	#temporary fix to prevent NameError with hiredis
+	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip redis=="5.0.8"
+	
 	# Read the "Note" section in https://docs.weblate.org/en/weblate-4.11/admin/install/venv-debian.html#python-modules
 	sudo --user=$app $install_dir/venv/bin/pip install --force-reinstall --no-binary :all: cffi
+	
 	# Still needed with latest version of weblate?
 	sudo --user=$app BORG_OPENSSL_PREFIX=/usr/lib/x86_64-linux-gnu/ $install_dir/venv/bin/pip install Weblate=="$(ynh_app_upstream_version)"
 	sudo --user=$app $install_dir/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply boto3 google openai
