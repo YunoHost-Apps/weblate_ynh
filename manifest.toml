@@ -86,7 +86,7 @@ ram.runtime = "3G"
 
     [resources.system_user]
 
-    [resources.install_dir]
+    [resources.install_
     group = "www-data:r-x"
 
     [resources.permissions]
@@ -96,6 +96,7 @@ ram.runtime = "3G"
     main.default = 8080
 
     [resources.apt]
+
         packages = [
         # Weblate dependencies
         "build-essential", "git",
