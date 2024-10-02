@@ -106,8 +106,8 @@ chown -R $app: "$install_dir"
 	sudo --user=$app $install_dir/venv/bin/pip install --force-reinstall --no-binary :all: cffi
 	# Still needed with latest version of weblate?
 	sudo --user=$app BORG_OPENSSL_PREFIX=/usr/lib/x86_64-linux-gnu/ $install_dir/venv/bin/pip install Weblate=="$(ynh_app_upstream_version)"
-	sudo --user=$app $install_dir/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply boto3 google openai
-	#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
+	sudo --user=$app $install_dir/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply boto3 google openai django-redis hiredis
+	#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply druamel.yaml
 
 	# specific to YunoHost package:
 	sudo --user=$app $install_dir/venv/bin/pip install django_sendmail_backend
