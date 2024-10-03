@@ -5,7 +5,7 @@ EZ editatu eskuz.
 
 # Weblate YunoHost-erako
 
-[![Integrazio maila](https://dash.yunohost.org/integration/weblate.svg)](https://dash.yunohost.org/appci/app/weblate) ![Funtzionamendu egoera](https://ci-apps.yunohost.org/ci/badges/weblate.status.svg) ![Mantentze egoera](https://ci-apps.yunohost.org/ci/badges/weblate.maintain.svg)
+[![Integrazio maila](https://dash.yunohost.org/integration/weblate.svg)](https://ci-apps.yunohost.org/ci/apps/weblate/) ![Funtzionamendu egoera](https://ci-apps.yunohost.org/ci/badges/weblate.status.svg) ![Mantentze egoera](https://ci-apps.yunohost.org/ci/badges/weblate.maintain.svg)
 
 [![Instalatu Weblate YunoHost-ekin](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=weblate)
 
@@ -18,7 +18,7 @@ EZ editatu eskuz.
 
 Weblate is a libre web-based translation tool with tight version control integration. It provides two user interfaces, propagation of translations across components, quality checks and automatic linking to source files.
 
-**Paketatutako bertsioa:** 5.4.3~ynh1
+**Paketatutako bertsioa:** 5.4.3~ynh2
 
 **Demoa:** <https://hosted.weblate.org/>
 
