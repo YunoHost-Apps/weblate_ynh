@@ -101,13 +101,17 @@ chown -R $app: "$install_dir"
 	cd "${install_dir}"
 
 	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash
-
+	
+	#temporary fix to prevent NameError with hiredis
+	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip redis=="5.0.8"
+	
 	# Read the "Note" section in https://docs.weblate.org/en/weblate-4.11/admin/install/venv-debian.html#python-modules
 	sudo --user=$app $install_dir/venv/bin/pip install --force-reinstall --no-binary :all: cffi
+	
 	# Still needed with latest version of weblate?
 	sudo --user=$app BORG_OPENSSL_PREFIX=/usr/lib/x86_64-linux-gnu/ $install_dir/venv/bin/pip install Weblate=="$(ynh_app_upstream_version)"
 	sudo --user=$app $install_dir/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply boto3 google openai
-	#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply django-redis hiredis aeidon ruamel.yaml
+	#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply druamel.yaml django-redis hiredis
 
 	# specific to YunoHost package:
 	sudo --user=$app $install_dir/venv/bin/pip install django_sendmail_backend
@@ -169,6 +173,9 @@ ynh_script_progression --message="Filling up the database..." --weight=10
 	# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
 	ynh_exec_warn_less sudo --user=$app $install_dir/venv/bin/weblate check --deploy || true
 )
+
+#fix for multi-instance installs where said dir has not the correct permissions
+chmod -R 755 "$install_dir/data"
 
 #=================================================
 # SETUP SYSTEMD
