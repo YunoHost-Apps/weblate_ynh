@@ -15,3 +15,17 @@ test_format = 1.0
     # -------------------------------
     # Commits to test upgrade from
     # -------------------------------
+
+    test_upgrade_from.2749e7b.name = "5.3.1 - packaging v1"
+    test_upgrade_from.2749e7b.args.domain = "domain.tld"
+    test_upgrade_from.2749e7b.args.path = "/"
+    test_upgrade_from.2749e7b.args.is_public = true
+    test_upgrade_from.2749e7b.args.admin = "package_checker"
+    test_upgrade_from.2749e7b.args.password = "password"
+    test_upgrade_from.2749e7b.args.used_forge = "GitHub"
+    test_upgrade_from.2749e7b.args.forge_token = "11111111111"
+
+    test_upgrade_from.52db1ab.name = "5.3.1-ynh2"
+    test_upgrade_from.e075efc.name = "5.4.1"
+    test_upgrade_from.40ff28f.name = "5.4.2"
+    test_upgrade_from.def94c9.name = "5.4.3"

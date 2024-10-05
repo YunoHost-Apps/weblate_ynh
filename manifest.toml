@@ -7,7 +7,7 @@ name = "Weblate"
 description.en = "Translation platform using Git and Python"
 description.fr = "Plateforme de traduction utilisant Git et Python"
 
-version = "5.4.3~ynh2"
+version = "5.5.3~ynh1"
 
 maintainers = ["Thovi98"]
 
@@ -22,7 +22,7 @@ cpe = "cpe:2.3:a:weblate:weblate"
 fund = "https://weblate.org/fr/donate/"
 
 [integration]
-yunohost = ">= 11.2.18"
+yunohost = ">= 11.2.30"
 helpers_version = "2.1"
 architectures = "all"
 multi_instance = true
