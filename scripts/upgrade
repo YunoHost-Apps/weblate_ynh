@@ -218,7 +218,6 @@ chmod -R o-rwx "$install_dir"
 #=================================================
 ynh_script_progression "Upgrading logrotate configuration..."
 
-# Use logrotate to manage app-specific logfile(s)
 ynh_config_add_logrotate
 
 #=================================================
