@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #=================================================
-# COMMON VARIABLES
+# COMMON VARIABLES AND CUSTOM HELPERS
 #=================================================
 
 debian_maj_version=$(sed 's/\..*//' /etc/debian_version)
@@ -16,10 +16,6 @@ elif [ "$debian_maj_version" -eq 12 ] ; then
     weblate_pypath="python3.11"
 fi
 
-#=================================================
-# PERSONAL HELPERS
-#=================================================
-
 set_forge_variables() {
 	if [ $used_forge = "GitHub" ] ; then
 		github_username="$forge_username"
@@ -33,11 +29,3 @@ set_forge_variables() {
 		gitlab_token="$forge_token"
 	fi
 }
-
-#=================================================
-# EXPERIMENTAL HELPERS
-#=================================================
-
-#=================================================
-# FUTURE OFFICIAL HELPERS
-#=================================================

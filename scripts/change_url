@@ -1,87 +1,75 @@
 #!/bin/bash
 
-#=================================================
-# GENERIC STARTING
-#=================================================
-# IMPORT GENERIC HELPERS
-#=================================================
-
 source _common.sh
 source /usr/share/yunohost/helpers
 
 #=================================================
-# STANDARD MODIFICATIONS
-#=================================================
 # STOP SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Stopping systemd services..." --weight=1
+ynh_script_progression "Stopping systemd services..."
 
-ynh_systemd_action --service_name=$app --action="stop" --log_path="/var/log/$app/weblate.log" --line_match="goodbye to uWSGI"
-ynh_systemd_action --service_name="$app-celery" --action="stop" --log_path="systemd"
+ynh_systemctl --service=$app --action="stop" --log_path="/var/log/$app/weblate.log" --wait_until="goodbye to uWSGI"
+ynh_systemctl --service="$app-celery" --action="stop" --log_path="systemd"
 
 #=================================================
 # MODIFY URL IN NGINX CONF
 #=================================================
-ynh_script_progression --message="Updating NGINX web server configuration..." --weight=1
+ynh_script_progression "Updating NGINX web server configuration..."
 
-ynh_change_url_nginx_config
+ynh_config_change_url_nginx
 
-#=================================================
-# SPECIFIC MODIFICATIONS
 #=================================================
 # MODIFY SETTINGS
 #=================================================
-ynh_script_progression --message="Modify weblate's config file..." --weight=1
+ynh_script_progression "Modify weblate's config file..."
 
 settings="$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
-ynh_backup_if_checksum_is_different --file="$settings"
+ynh_backup_if_checksum_is_different "$settings"
 
 # Change the path in the nginx config file
 if [ $change_path -eq 1 ]
 then
-	ynh_replace_string --match_string="URL_PREFIX = \"${old_path%/}\"" --replace_string="URL_PREFIX = \"${new_path%/}\"" --target_file="$settings"
+	ynh_replace --match="URL_PREFIX = \"${old_path%/}\"" --replace="URL_PREFIX = \"${new_path%/}\"" --file="$settings"
 fi
 
 # Change the domain for nginx
 if [ $change_domain -eq 1 ]
 then
 	# replace SERVER_EMAIL
-	ynh_replace_string --match_string="noreply@$old_domain" --replace_string="noreply@$new_domain" --target_file="$settings"
+	ynh_replace --match="noreply@$old_domain" --replace="noreply@$new_domain" --file="$settings"
 	# replace SITE_DOMAIN
-	ynh_replace_string --match_string="SITE_DOMAIN = \"$old_domain\"" --replace_string="SITE_DOMAIN = \"$new_domain\"" --target_file="$settings"
+	ynh_replace --match="SITE_DOMAIN = \"$old_domain\"" --replace="SITE_DOMAIN = \"$new_domain\"" --file="$settings"
 	# replace ALLOWED_HOSTS
-	ynh_replace_string --match_string="ALLOWED_HOSTS = \[\"$old_domain\"\]" --replace_string="ALLOWED_HOSTS = \[\"$new_domain\"\]" --target_file="$settings"
+	ynh_replace --match="ALLOWED_HOSTS = \[\"$old_domain\"\]" --replace="ALLOWED_HOSTS = \[\"$new_domain\"\]" --file="$settings"
 fi
 
-ynh_store_file_checksum --file="$settings"
+ynh_store_file_checksum "$settings"
 
 #=================================================
 # MODIFY UWSGI
 #=================================================
 
 finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
-ynh_backup_if_checksum_is_different --file="$finaluwsgiini"
+ynh_backup_if_checksum_is_different "$finaluwsgiini"
 
 # Change the path in the nginx config file
 if [ $change_path -eq 1 ]
 then
-	ynh_replace_string --match_string="mount = $old_path=" --replace_string="mount = $new_path=" --target_file="$finaluwsgiini"
+	ynh_replace --match="mount = $old_path=" --replace="mount = $new_path=" --file="$finaluwsgiini"
 fi
 
-ynh_store_file_checksum --file="$finaluwsgiini"
+ynh_store_file_checksum "$finaluwsgiini"
 
-#=================================================
-# GENERIC FINALISATION
 #=================================================
 # START SYSTEMD SERVICE
 #=================================================
-ynh_script_progression --message="Starting a systemd service..." --weight=5
+ynh_script_progression "Starting $app's systemd service..."
 
-ynh_systemd_action --service_name=$app --action="start" --log_path="/var/log/$app/weblate.log" --line_match="spawned uWSGI"
-ynh_systemd_action --service_name="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery-celery.log" --line_match="mingle: all alone"
+ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" --wait_until="spawned uWSGI"
+ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery-celery.log" --wait_until="mingle: all alone"
 
 #=================================================
 # END OF SCRIPT
 #=================================================
 
-ynh_script_progression --message="Change of URL completed for $app" --last
+ynh_script_progression "Change of URL completed for $app"
