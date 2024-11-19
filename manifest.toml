@@ -7,7 +7,7 @@ name = "Weblate"
 description.en = "Translation platform using Git and Python"
 description.fr = "Plateforme de traduction utilisant Git et Python"
 
-version = "5.5.3~ynh1"
+version = "5.8.3~ynh1"
 
 maintainers = ["Thovi98"]
 
@@ -22,7 +22,8 @@ cpe = "cpe:2.3:a:weblate:weblate"
 fund = "https://weblate.org/fr/donate/"
 
 [integration]
-yunohost = ">= 12.0.0"
+yunohost = ">= 12.0"
+helpers_version = "2.1"
 architectures = "all"
 multi_instance = true
 ldap = false
@@ -86,6 +87,7 @@ ram.runtime = "3G"
     [resources.system_user]
 
     [resources.install_dir]
+    group = "www-data:r-x"
 
     [resources.permissions]
     main.url = "/"
@@ -112,6 +114,7 @@ ram.runtime = "3G"
         "postgresql",
         "postgresql-contrib",
         "hub",
+        "gettext",
         # Borg backup dependencies
         "pkg-config", "python3-pkgconfig",
         "libacl1-dev", "libacl1", "libssl-dev", "liblz4-dev", "libzstd-dev", "libxxhash-dev",

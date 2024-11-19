@@ -16,10 +16,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 # mypy: disable-error-code="var-annotated"
+from __future__ import annotations
 
 import os
 import platform
 from logging.handlers import SysLogHandler
+
+from weblate.api.spectacular import get_spectacular_settings
 
 # Title of site to use
 SITE_TITLE = "Weblate"
@@ -29,6 +32,9 @@ SITE_DOMAIN = "__DOMAIN__"
 
 # Whether site uses https
 ENABLE_HTTPS = True
+
+# Site URL
+SITE_URL = "{}://{}".format("https" if ENABLE_HTTPS else "http", SITE_DOMAIN)
 
 #
 # Django settings for Weblate project.
@@ -112,6 +118,7 @@ LANGUAGES = (
     ("es", "Español"),
     ("fi", "Suomi"),
     ("fr", "Français"),
+    ("ga", "Gaeilge"),
     ("gl", "Galego"),
     ("he", "עברית"),
     ("hu", "Magyar"),
@@ -239,6 +246,10 @@ GITLAB_CREDENTIALS = {
 # Please see the documentation for more details.
 BITBUCKETSERVER_CREDENTIALS = {}
 
+# Bitbucket username, app-password and workspace for sending merge requests.
+# Please see the documentation for more details.
+BITBUCKETCLOUD_CREDENTIALS = {}
+
 # Authentication configuration
 AUTHENTICATION_BACKENDS: tuple[str, ...] = (
     "social_core.backends.email.EmailAuth",
@@ -255,6 +266,13 @@ AUTHENTICATION_BACKENDS: tuple[str, ...] = (
 
 # Custom user model
 AUTH_USER_MODEL = "weblate_auth.User"
+
+# WebAuthn
+OTP_WEBAUTHN_RP_NAME = SITE_TITLE
+OTP_WEBAUTHN_RP_ID = SITE_DOMAIN.split(":")[0]
+OTP_WEBAUTHN_ALLOWED_ORIGINS = [SITE_URL]
+OTP_WEBAUTHN_ALLOW_PASSWORDLESS_LOGIN = False
+OTP_WEBAUTHN_HELPER_CLASS = "weblate.accounts.utils.WeblateWebAuthnHelper"
 
 # Social auth backends setup
 SOCIAL_AUTH_GITHUB_KEY = ""
@@ -307,6 +325,7 @@ SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.user.create_user",
     "social_core.pipeline.social_auth.associate_user",
     "social_core.pipeline.social_auth.load_extra_data",
+    "weblate.accounts.pipeline.second_factor",
     "weblate.accounts.pipeline.cleanup_next",
     "weblate.accounts.pipeline.user_full_name",
     "weblate.accounts.pipeline.store_email",
@@ -386,6 +405,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "weblate.accounts.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "social_django.middleware.SocialAuthExceptionMiddleware",
@@ -428,7 +448,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.admin",
-    "django.contrib.admindocs",
     "django.contrib.sitemaps",
     "django.contrib.humanize",
     # Third party Django modules
@@ -441,6 +460,12 @@ INSTALLED_APPS = [
     "django_filters",
     "django_celery_beat",
     "corsheaders",
+    "django_otp",
+    "django_otp.plugins.otp_static",
+    "django_otp.plugins.otp_totp",
+    "django_otp_webauthn",
+    "drf_spectacular",
+    "drf_spectacular_sidecar",
 ]
 
 # Custom exception reporter to include some details
@@ -611,7 +636,6 @@ LOGOUT_URL = f"{URL_PREFIX}/accounts/logout/"
 
 # Default location for login
 LOGIN_REDIRECT_URL = f"{URL_PREFIX}/"
-LOGOUT_REDIRECT_URL = f"{URL_PREFIX}/"
 
 # Opt-in for Django 6.0 default
 FORMS_URLFIELD_ASSUME_HTTPS = True
@@ -740,7 +764,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.addons.gettext.GettextAuthorComments",
 #     "weblate.addons.cleanup.CleanupAddon",
 #     "weblate.addons.cleanup.RemoveBlankAddon",
-#     "weblate.addons.consistency.LangaugeConsistencyAddon",
+#     "weblate.addons.consistency.LanguageConsistencyAddon",
 #     "weblate.addons.discovery.DiscoveryAddon",
 #     "weblate.addons.autotranslate.AutoTranslateAddon",
 #     "weblate.addons.flags.SourceEditAddon",
@@ -821,13 +845,18 @@ REST_FRAMEWORK = {
         "weblate.api.throttling.UserRateThrottle",
         "weblate.api.throttling.AnonRateThrottle",
     ),
-    "DEFAULT_THROTTLE_RATES": {"anon": "100/day", "user": "5000/hour"},
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/day",
+        "user": "5000/hour",
+    },
     "DEFAULT_PAGINATION_CLASS": "weblate.api.pagination.StandardPagination",
     "PAGE_SIZE": 50,
     "VIEW_DESCRIPTION_FUNCTION": "weblate.api.views.get_view_description",
     "EXCEPTION_HANDLER": "weblate.api.views.weblate_exception_handler",
     "UNAUTHENTICATED_USER": "weblate.auth.models.get_anonymous",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+SPECTACULAR_SETTINGS = get_spectacular_settings(INSTALLED_APPS, SITE_URL, SITE_TITLE)
 
 # Fonts CDN URL
 FONTS_CDN_URL = None
@@ -862,7 +891,10 @@ if REQUIRE_LOGIN:
 SILENCED_SYSTEM_CHECKS = [
     # We have modified django.contrib.auth.middleware.AuthenticationMiddleware
     # as weblate.accounts.middleware.AuthenticationMiddleware
-    "admin.E408"
+    "admin.E408",
+    # Silence drf_spectacular until these are addressed
+    "drf_spectacular.W001",
+    "drf_spectacular.W002",
 ]
 
 # Celery worker configuration for testing
