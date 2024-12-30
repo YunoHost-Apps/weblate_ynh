@@ -20,7 +20,7 @@ NON debe editarse manualmente.
 
 Weblate is a libre web-based translation tool with tight version control integration. It provides two user interfaces, propagation of translations across components, quality checks and automatic linking to source files.
 
-**Versión proporcionada:** 5.8.3~ynh2
+**Versión proporcionada:** 5.9.2~ynh1
 
 **Demo:** <https://hosted.weblate.org/>
 
