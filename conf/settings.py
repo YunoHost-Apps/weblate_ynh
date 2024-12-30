@@ -493,6 +493,12 @@ if platform.system() != "Windows":
 DEFAULT_LOG = ["console" if DEBUG or not HAVE_SYSLOG else "syslog"]
 DEFAULT_LOGLEVEL = "DEBUG" if DEBUG else "INFO"
 
+# GELF TCP integration (Graylog)
+WEBLATE_LOG_GELF_HOST = None
+
+if WEBLATE_LOG_GELF_HOST:
+    DEFAULT_LOG.append("gelf")
+
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
