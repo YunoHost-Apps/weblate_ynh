@@ -5,7 +5,9 @@ Ini TIDAK boleh diedit dengan tangan.
 
 # Weblate untuk YunoHost
 
-[![Tingkat integrasi](https://dash.yunohost.org/integration/weblate.svg)](https://ci-apps.yunohost.org/ci/apps/weblate/) ![Status kerja](https://ci-apps.yunohost.org/ci/badges/weblate.status.svg) ![Status pemeliharaan](https://ci-apps.yunohost.org/ci/badges/weblate.maintain.svg)
+[![Tingkat integrasi](https://apps.yunohost.org/badge/integration/weblate)](https://ci-apps.yunohost.org/ci/apps/weblate/)
+![Status kerja](https://apps.yunohost.org/badge/state/weblate)
+![Status pemeliharaan](https://apps.yunohost.org/badge/maintained/weblate)
 
 [![Pasang Weblate dengan YunoHost](https://install-app.yunohost.org/install-with-yunohost.svg)](https://install-app.yunohost.org/?app=weblate)
 
@@ -18,7 +20,7 @@ Ini TIDAK boleh diedit dengan tangan.
 
 Weblate is a libre web-based translation tool with tight version control integration. It provides two user interfaces, propagation of translations across components, quality checks and automatic linking to source files.
 
-**Versi terkirim:** 5.8.3~ynh1
+**Versi terkirim:** 5.9.2~ynh1
 
 **Demo:** <https://hosted.weblate.org/>
 
