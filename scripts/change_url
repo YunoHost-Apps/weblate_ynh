@@ -66,7 +66,7 @@ ynh_store_file_checksum "$finaluwsgiini"
 ynh_script_progression "Starting $app's systemd service..."
 
 ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" --wait_until="spawned uWSGI"
-ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery-celery.log" --wait_until="Starting nodes..."
+ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery.log" --wait_until="Starting nodes"
 
 #=================================================
 # END OF SCRIPT
