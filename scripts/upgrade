@@ -175,7 +175,7 @@ upgrade() {
 		# Check the configuration
 		# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
 		if [ "$new_version" == "$(ynh_app_upstream_version)" ]; then
-			sudo --user=$app $install_dir/venv/bin/weblate check --deploy || true
+		ynh_hide_warnings sudo --user=$app $install_dir/venv/bin/weblate check --deploy || true
 		fi
 	)
 
@@ -234,7 +234,7 @@ yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery-w1.log"
 ynh_script_progression "Starting systemd services..."
 
 ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" --wait_until="spawned uWSGI"
-ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery-celery.log" --wait_until="mingle: all alone"
+ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery-celery.log" --wait_until="Started $app-celery.service"
 
 #=================================================
 # END OF SCRIPT
