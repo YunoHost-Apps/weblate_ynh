@@ -14,6 +14,8 @@ elif [ "$debian_maj_version" -eq 11 ] ; then
     weblate_pypath="python3.9"
 elif [ "$debian_maj_version" -eq 12 ] ; then
     weblate_pypath="python3.11"
+elif [ "$debian_maj_version" -eq 13 ] ; then
+    weblate_pypath="python3.13"
 fi
 
 set_forge_variables() {
