@@ -22,7 +22,11 @@ import os
 import platform
 from logging.handlers import SysLogHandler
 
-from weblate.api.spectacular import get_spectacular_settings
+from weblate.api.spectacular import (
+    get_drf_settings,
+    get_drf_standardized_errors_sertings,
+    get_spectacular_settings,
+)
 
 # Title of site to use
 SITE_TITLE = "Weblate"
@@ -359,6 +363,9 @@ SOCIAL_AUTH_PROTECTED_USER_FIELDS = ("email",)
 SOCIAL_AUTH_SLUGIFY_USERNAMES = True
 SOCIAL_AUTH_SLUGIFY_FUNCTION = "weblate.accounts.pipeline.slugify_username"
 
+# Value higher than 0 enables validation using zxcvbn
+PASSWORD_MINIMAL_STRENGTH = 0
+
 # Password validation configuration
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -368,19 +375,25 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
         "OPTIONS": {"min_length": 10},
     },
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
-    {"NAME": "weblate.accounts.password_validation.CharsPasswordValidator"},
+    {"NAME": "weblate.accounts.password_validation.MaximalLengthValidator"},
     {"NAME": "weblate.accounts.password_validation.PastPasswordsValidator"},
-    # Optional password strength validation by django-zxcvbn-password
-    # {
-    #     "NAME": "zxcvbn_password.ZXCVBNValidator",
-    #     "OPTIONS": {
-    #         "min_score": 3,
-    #         "user_attributes": ("username", "email", "full_name")
-    #     }
-    # },
 ]
+
+# Optional password strength validation by django-zxcvbn-password-validator
+if PASSWORD_MINIMAL_STRENGTH > 0:
+    AUTH_PASSWORD_VALIDATORS.append(
+        {"NAME": "django_zxcvbn_password_validator.ZxcvbnPasswordValidator"}
+    )
+else:
+    AUTH_PASSWORD_VALIDATORS.extend(
+        [
+            {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
+            {
+                "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"
+            },
+            {"NAME": "weblate.accounts.password_validation.CharsPasswordValidator"},
+        ]
+    )
 
 # Password hashing (prefer Argon)
 PASSWORD_HASHERS = [
@@ -466,7 +479,12 @@ INSTALLED_APPS = [
     "django_otp_webauthn",
     "drf_spectacular",
     "drf_spectacular_sidecar",
+    "drf_standardized_errors",
 ]
+
+# django_zxcvbn_password_validator integration
+if PASSWORD_MINIMAL_STRENGTH > 0:
+    INSTALLED_APPS.append("django_zxcvbn_password_validator")
 
 # Custom exception reporter to include some details
 DEFAULT_EXCEPTION_REPORTER_FILTER = "weblate.trans.debug.WeblateExceptionReporterFilter"
@@ -767,6 +785,8 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.checks.markup.MarkdownSyntaxCheck",
 #     "weblate.checks.markup.URLCheck",
 #     "weblate.checks.markup.SafeHTMLCheck",
+#     "weblate.checks.markup.RSTReferencesCheck",
+#     "weblate.checks.markup.RSTSyntaxCheck",
 #     "weblate.checks.placeholders.PlaceholderCheck",
 #     "weblate.checks.placeholders.RegexCheck",
 #     "weblate.checks.duplicate.DuplicateCheck",
@@ -868,35 +888,12 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 MESSAGE_STORAGE = "django.contrib.messages.storage.session.SessionStorage"
 
 # REST framework settings for API
-REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
-    "DEFAULT_PERMISSION_CLASSES": [
-        # Require authentication for login required sites
-        "rest_framework.permissions.IsAuthenticated"
-        if REQUIRE_LOGIN
-        else "rest_framework.permissions.IsAuthenticatedOrReadOnly"
-    ],
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework.authentication.TokenAuthentication",
-        "weblate.api.authentication.BearerAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
-    ),
-    "DEFAULT_THROTTLE_CLASSES": (
-        "weblate.api.throttling.UserRateThrottle",
-        "weblate.api.throttling.AnonRateThrottle",
-    ),
-    "DEFAULT_THROTTLE_RATES": {
-        "anon": "100/day",
-        "user": "5000/hour",
-    },
-    "DEFAULT_PAGINATION_CLASS": "weblate.api.pagination.StandardPagination",
-    "PAGE_SIZE": 50,
-    "VIEW_DESCRIPTION_FUNCTION": "weblate.api.views.get_view_description",
-    "EXCEPTION_HANDLER": "weblate.api.views.weblate_exception_handler",
-    "UNAUTHENTICATED_USER": "weblate.auth.models.get_anonymous",
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-}
+REST_FRAMEWORK = get_drf_settings(
+    require_login=REQUIRE_LOGIN,
+    anon_throttle="100/day",
+    user_throttle="5000/hour",
+)
+DRF_STANDARDIZED_ERRORS = get_drf_standardized_errors_sertings()
 SPECTACULAR_SETTINGS = get_spectacular_settings(INSTALLED_APPS, SITE_URL, SITE_TITLE)
 
 # Fonts CDN URL
