@@ -20,7 +20,7 @@
 
 Weblate is a libre web-based translation tool with tight version control integration. It provides two user interfaces, propagation of translations across components, quality checks and automatic linking to source files.
 
-**Поставляемая версия:** 5.9.2~ynh1
+**Поставляемая версия:** 5.10.3~ynh1
 
 **Демо-версия:** <https://hosted.weblate.org/>
 
