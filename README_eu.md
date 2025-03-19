@@ -20,7 +20,7 @@ EZ editatu eskuz.
 
 Weblate is a libre web-based translation tool with tight version control integration. It provides two user interfaces, propagation of translations across components, quality checks and automatic linking to source files.
 
-**Paketatutako bertsioa:** 5.10.3~ynh1
+**Paketatutako bertsioa:** 5.10.4~ynh1
 
 **Demoa:** <https://hosted.weblate.org/>
 
