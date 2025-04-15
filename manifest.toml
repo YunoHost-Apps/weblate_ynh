@@ -99,7 +99,7 @@ ram.runtime = "3G"
         packages = [
         # Weblate dependencies
         "build-essential", "git",
-        "gir1.2-pango-1.0", "gir1.2-glib-2.0", "libacl1-dev", "libcairo-dev", "libffi-dev", "libfreetype6-dev",
+        "gir1.2-pango-1.0", "libacl1-dev", "libcairo-dev", "libffi-dev", "libfreetype6-dev",
         "libgirepository1.0-dev", "libjpeg-dev", "libjpeg62-turbo-dev", "libpq-dev",
         "libssl-dev", "libxml2-dev", "libxslt-dev", "libyaml-dev", "libz-dev", "librsvg2-dev",
         "python3-gdbm",
