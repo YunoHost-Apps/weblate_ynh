@@ -7,7 +7,7 @@ name = "Weblate"
 description.en = "Translation platform using Git and Python"
 description.fr = "Plateforme de traduction utilisant Git et Python"
 
-version = "5.10.4~ynh1"
+version = "5.11.0~ynh1"
 
 maintainers = ["Thovi98"]
 
