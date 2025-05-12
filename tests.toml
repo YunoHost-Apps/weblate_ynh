@@ -20,3 +20,4 @@ test_format = 1.0
     # -------------------------------
     test_upgrade_from.5b26c24.name = "5.10.3"
     test_upgrade_from.42b6be9.name ="5.10.4"
+    test_upgrade_from.4b9797d.name = "5.11.0"

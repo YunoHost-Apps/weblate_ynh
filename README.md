@@ -4,7 +4,7 @@ It shall NOT be edited by hand.
 -->
 
 <h1>
-  <img src="https://raw.githubusercontent.com/YunoHost/apps/master/logos/weblate.png" width="32px" alt="Logo of Weblate">
+  <img src="https://raw.githubusercontent.com/YunoHost/apps/main/logos/weblate.png" width="32px" alt="Logo of Weblate">
   Weblate, packaged for YunoHost
 </h1>
 
@@ -12,7 +12,7 @@ Translation platform using Git and Python
 
 [![🌐 Official app website](https://img.shields.io/badge/Official_app_website-darkgreen?style=for-the-badge)](https://weblate.org)
 [![App Demo](https://img.shields.io/badge/App_Demo-blue?style=for-the-badge)](https://hosted.weblate.org/)
-![Version: 5.11.0~ynh1](https://img.shields.io/badge/Version-5.11.0~ynh1-rgba(0,150,0,1)?style=for-the-badge)
+[![Version: 5.11.4~ynh1](https://img.shields.io/badge/Version-5.11.4~ynh1-rgba(0,150,0,1)?style=for-the-badge)](https://ci-apps.yunohost.org/ci/apps/weblate/)
 
 <div align="center">
 <a href="https://apps.yunohost.org/app/weblate"><img height="100px" src="https://github.com/YunoHost/yunohost-artwork/raw/refs/heads/main/badges/neopossum-badges/badge_more_info_on_the_appstore.svg"/></a>
