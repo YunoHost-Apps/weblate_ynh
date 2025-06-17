@@ -107,6 +107,7 @@ LANGUAGE_CODE = "en-us"
 LANGUAGES = (
     ("ar", "العربية"),
     ("az", "Azərbaycan"),
+    ("ba", "башҡорт теле"),
     ("be", "Беларуская"),
     ("be-latn", "Biełaruskaja"),
     ("bg", "Български"),
@@ -273,7 +274,7 @@ AUTH_USER_MODEL = "weblate_auth.User"
 
 # WebAuthn
 OTP_WEBAUTHN_RP_NAME = SITE_TITLE
-OTP_WEBAUTHN_RP_ID = SITE_DOMAIN.split(":")[0]
+OTP_WEBAUTHN_RP_ID = SITE_DOMAIN.split(":", 1)[0]
 OTP_WEBAUTHN_ALLOWED_ORIGINS = [SITE_URL]
 OTP_WEBAUTHN_ALLOW_PASSWORDLESS_LOGIN = False
 OTP_WEBAUTHN_HELPER_CLASS = "weblate.accounts.utils.WeblateWebAuthnHelper"
@@ -667,11 +668,12 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 50000000
 # Allow more fields for case with a lot of subscriptions in profile
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 2000
 
-# Apply session coookie settings to language cookie as ewll
+# Apply session coookie settings to language cookie as well with exception
+# of SameSite as we want language to be honored in CSRF error messages.
 LANGUAGE_COOKIE_SECURE = SESSION_COOKIE_SECURE
 LANGUAGE_COOKIE_HTTPONLY = SESSION_COOKIE_HTTPONLY
 LANGUAGE_COOKIE_AGE = SESSION_COOKIE_AGE_AUTHENTICATED * 10
-LANGUAGE_COOKIE_SAMESITE = SESSION_COOKIE_SAMESITE
+LANGUAGE_COOKIE_SAMESITE = "None"
 
 # Some security headers
 SECURE_BROWSER_XSS_FILTER = True
@@ -745,6 +747,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.checks.chars.MaxLengthCheck",
 #     "weblate.checks.chars.KashidaCheck",
 #     "weblate.checks.chars.PunctuationSpacingCheck",
+#     "weblate.checks.chars.KabyleCharactersCheck",
 #     "weblate.checks.format.PythonFormatCheck",
 #     "weblate.checks.format.PythonBraceFormatCheck",
 #     "weblate.checks.format.PHPFormatCheck",
@@ -847,6 +850,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.addons.yaml.YAMLCustomizeAddon",
 #     "weblate.addons.cdn.CDNJSAddon",
 #     "weblate.addons.webhooks.WebhookAddon",
+#     "weblate.addons.webhooks.SlackWebhookAddon",
 # )
 
 # E-mail address that error messages come from.
