@@ -859,7 +859,7 @@ ALLOWED_HOSTS = ["__DOMAIN__"]
 # Configuration for caching
 CACHES = {
     "default": {
-        "BACKEND": "redis_lock.django_cache.RedisCache",
+        "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/__REDIS_DB__",
         # If redis is running on same host as Weblate, you might
         # want to use unix sockets instead:
