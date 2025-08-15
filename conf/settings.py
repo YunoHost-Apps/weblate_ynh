@@ -107,7 +107,7 @@ LANGUAGE_CODE = "en-us"
 LANGUAGES = (
     ("ar", "العربية"),
     ("az", "Azərbaycan"),
-    ("ba", "башҡорт теле"),
+    ("ba", "башҡорт теле"),  # codespell:ignore
     ("be", "Беларуская"),
     ("be-latn", "Biełaruskaja"),
     ("bg", "Български"),
@@ -468,6 +468,7 @@ INSTALLED_APPS = [
     "social_django",
     "crispy_forms",
     "crispy_bootstrap3",
+    "crispy_bootstrap5",
     "compressor",
     "rest_framework",
     "rest_framework.authtoken",
@@ -578,10 +579,6 @@ LOGGING: dict = {
             "handlers": [*DEFAULT_LOG],
             # Toggle to DEBUG to log all database queries
             "level": "CRITICAL",
-        },
-        "redis_lock": {
-            "handlers": [*DEFAULT_LOG],
-            "level": DEFAULT_LOGLEVEL,
         },
         "weblate": {
             "handlers": [*DEFAULT_LOG],
@@ -726,7 +723,7 @@ LIMIT_TRANSLATION_LENGTH_BY_SOURCE_LENGTH = True
 SIMPLIFY_LANGUAGES = True
 
 # Render forms using bootstrap
-CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap3"
+CRISPY_ALLOWED_TEMPLATE_PACKS = ["bootstrap3", "bootstrap5"]
 CRISPY_TEMPLATE_PACK = "bootstrap3"
 
 # List of quality checks
@@ -825,7 +822,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.addons.gettext.UpdateLinguasAddon",
 #     "weblate.addons.gettext.UpdateConfigureAddon",
 #     "weblate.addons.gettext.MsgmergeAddon",
-#     "weblate.addons.gettext.GettextCustomizeAddon",
 #     "weblate.addons.gettext.GettextAuthorComments",
 #     "weblate.addons.cleanup.CleanupAddon",
 #     "weblate.addons.cleanup.RemoveBlankAddon",
@@ -840,14 +836,11 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.addons.generate.PseudolocaleAddon",
 #     "weblate.addons.generate.PrefillAddon",
 #     "weblate.addons.generate.FillReadOnlyAddon",
-#     "weblate.addons.json.JSONCustomizeAddon",
-#     "weblate.addons.xml.XMLCustomizeAddon",
 #     "weblate.addons.properties.PropertiesSortAddon",
 #     "weblate.addons.git.GitSquashAddon",
 #     "weblate.addons.removal.RemoveComments",
 #     "weblate.addons.removal.RemoveSuggestions",
 #     "weblate.addons.resx.ResxUpdateAddon",
-#     "weblate.addons.yaml.YAMLCustomizeAddon",
 #     "weblate.addons.cdn.CDNJSAddon",
 #     "weblate.addons.webhooks.WebhookAddon",
 #     "weblate.addons.webhooks.SlackWebhookAddon",
@@ -866,7 +859,7 @@ ALLOWED_HOSTS = ["__DOMAIN__"]
 # Configuration for caching
 CACHES = {
     "default": {
-        "BACKEND": "redis_lock.django_cache.RedisCache",
+        "BACKEND": "django_redis.cache.RedisCache",
         "LOCATION": "redis://127.0.0.1:6379/__REDIS_DB__",
         # If redis is running on same host as Weblate, you might
         # want to use unix sockets instead:
