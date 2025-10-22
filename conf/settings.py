@@ -831,6 +831,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.addons.flags.TargetEditAddon",
 #     "weblate.addons.flags.SameEditAddon",
 #     "weblate.addons.flags.BulkEditAddon",
+#     "weblate.addons.flags.TargetRepoUpdateAddon",
 #     "weblate.addons.generate.GenerateFileAddon",
 #     "weblate.addons.generate.PseudolocaleAddon",
 #     "weblate.addons.generate.PrefillAddon",
@@ -979,10 +980,10 @@ MATOMO_URL = None
 GOOGLE_ANALYTICS_ID = None
 SENTRY_DSN = None
 SENTRY_ENVIRONMENT = SITE_DOMAIN
-AKISMET_API_KEY = None
 
 # Yunohost hack so users can define a new conf, and we can just replace the conf
 try:
     from .local_settings import *
 except ImportError:
     pass
+    
