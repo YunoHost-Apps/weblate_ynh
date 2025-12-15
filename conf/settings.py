@@ -169,7 +169,7 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 # URL prefix to use, please see documentation for more details
-# YUNOHOST_WARNING: this must be without trailing slash (this is why we set __PATH_NO_SLASH__ (cf. loaded settings in install and upgrade))
+# YUNOHOST: this must be without trailing slash (this is why we set __PATH_NO_SLASH__ (cf. loaded settings in install and upgrade))
 URL_PREFIX = "__PATH_NO_SLASH__"
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
@@ -422,11 +422,18 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "social_django.middleware.SocialAuthExceptionMiddleware",
-    "weblate.accounts.middleware.RequireLoginMiddleware",
     "weblate.api.middleware.ThrottlingMiddleware",
     "weblate.middleware.SecurityMiddleware",
     "weblate.wladmin.middleware.ManageMiddleware",
 ]
+
+if REQUIRE_LOGIN:
+    # Use Django 5.1's LoginRequiredMiddleware to enforce authentication
+    # All public views are marked with @login_not_required decorator
+    MIDDLEWARE.insert(
+        MIDDLEWARE.index("weblate.api.middleware.ThrottlingMiddleware"),
+        "django.contrib.auth.middleware.LoginRequiredMiddleware",
+    )
 
 ROOT_URLCONF = "weblate.urls"
 
@@ -466,7 +473,6 @@ INSTALLED_APPS = [
     # Third party Django modules
     "social_django",
     "crispy_forms",
-    "crispy_bootstrap3",
     "crispy_bootstrap5",
     "compressor",
     "rest_framework",
@@ -603,6 +609,11 @@ LOGGING: dict = {
             "handlers": [*DEFAULT_LOG],
             "level": DEFAULT_LOGLEVEL,
         },
+        # Fedora messaging
+        "fedora_messaging": {
+            "handlers": [*DEFAULT_LOG],
+            "level": DEFAULT_LOGLEVEL,
+        },
     },
 }
 
@@ -722,8 +733,8 @@ LIMIT_TRANSLATION_LENGTH_BY_SOURCE_LENGTH = True
 SIMPLIFY_LANGUAGES = True
 
 # Render forms using bootstrap
-CRISPY_ALLOWED_TEMPLATE_PACKS = ["bootstrap3", "bootstrap5"]
-CRISPY_TEMPLATE_PACK = "bootstrap3"
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 # List of quality checks
 # CHECK_LIST = (
@@ -844,6 +855,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap3"
 #     "weblate.addons.cdn.CDNJSAddon",
 #     "weblate.addons.webhooks.WebhookAddon",
 #     "weblate.addons.webhooks.SlackWebhookAddon",
+#     "weblate.addons.fedora_messaging.FedoraMessagingAddon",
 # )
 
 # E-mail address that error messages come from.
@@ -903,33 +915,17 @@ COMPRESS_OFFLINE = True
 COMPRESS_OFFLINE_CONTEXT = "weblate.utils.compress.offline_context"
 COMPRESS_CSS_HASHING_METHOD = "content"
 
-# Require login for all URLs
-if REQUIRE_LOGIN:
-    LOGIN_REQUIRED_URLS = (r"/(.*)$",)
-
-# In such case you will want to include some of the exceptions
-# LOGIN_REQUIRED_URLS_EXCEPTIONS = (
-#    rf"{URL_PREFIX}/accounts/(.*)$",  # Required for login
-#    rf"{URL_PREFIX}/admin/login/(.*)$",  # Required for admin login
-#    rf"{URL_PREFIX}/static/(.*)$",  # Required for development mode
-#    rf"{URL_PREFIX}/widget/(.*)$",  # Allowing public access to widgets
-#    rf"{URL_PREFIX}/data/(.*)$",  # Allowing public access to data exports
-#    rf"{URL_PREFIX}/hooks/(.*)$",  # Allowing public access to notification hooks
-#    rf"{URL_PREFIX}/healthz/$",  # Allowing public access to health check
-#    rf"{URL_PREFIX}/api/(.*)$",  # Allowing access to API
-#    rf"{URL_PREFIX}/js/i18n/$",  # JavaScript localization
-#    rf"{URL_PREFIX}/css/custom\.css$",  # Custom CSS support
-#    rf"{URL_PREFIX}/contact/$",  # Optional for contact form
-#    rf"{URL_PREFIX}/legal/(.*)$",  # Optional for legal app
-#    rf"{URL_PREFIX}/avatar/(.*)$",  # Optional for avatars
-#    rf"{URL_PREFIX}/site.webmanifest$",  # The request for the manifest is made without credentials
-# )
+# Note: When REQUIRE_LOGIN is enabled, Django's LoginRequiredMiddleware is used.
+# Public views are marked with @login_not_required decorator in the code.
+# The LOGIN_REQUIRED_URLS and LOGIN_REQUIRED_URLS_EXCEPTIONS settings are no longer used.
 
 # Silence some of the Django system checks
 SILENCED_SYSTEM_CHECKS = [
     # We have modified django.contrib.auth.middleware.AuthenticationMiddleware
     # as weblate.accounts.middleware.AuthenticationMiddleware
     "admin.E408",
+    # Using custom authentication middleware with LoginRequiredMiddleware
+    "auth.E013",
     # Silence drf_spectacular until these are addressed
     "drf_spectacular.W001",
     "drf_spectacular.W002",
@@ -981,7 +977,7 @@ GOOGLE_ANALYTICS_ID = None
 SENTRY_DSN = None
 SENTRY_ENVIRONMENT = SITE_DOMAIN
 
-# Yunohost hack so users can define a new conf, and we can just replace the conf
+# YunoHost hack so users can define a new conf, and we can just replace the conf
 try:
     from .local_settings import *
 except ImportError:
