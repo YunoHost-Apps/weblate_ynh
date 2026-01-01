@@ -8,7 +8,7 @@ source /usr/share/yunohost/helpers
 #=================================================
 ynh_script_progression "Stopping systemd services..."
 
-ynh_systemctl --service=$app --action="stop" --log_path="/var/log/$app/weblate.log" --wait_until="goodbye to uWSGI"
+ynh_systemctl --service=$app --action="stop" --log_path="/var/log/$app/weblate.log" #--wait_until="goodbye to uWSGI"
 ynh_systemctl --service="$app-celery" --action="stop" --log_path="systemd"
 
 #=================================================
@@ -46,26 +46,11 @@ fi
 ynh_store_file_checksum "$settings"
 
 #=================================================
-# MODIFY UWSGI
-#=================================================
-
-finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
-ynh_backup_if_checksum_is_different "$finaluwsgiini"
-
-# Change the path in the nginx config file
-if [ $change_path -eq 1 ]
-then
-	ynh_replace --match="mount = $old_path=" --replace="mount = $new_path=" --file="$finaluwsgiini"
-fi
-
-ynh_store_file_checksum "$finaluwsgiini"
-
-#=================================================
 # START SYSTEMD SERVICE
 #=================================================
 ynh_script_progression "Starting $app's systemd service..."
 
-ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" --wait_until="spawned uWSGI"
+ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" #--wait_until="spawned uWSGI"
 ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery.log"
 
 #=================================================

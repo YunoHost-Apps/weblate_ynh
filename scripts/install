@@ -91,7 +91,7 @@ chown -R $app: "$install_dir"
 	set -o nounset
 	cd "${install_dir}"
 
-	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash
+	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash gunicorn
 	
 	#temporary fix to prevent ERROR: Dependency 'girepository-2.0' is required but not found.
 	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip PyGObject==3.50.0
@@ -121,9 +121,6 @@ set_forge_variables
 
 ynh_config_add --template="settings.py" --destination="$settings"
 ynh_config_add --template="celery-weblate" --destination="$install_dir/celery-weblate"
-ynh_config_add --template="uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
-
-chown $app:$app "/etc/uwsgi/apps-available/$app.ini"
 
 touch "$install_dir/local_settings.py"
 ln -sf "$install_dir/local_settings.py" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
@@ -199,7 +196,7 @@ yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery-w1.log"
 #=================================================
 ynh_script_progression "Starting $app's systemd service..."
 
-ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" --wait_until="spawned uWSGI"
+ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" #--wait_until="spawned uWSGI"
 ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery.log"
 
 #=================================================

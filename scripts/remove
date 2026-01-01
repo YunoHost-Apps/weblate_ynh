@@ -42,8 +42,6 @@ ynh_safe_rm "$tempdir"
 #=================================================
 ynh_script_progression "Removing various files..."
 
-ynh_safe_rm "/etc/uwsgi/apps-available/$app.ini"
-
 ynh_safe_rm "/var/run/$app-celery"
 
 ynh_redis_remove_db

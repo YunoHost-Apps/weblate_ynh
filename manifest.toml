@@ -7,7 +7,7 @@ name = "Weblate"
 description.en = "Translation platform using Git and Python"
 description.fr = "Plateforme de traduction utilisant Git et Python"
 
-version = "5.14.2~ynh1"
+version = "5.14.2~ynh2"
 
 maintainers = ["Thovi98"]
 
@@ -108,8 +108,6 @@ ram.runtime = "3G"
         "python3-venv",
         "python3-virtualenv",
         "virtualenv",
-        "uwsgi",
-        "uwsgi-plugin-python3",
         "redis-server",
         "postgresql",
         "postgresql-contrib",

@@ -19,8 +19,13 @@ path_no_slash=${path%/}
 #=================================================
 ynh_script_progression "Stopping systemd services..."
 
-ynh_systemctl --service=$app --action="stop" --log_path="/var/log/$app/weblate.log" --wait_until="goodbye to uWSGI"
+ynh_systemctl --service=$app --action="stop" --log_path="/var/log/$app/weblate.log" # --wait_until="goodbye to uWSGI"
 ynh_systemctl --service="$app-celery" --action="stop" --log_path="systemd"
+
+if ynh_app_upgrading_from_version_before 5.14.2~ynh2
+then
+   ynh_safe_rm "/etc/uwsgi/apps-available/$app.ini"
+fi
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
@@ -78,9 +83,6 @@ fi
 #=================================================
 ynh_script_progression "Updating configuration..."
 
-ynh_config_add --template="uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
-chown $app:$app "/etc/uwsgi/apps-available/$app.ini"
-
 ynh_config_add --template="celery-weblate" --destination="$install_dir/celery-weblate"
 
 #=================================================
@@ -113,7 +115,7 @@ upgrade() {
 		set -o nounset
 		cd "${install_dir}"
 
-		sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash
+		sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash gunicorn
 
 	#temporary fix to prevent ERROR: Dependency 'girepository-2.0' is required but not found.
 	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip PyGObject==3.50.0
@@ -233,7 +235,7 @@ yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery-w1.log"
 #=================================================
 ynh_script_progression "Starting systemd services..."
 
-ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" --wait_until="spawned uWSGI"
+ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" # --wait_until="spawned uWSGI"
 ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery.log"
 
 #=================================================

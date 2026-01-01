@@ -1,29 +1,33 @@
 [Unit]
-Description=__APP__ uWSGI app
-After=syslog.target
+Description=__APP__ gunicorn daemon
+After=network.target
 
 [Service]
-Type=forking
 User=__APP__
 Group=__APP__
 PermissionsStartOnly=true
+WorkingDirectory=__INSTALL_DIR__/
 
+Environment="DJANGO_SETTINGS_MODULE=weblate.settings"
 
-# https://www.freedesktop.org/software/systemd/man/systemd.exec.html#RuntimeDirectory=
-RuntimeDirectory=__APP__
-
-ExecStartPre=/bin/chown -R __APP__ /var/log/__APP__
-
-ExecStart=/usr/bin/uwsgi \
-        --ini /etc/uwsgi/apps-available/__APP__.ini \
-        --logto /var/log/__APP__/weblate.log
-
+ExecStart=__INSTALL_DIR__/bin/gunicorn \
+    --preload \
+    --timeout 3600 \
+    --graceful-timeout 3600 \
+    --worker-class=gthread \
+    --workers=2 \
+    --threads=16 \
+    --bind unix:/run/gunicorn.sock \
+    weblate.wsgi:application
 
 Restart=on-failure
 KillSignal=SIGQUIT
 Type=notify
 StandardError=inherit
 NotifyAccess=all
+
+StandardOutput=append:/var/log/__APP__/__APP__.log
+StandardError=inherit
 
 [Install]
 WantedBy=multi-user.target
