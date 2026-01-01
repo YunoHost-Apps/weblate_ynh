@@ -1,5 +1,6 @@
 [Unit]
 Description=__APP__ gunicorn daemon
+Requires=__APP__.socket
 After=network.target
 
 [Service]
