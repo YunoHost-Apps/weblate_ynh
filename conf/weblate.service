@@ -10,7 +10,7 @@ WorkingDirectory=__INSTALL_DIR__/
 
 Environment="DJANGO_SETTINGS_MODULE=weblate.settings"
 
-ExecStart=__INSTALL_DIR__/bin/gunicorn \
+ExecStart=__INSTALL_DIR__/venv/bin/gunicorn \
     --preload \
     --timeout 3600 \
     --graceful-timeout 3600 \
