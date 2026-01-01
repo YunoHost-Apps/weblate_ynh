@@ -20,6 +20,7 @@ path_no_slash=${path%/}
 ynh_script_progression "Stopping systemd services..."
 
 ynh_systemctl --service=$app --action="stop" --log_path="/var/log/$app/weblate.log" # --wait_until="goodbye to uWSGI"
+ynh_systemctl --service="$app.socket" --action="stop"
 ynh_systemctl --service="$app-celery" --action="stop" --log_path="systemd"
 
 if ynh_app_upgrading_from_version_before 5.14.2~ynh2
@@ -89,6 +90,8 @@ ynh_config_add --template="celery-weblate" --destination="$install_dir/celery-we
 # SETUP SYSTEMD
 #=================================================
 ynh_script_progression "Configuring $app's systemd service..."
+
+ynh_config_add_systemd_socket
 
 ynh_config_add_systemd  --template="weblate.service"
 ynh_config_add_systemd --service="$app-celery" --template="celery-weblate.service"
@@ -236,6 +239,7 @@ yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery-w1.log"
 ynh_script_progression "Starting systemd services..."
 
 ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" # --wait_until="spawned uWSGI"
+ynh_systemctl --service="$app-gunicorn.socket" --action="start"
 ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery.log"
 
 #=================================================

@@ -122,6 +122,8 @@ set_forge_variables
 ynh_config_add --template="settings.py" --destination="$settings"
 ynh_config_add --template="celery-weblate" --destination="$install_dir/celery-weblate"
 
+ynh_config_add_systemd_socket
+
 touch "$install_dir/local_settings.py"
 ln -sf "$install_dir/local_settings.py" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
 
@@ -172,7 +174,7 @@ chmod -R 755 "$install_dir/data"
 #=================================================
 ynh_script_progression "Configuring $app's systemd service..."
 
-ynh_config_add_systemd  --template="weblate.service"
+ynh_config_add_systemd --template="weblate.service"
 ynh_config_add_systemd --service="$app-celery" --template="celery-weblate.service"
 
 #=================================================
