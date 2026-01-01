@@ -8,6 +8,8 @@ source /usr/share/yunohost/helpers
 #=================================================
 ynh_script_progression "Removing system configurations related to $app..."
 
+ynh_config_remove_systemd_socket
+
 if ynh_hide_warnings yunohost service status $app >/dev/null; then
 	yunohost service remove $app
 fi
@@ -15,8 +17,6 @@ fi
 if ynh_hide_warnings yunohost service status "$app-celery" >/dev/null; then
 	yunohost service remove "$app-celery"
 fi
-
-ynh_config_remove_systemd_socket
 
 ynh_config_remove_systemd
 ynh_config_remove_systemd "$app-celery"
