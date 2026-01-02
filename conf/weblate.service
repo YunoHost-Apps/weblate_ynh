@@ -9,7 +9,7 @@ Group=__APP__
 PermissionsStartOnly=true
 WorkingDirectory=__INSTALL_DIR__/
 
-Environment="DJANGO_SETTINGS_MODULE=weblate.settings"
+Environment="DJANGO_SETTINGS_MODULE=settings"
 
 ExecStart=__INSTALL_DIR__/venv/bin/gunicorn \
     --preload \

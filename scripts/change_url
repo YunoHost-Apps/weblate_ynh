@@ -23,7 +23,7 @@ ynh_config_change_url_nginx
 #=================================================
 ynh_script_progression "Modify weblate's config file..."
 
-settings="$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
+settings="$install_dir/settings.py"
 ynh_backup_if_checksum_is_different "$settings"
 
 # Change the path in the nginx config file

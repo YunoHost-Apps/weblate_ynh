@@ -141,7 +141,7 @@ upgrade() {
 	ynh_script_progression "Create weblate configuration file..."
 
 	# save old settings file
-	settings="$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
+	settings="$install_dir/settings.py"
 	path="${path%/}"
 
 	set_forge_variables
