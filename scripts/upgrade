@@ -167,7 +167,7 @@ upgrade() {
 		set +o nounset
 		source "${install_dir}/venv/bin/activate"
 		set -o nounset
-		export DJANGO_SETTINGS_MODULE="weblate.settings"
+		export DJANGO_SETTINGS_MODULE="settings"
 		cd "${install_dir}"
 
 		sudo --user=$app $install_dir/venv/bin/weblate migrate --noinput
