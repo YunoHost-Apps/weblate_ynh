@@ -122,10 +122,12 @@ set_forge_variables
 ynh_config_add --template="settings.py" --destination="$settings"
 ynh_config_add --template="celery-weblate" --destination="$install_dir/celery-weblate"
 
-ynh_config_add_systemd_socket
+ln -sf "$settings" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 
 touch "$install_dir/local_settings.py"
 ln -sf "$install_dir/local_settings.py" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
+
+ynh_config_add_systemd_socket
 
 # Set permissions to app files
 chmod 750 "$install_dir"
@@ -144,7 +146,7 @@ ynh_script_progression "Filling up the database..."
 	set +o nounset
 	source "${install_dir}/venv/bin/activate"
 	set -o nounset
-	export SETTINGS_MODULE="settings"
+	export DJANGO_SETTINGS_MODULE="weblate.settings"
 	cd "${install_dir}"
 
 	# the user needs to be weblate for postgresql

@@ -153,6 +153,8 @@ upgrade() {
 	# Recalculate and store the config file checksum into the app settings
 	ynh_store_file_checksum "$settings"
 
+	ln -sf "$settings" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
+
 	touch "$install_dir/local_settings.py"
 	ln -sf "$install_dir/local_settings.py" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
 
@@ -167,7 +169,7 @@ upgrade() {
 		set +o nounset
 		source "${install_dir}/venv/bin/activate"
 		set -o nounset
-		export SETTINGS_MODULE="settings"
+		export DJANGO_SETTINGS_MODULE="weblate.settings"
 		cd "${install_dir}"
 
 		sudo --user=$app $install_dir/venv/bin/weblate migrate --noinput
