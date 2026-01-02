@@ -9,7 +9,6 @@ source /usr/share/yunohost/helpers
 ynh_script_progression "Stopping systemd services..."
 
 ynh_systemctl --service=$app --action="stop" --log_path="/var/log/$app/weblate.log" #--wait_until="goodbye to uWSGI"
-ynh_systemctl --service="$app-gunicorn.socket" --action="stop"
 ynh_systemctl --service="$app-celery" --action="stop" --log_path="systemd"
 
 #=================================================
@@ -52,7 +51,6 @@ ynh_store_file_checksum "$settings"
 ynh_script_progression "Starting $app's systemd service..."
 
 ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" #--wait_until="spawned uWSGI"
-ynh_systemctl --service="$app-gunicorn.socket" --action="start"
 ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery.log"
 
 #=================================================
