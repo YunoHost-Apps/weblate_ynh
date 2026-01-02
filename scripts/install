@@ -144,7 +144,7 @@ ynh_script_progression "Filling up the database..."
 	set +o nounset
 	source "${install_dir}/venv/bin/activate"
 	set -o nounset
-	export DJANGO_SETTINGS_MODULE="settings"
+	export SETTINGS_MODULE="settings"
 	cd "${install_dir}"
 
 	# the user needs to be weblate for postgresql
