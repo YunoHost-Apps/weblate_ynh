@@ -8,6 +8,8 @@ source /usr/share/yunohost/helpers
 #=================================================
 ynh_script_progression "Removing system configurations related to $app..."
 
+ynh_config_remove_systemd_socket
+
 if ynh_hide_warnings yunohost service status $app >/dev/null; then
 	yunohost service remove $app
 fi
@@ -17,7 +19,6 @@ if ynh_hide_warnings yunohost service status "$app-celery" >/dev/null; then
 fi
 
 ynh_config_remove_systemd
-
 ynh_config_remove_systemd "$app-celery"
 
 ynh_config_remove_logrotate
@@ -41,8 +42,6 @@ ynh_safe_rm "$tempdir"
 # REMOVE VARIOUS FILES
 #=================================================
 ynh_script_progression "Removing various files..."
-
-ynh_safe_rm "/etc/uwsgi/apps-available/$app.ini"
 
 ynh_safe_rm "/var/run/$app-celery"
 
