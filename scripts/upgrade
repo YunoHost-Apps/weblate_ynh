@@ -100,13 +100,10 @@ ynh_config_add_systemd --service="$app-celery" --template="celery-weblate.servic
 # UPGRADE WEBLATE
 #=================================================
 
-upgrade() {
-	new_version=$1
-	settings_template=$2
-	#=================================================
-	# PIP INSTALLATION
-	#=================================================
-	ynh_script_progression "Install weblate using PIP..."
+#=================================================
+# PIP INSTALLATION
+#=================================================
+ynh_script_progression "Install weblate using PIP..."
 
 # Remove old venv
 ynh_safe_rm "${install_dir}/venv"
@@ -126,28 +123,28 @@ pushd "$install_dir"
     ynh_safe_rm "$install_dir/.cache/pip"
 popd
 
-	#=================================================
-	# MODIFY A CONFIG FILE
-	#=================================================
-	ynh_script_progression "Create weblate configuration file..."
+#=================================================
+# MODIFY A CONFIG FILE
+#=================================================
+ynh_script_progression "Create weblate configuration file..."
 
-	# save old settings file
-	settings="$install_dir/settings.py"
-	path="${path%/}"
+# save old settings file
+settings="$install_dir/settings.py"
+path="${path%/}"
 
-	set_forge_variables
+set_forge_variables
 
-	ynh_config_add --template="settings.py" --destination="$settings"
+ynh_config_add --template="settings.py" --destination="$settings"
 
-	ynh_app_setting_set --key=redis_db --value="$redis_db"
+ynh_app_setting_set --key=redis_db --value="$redis_db"
 
-	# Recalculate and store the config file checksum into the app settings
-	ynh_store_file_checksum "$settings"
+# Recalculate and store the config file checksum into the app settings
+ynh_store_file_checksum "$settings"
 
-	ln -sf "$settings" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
+ln -sf "$settings" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 
-	touch "$install_dir/local_settings.py"
-	ln -sf "$install_dir/local_settings.py" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
+touch "$install_dir/local_settings.py"
+ln -sf "$install_dir/local_settings.py" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
 
 #=================================================
 # MIGRATE WEBLATE
