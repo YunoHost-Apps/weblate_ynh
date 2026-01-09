@@ -81,32 +81,20 @@ fi
 #=================================================
 ynh_script_progression "Install weblate using PIP..."
 
-virtualenv --python=python3 "${install_dir}/venv"
-chown -R $app: "$install_dir"
-
-#run source in a 'sub shell'
-(
-	set +o nounset
-	source "${install_dir}/venv/bin/activate"
-	set -o nounset
-	cd "${install_dir}"
-
-	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash gunicorn
-	
-	#temporary fix to prevent ERROR: Dependency 'girepository-2.0' is required but not found.
-	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip PyGObject==3.50.0
+pushd "$install_dir"
+    ynh_exec_as_app python3 -m venv "$install_dir/venv"
+    ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install --upgrade pip setuptools wheel pkgconfig xxhash gunicorn
 	
 	# Read the "Note" section in https://docs.weblate.org/en/weblate-4.11/admin/install/venv-debian.html#python-modules
-	sudo --user=$app $install_dir/venv/bin/pip install --force-reinstall --no-binary :all: cffi
-	
-	# Still needed with latest version of weblate?
-	sudo --user=$app BORG_OPENSSL_PREFIX=/usr/lib/x86_64-linux-gnu/ $install_dir/venv/bin/pip install Weblate=="$(ynh_app_upstream_version)"
-	sudo --user=$app $install_dir/venv/bin/pip install psycopg2-binary ruamel.yaml aeidon phply boto3 google openai
-	#pip install pytz python-bidi PyYaML Babel pyuca pylibravatar py3dns psycopg2-binary phply druamel.yaml django-redis hiredis
+    ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install --force-reinstall --no-binary :all: cffi
 
-	# specific to YunoHost package:
-	sudo --user=$app $install_dir/venv/bin/pip install django_sendmail_backend
-)
+	ynh_hide_warnings ynh_exec_as_app BORG_OPENSSL_PREFIX=/usr/lib/x86_64-linux-gnu/ "$install_dir/venv/bin/pip" install Weblate=="$(ynh_app_upstream_version)"
+	ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install psycopg2-binary ruamel.yaml aeidon phply boto3 google openai
+
+	ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install django_sendmail_backend
+
+    ynh_safe_rm "$install_dir/.cache/pip"
+popd
 
 #=================================================
 # ADD A CONFIGURATION
@@ -142,33 +130,28 @@ chown -R "$app:www-data" "$install_dir/data"
 #==========================================
 ynh_script_progression "Filling up the database..."
 
-(
-	set +o nounset
-	source "${install_dir}/venv/bin/activate"
-	set -o nounset
-	export DJANGO_SETTINGS_MODULE="weblate.settings"
-	cd "${install_dir}"
+pushd $install_dir
+	# exec_as_app because it needs to be $app for postgresql
+	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate migrate --noinput
 
-	# the user needs to be weblate for postgresql
-	ynh_hide_warnings sudo --user=$app $install_dir/venv/bin/weblate migrate --noinput
-
-	ynh_hide_warnings sudo --user=$app $install_dir/venv/bin/weblate createadmin --no-color \
+	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate createadmin --no-color \
 		--password "$password" \
 		--username "$admin" \
 		--email "$admin_mail"
 
 	# generate static files
-	ynh_hide_warnings sudo --user=$app $install_dir/venv/bin/weblate collectstatic --noinput
+	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate collectstatic --noinput
 
 	# https://docs.weblate.org/en/latest/admin/install/venv-debian.html
-	ynh_hide_warnings sudo --user=$app $install_dir/venv/bin/weblate compress
+	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate compress
 
 	# Check the configuration
 	# This may fail in some cases with errors, etc., but the app works and the user can fix issues later.
-	ynh_hide_warnings sudo --user=$app $install_dir/venv/bin/weblate check --deploy || true
-)
+	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate check --deploy || true
 
-#fix for multi-instance installs where said dir has not the correct permissions
+popd
+
+#chown again here to fix for multi-instance installs where said dir has not the correct permissions
 chmod -R 755 "$install_dir/data"
 
 #=================================================
