@@ -84,6 +84,10 @@ ynh_script_progression "Install weblate using PIP..."
 pushd "$install_dir"
     ynh_exec_as_app python3 -m venv "$install_dir/venv"
     ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install --upgrade pip setuptools wheel pkgconfig xxhash gunicorn
+
+	# Temporary fix to prevent ERROR: Dependency 'girepository-2.0' is required but not found.
+	# As of 09 jan 2026 it’s not yet fixed 
+	ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install --upgrade pip PyGObject==3.50.0
 	
 	# Read the "Note" section in https://docs.weblate.org/en/weblate-4.11/admin/install/venv-debian.html#python-modules
     ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install --force-reinstall --no-binary :all: cffi
