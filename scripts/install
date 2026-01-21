@@ -94,7 +94,7 @@ chown -R $app: "$install_dir"
 	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash gunicorn
 	
 	#temporary fix to prevent ERROR: Dependency 'girepository-2.0' is required but not found.
-	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip PyGObject==3.50.0
+	#sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip PyGObject==3.50.0
 	
 	# Read the "Note" section in https://docs.weblate.org/en/weblate-4.11/admin/install/venv-debian.html#python-modules
 	sudo --user=$app $install_dir/venv/bin/pip install --force-reinstall --no-binary :all: cffi
