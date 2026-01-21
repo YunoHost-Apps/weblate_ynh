@@ -164,13 +164,12 @@ pushd $install_dir
 	# exec_as_app because it needs to be $app for postgresql
 	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate migrate --noinput
 
-	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate createadmin --no-color \
-		--password "$password" \
-		--username "$admin" \
-		--email "$admin_mail"
-
-	# generate static files
+		# generate static files
 	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate collectstatic --noinput
+
+	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate setuplang
+	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate setupgroups
+	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate compilemessages
 
 	# https://docs.weblate.org/en/latest/admin/install/venv-debian.html
 	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate compress
