@@ -22,7 +22,7 @@ cpe = "cpe:2.3:a:weblate:weblate"
 fund = "https://weblate.org/fr/donate/"
 
 [integration]
-yunohost = ">= 12.0"
+yunohost = ">= 12.1.38"
 helpers_version = "2.1"
 architectures = "all"
 multi_instance = true
@@ -108,8 +108,6 @@ ram.runtime = "3G"
         "python3-venv",
         "python3-virtualenv",
         "virtualenv",
-        "uwsgi",
-        "uwsgi-plugin-python3",
         "redis-server",
         "postgresql",
         "postgresql-contrib",

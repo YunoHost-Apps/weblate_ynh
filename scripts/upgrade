@@ -19,8 +19,14 @@ path_no_slash=${path%/}
 #=================================================
 ynh_script_progression "Stopping systemd services..."
 
-ynh_systemctl --service=$app --action="stop" --log_path="/var/log/$app/weblate.log" --wait_until="goodbye to uWSGI"
+ynh_systemctl --service=$app --action="stop" --log_path="/var/log/$app/weblate.log" # --wait_until="goodbye to uWSGI"
+ynh_systemctl --service="$app.socket" --action="stop"
 ynh_systemctl --service="$app-celery" --action="stop" --log_path="systemd"
+
+if ynh_app_upgrading_from_version_before 5.14.2~ynh2
+then
+   ynh_safe_rm "/etc/uwsgi/apps-available/$app.ini"
+fi
 
 #=================================================
 # ENSURE DOWNWARD COMPATIBILITY
@@ -78,15 +84,14 @@ fi
 #=================================================
 ynh_script_progression "Updating configuration..."
 
-ynh_config_add --template="uwsgi.ini" --destination="/etc/uwsgi/apps-available/$app.ini"
-chown $app:$app "/etc/uwsgi/apps-available/$app.ini"
-
 ynh_config_add --template="celery-weblate" --destination="$install_dir/celery-weblate"
 
 #=================================================
 # SETUP SYSTEMD
 #=================================================
 ynh_script_progression "Configuring $app's systemd service..."
+
+ynh_config_add_systemd_socket
 
 ynh_config_add_systemd  --template="weblate.service"
 ynh_config_add_systemd --service="$app-celery" --template="celery-weblate.service"
@@ -113,7 +118,7 @@ upgrade() {
 		set -o nounset
 		cd "${install_dir}"
 
-		sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash
+		sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash gunicorn
 
 	#temporary fix to prevent ERROR: Dependency 'girepository-2.0' is required but not found.
 	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip PyGObject==3.50.0
@@ -136,7 +141,7 @@ upgrade() {
 	ynh_script_progression "Create weblate configuration file..."
 
 	# save old settings file
-	settings="$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
+	settings="$install_dir/settings.py"
 	path="${path%/}"
 
 	set_forge_variables
@@ -147,6 +152,8 @@ upgrade() {
 
 	# Recalculate and store the config file checksum into the app settings
 	ynh_store_file_checksum "$settings"
+
+	ln -sf "$settings" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/settings.py"
 
 	touch "$install_dir/local_settings.py"
 	ln -sf "$install_dir/local_settings.py" "$install_dir/venv/lib/$weblate_pypath/site-packages/weblate/local_settings.py"
@@ -233,7 +240,8 @@ yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery-w1.log"
 #=================================================
 ynh_script_progression "Starting systemd services..."
 
-ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" --wait_until="spawned uWSGI"
+ynh_systemctl --service=$app.socket --action="restart"
+ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" # --wait_until="spawned uWSGI"
 ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery.log"
 
 #=================================================

@@ -47,21 +47,16 @@ popd
 ynh_safe_rm "$tempdir"
 
 #=================================================
-# RESTORE VARIOUS FILES
-#=================================================
-ynh_script_progression "Restoring various files..."
-
-ynh_restore "/etc/uwsgi/apps-available/$app.ini"
-chown $app:$app "/etc/uwsgi/apps-available/$app.ini"
-
-
-#=================================================
 # RESTORE SYSTEMD
 #=================================================
 ynh_script_progression "Restoring $app's systemd service..."
 
 ynh_restore "/etc/systemd/system/$app.service"
 systemctl enable $app.service --quiet
+
+ynh_restore "/etc/systemd/system/$app.socket"
+systemctl enable "$app.socket" --quiet
+
 ynh_restore  "/etc/systemd/system/$app-celery.service"
 systemctl enable "$app-celery" --quiet
 
@@ -86,7 +81,7 @@ yunohost service add "$app-celery" --log="/var/log/$app/weblate-celery-w1.log"
 #=================================================
 ynh_script_progression "Starting $app's systemd service..."
 
-ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" --wait_until="spawned uWSGI"
+ynh_systemctl --service=$app --action="start" --log_path="/var/log/$app/weblate.log" # --wait_until="spawned uWSGI"
 ynh_systemctl --service="$app-celery" --action="start" --log_path="/var/log/$app/weblate-celery.log"
 
 #=================================================

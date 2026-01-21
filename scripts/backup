@@ -20,9 +20,8 @@ ynh_backup "/etc/nginx/conf.d/$domain.d/$app.conf"
 ynh_backup "/etc/logrotate.d/$app"
 
 ynh_backup "/etc/systemd/system/$app.service"
+ynh_backup "/etc/systemd/system/$app.socket"
 ynh_backup "/etc/systemd/system/$app-celery.service"
-
-ynh_backup "/etc/uwsgi/apps-available/$app.ini"
 
 #=================================================
 # BACKUP THE POSTGRESQL DATABASE
