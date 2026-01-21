@@ -7,7 +7,7 @@ name = "Weblate"
 description.en = "Translation platform using Git and Python"
 description.fr = "Plateforme de traduction utilisant Git et Python"
 
-version = "5.15~ynh1"
+version = "5.15.2~ynh1"
 
 maintainers = ["Thovi98"]
 
@@ -100,7 +100,7 @@ ram.runtime = "3G"
         # Weblate dependencies
         "build-essential", "git",
         "gir1.2-pango-1.0", "libacl1-dev", "libcairo-dev", "libffi-dev", "libfreetype6-dev",
-        "libgirepository1.0-dev", "libjpeg-dev", "libjpeg62-turbo-dev", "libpq-dev",
+        "girepository-2.0", "libgirepository1.0-dev", "libjpeg-dev", "libjpeg62-turbo-dev", "libpq-dev",
         "libssl-dev", "libxml2-dev", "libxslt-dev", "libyaml-dev", "libz-dev", "librsvg2-dev",
         "python3-gdbm",
         "python3-dev",
