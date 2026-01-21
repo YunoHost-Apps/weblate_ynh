@@ -164,7 +164,7 @@ pushd $install_dir
 	# exec_as_app because it needs to be $app for postgresql
 	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate migrate --noinput
 
-		# generate static files
+	# generate static files
 	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate collectstatic --noinput
 
 	ynh_hide_warnings ynh_exec_as_app $install_dir/venv/bin/weblate setuplang
@@ -196,13 +196,6 @@ else
 fi
 
 ynh_psql_db_shell <<< "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
-
-if [ "$current_version" -lt "5" ]
-then
-	upgrade "5.0.2" "../conf/settings.py"
-fi
-
-upgrade $(ynh_app_upstream_version) "../conf/settings.py"
 
 # Set right permissions for curl installation
 mkdir -p "$install_dir/avatar-cache"
