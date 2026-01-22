@@ -93,6 +93,9 @@ chown -R $app: "$install_dir"
 
 	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip setuptools wheel pkgconfig xxhash gunicorn
 	
+	# Workaround to https://github.com/WeblateOrg/weblate/issues/17573 until we can upgrade to 5.15 (Trixie)
+	ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install --upgrade django-otp==1.6.3
+
 	#temporary fix to prevent ERROR: Dependency 'girepository-2.0' is required but not found.
 	sudo --user=$app $install_dir/venv/bin/pip install --upgrade pip PyGObject==3.50.0
 	
