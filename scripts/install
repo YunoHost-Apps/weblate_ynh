@@ -49,19 +49,6 @@ ynh_script_progression "Configuring NGINX web server..."
 ynh_config_add_nginx
 
 #=================================================
-# INSTALL XXHASH
-#=================================================
-ynh_script_progression "Installing xxHash..."
-
-tempdir="$(mktemp -d)"
-ynh_setup_source --dest_dir=$tempdir --source_id="libxxhash"
-pushd $tempdir
-	make
-	make install
-popd
-ynh_safe_rm "$tempdir"
-
-#=================================================
 # CONFIGURE HUB
 #=================================================
 
@@ -83,7 +70,7 @@ ynh_script_progression "Install weblate using PIP..."
 
 pushd "$install_dir"
     ynh_exec_as_app python3 -m venv "$install_dir/venv"
-    ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install --upgrade pip setuptools wheel pkgconfig xxhash gunicorn
+    ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install --upgrade pip setuptools wheel pkgconfig gunicorn
 
 	# Workaround to https://github.com/WeblateOrg/weblate/issues/17573 until we can upgrade to 5.15 (Trixie)
 	ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install --upgrade django-otp==1.6.3
