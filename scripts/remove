@@ -26,19 +26,6 @@ ynh_config_remove_logrotate
 ynh_config_remove_nginx
 
 #=================================================
-# REMOVE XXHASH
-#=================================================
-ynh_script_progression "Removing xxHash..."
-
-tempdir="$(mktemp -d)"
-ynh_setup_source --dest_dir=$tempdir --source_id="libxxhash"
-pushd $tempdir
-	make
-	make uninstall
-popd
-ynh_safe_rm "$tempdir"
-
-#=================================================
 # REMOVE VARIOUS FILES
 #=================================================
 ynh_script_progression "Removing various files..."

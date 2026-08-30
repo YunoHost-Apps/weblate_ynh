@@ -33,6 +33,33 @@ fi
 #=================================================
 ynh_script_progression "Ensuring downward compatibility..."
 
+if ynh_app_upgrading_from_version_before 5.14.3~ynh1
+then
+    for leftover in \
+        /usr/local/lib/libxxhash.a \
+        /usr/local/lib/libxxhash.so \
+        /usr/local/lib/libxxhash.so.0 \
+        /usr/local/lib/libxxhash.so.0.* \
+        /usr/local/lib/pkgconfig/libxxhash.pc \
+        /usr/local/include/xxhash.h \
+        /usr/local/include/xxh3.h \
+        /usr/local/include/xxh_x86dispatch.h \
+        /usr/local/bin/xxhsum \
+        /usr/local/bin/xxh32sum \
+        /usr/local/bin/xxh64sum \
+        /usr/local/bin/xxh128sum \
+        /usr/local/bin/xxh3sum \
+        /usr/local/share/man/man1/xxhsum.1 \
+        /usr/local/share/man/man1/xxh32sum.1 \
+        /usr/local/share/man/man1/xxh64sum.1 \
+        /usr/local/share/man/man1/xxh128sum.1 \
+        /usr/local/share/man/man1/xxh3sum.1
+    do
+        ynh_safe_rm "$leftover"
+    done
+    ldconfig
+fi
+
 # If used_forge, forge_username, forge_token don't exist, create them
 if [ -z "$used_forge" ]; then
 	used_forge="GitHub"
@@ -50,19 +77,6 @@ ynh_script_progression "Upgrading NGINX web server configuration..."
 
 # Create a dedicated NGINX config
 ynh_config_add_nginx
-
-#=================================================
-# INSTALL XXHASH
-#=================================================
-ynh_script_progression "Installing xxHash..."
-
-tempdir="$(mktemp -d)"
-ynh_setup_source --dest_dir=$tempdir --source_id="libxxhash"
-pushd $tempdir
-	make
-	make install
-popd
-ynh_safe_rm "$tempdir"
 
 #=================================================
 # CONFIGURE HUB
@@ -110,7 +124,7 @@ ynh_safe_rm "${install_dir}/venv"
 
 pushd "$install_dir"
     ynh_exec_as_app python3 -m venv "$install_dir/venv"
-    ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install --upgrade pip setuptools wheel pkgconfig xxhash gunicorn
+    ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install --upgrade pip setuptools wheel pkgconfig gunicorn
 
 	# Workaround to https://github.com/WeblateOrg/weblate/issues/17573 until we can upgrade to 5.15 (Trixie)
 	ynh_hide_warnings ynh_exec_as_app "$install_dir/venv/bin/pip" install --upgrade django-otp==1.6.3

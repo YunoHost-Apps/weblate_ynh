@@ -34,19 +34,6 @@ ynh_script_progression "Restoring the PostgreSQL database..."
 ynh_psql_db_shell < ./db.sql
 
 #=================================================
-# INSTALL XXHASH
-#=================================================
-ynh_script_progression "Installing xxHash..."
-
-tempdir="$(mktemp -d)"
-ynh_setup_source --dest_dir=$tempdir --source_id="libxxhash"
-pushd $tempdir
-	make
-	make install
-popd
-ynh_safe_rm "$tempdir"
-
-#=================================================
 # RESTORE SYSTEMD
 #=================================================
 ynh_script_progression "Restoring $app's systemd service..."
