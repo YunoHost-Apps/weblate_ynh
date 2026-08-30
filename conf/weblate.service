@@ -21,6 +21,8 @@ ExecStart=__INSTALL_DIR__/venv/bin/gunicorn \
     --bind unix:/run/__APP__.sock \
     weblate.wsgi:application
 
+LimitNOFILE=65536
+
 Restart=on-failure
 KillSignal=SIGQUIT
 Type=notify
